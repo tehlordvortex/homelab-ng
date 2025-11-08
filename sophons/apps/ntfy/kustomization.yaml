@@ -11,4 +11,4 @@ configMapGenerator:
       - config/litestream.yaml
   - name: ntfy
     files:
-      - config/server.sops.yaml
+      - server.yaml=config/server.sops.yaml

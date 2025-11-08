@@ -1,4 +1,12 @@
 #!/bin/bash
-cat > resources.yaml
-kubectl kustomize
-rm resources.yaml
+set -eou pipefail
+
+dir=$1
+if [[ "$dir" == "" ]]; then
+  >&2 echo "where dir???"
+  exit 2
+fi
+
+cat >$dir/resources.yaml
+kubectl kustomize $dir
+rm $dir/resources.yaml
