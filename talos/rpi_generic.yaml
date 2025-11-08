@@ -1,0 +1,24 @@
+overlay:
+  name: rpi_generic
+  image: siderolabs/sbc-raspberrypi
+  options:
+    configTxt: |
+      gpu_mem=128
+      kernel=u-boot.bin
+      arm_64bit=1
+      arm_boost=1
+      dtoverlay=disable-bt
+      dtoverlay=disable-wifi
+      enable_uart=1
+      avoid_warnings=2
+      dtoverlay=vc4-kms-v3d,noaudio
+      dtoverlay=gpio-fan,gpiopin=14,temp=75000
+      over_voltage=6
+      arm_freq=2000
+      gpu_freq=750
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/vc4
+      - siderolabs/iscsi-tools
+      - siderolabs/util-linux-tools

@@ -1,0 +1,74 @@
+# Template: https://github.com/binwiederhier/ntfy/blob/main/server/server.yml
+log-level: debug
+base-url: https://ntfy.vrtx.sh
+behind-proxy: true
+# faster iOS notifications
+upstream-base-url: https://ntfy.sh
+auth-file: /var/lib/ntfy/user.db
+auth-startup-queries: |
+  pragma journal_mode = WAL;
+  pragma synchronous = normal;
+  pragma temp_store = memory;
+  pragma busy_timeout = 15000;
+  vacuum;
+auth-default-access: deny-all
+# enc!
+auth-users:
+  - ENC[AES256_GCM,data:qTP8uM39/2eo6JaHu2W+iTmx2BjRotYP4TVfJSOMzjWVF3gvD+Y3Pbn/jYiKOcXLfPHoT/CAoaNM5XWszqOoAHiqt1SGGec=,iv:n1IMttOWSvLYuVZjF6MykmEb15ZeLpXIEku3A0nsZsM=,tag:NvKmqsWfJP6qSXTwSVR7Qg==,type:str]
+  - ENC[AES256_GCM,data:GOyXMSIauqx1Cwzo1wErnRu3/7NGpOjhZ+SLikL7OxtgjBmlx/RCFStSaYkr/g9PtUiyEH5TXkZBbq8qwO7FUTsehg+9X4vX,iv:o6JlyzFt2csMr7GSQmBOZJU8m/mirq/wTHGEAzO1glg=,tag:OCTlgoXqK0uC92LwPXi/9w==,type:str]
+# enc!
+auth-tokens:
+  - ENC[AES256_GCM,data:aGN3JgqDdYNNE4VAPCLFOCvTeiF/xibHRTnUsbd+FsJOkicZI7mPpiVCTcU=,iv:eHx2dCMohY6yZ9S85DqP+3nKhX5QEtCnCR/XKj+3yRM=,tag:4H3VGrbPtU+efq19pzBFvA==,type:str]
+  - ENC[AES256_GCM,data:Ovvz/trLp/Jd0vqt8AnUX4PY89Jzf0lyYf0iCa94iimT8DgfLTjO9PmTYA==,iv:SG3+7c9TqiiLwBycmJ+Fj0wxOTe4QLS9DVcw9wAdr54=,tag:UANSQRd25u9nAX1GUDbHwQ==,type:str]
+  - ENC[AES256_GCM,data:1K/lzljJDjqpyzGoqJGfLrheRBK5O4e8TAVsc1hoHXWOvW1ixae2HyHxyDCdIg==,iv:8dG3dvvsDUKPjsKIDpPA7gaLGyQAZkTq55Edmp6Y2FY=,tag:t5m1E+zfKzOiLEPybTKSnA==,type:str]
+  - ENC[AES256_GCM,data:84wj5BZTPDoNEbpXRqpNZjzHgpv2rjSM5eAgiO1jm5Bpbmp0nXDAqPkdZEx2c2E=,iv:la7SdS7yFlMhSMM6ELM2JnsyI5v3pbj17iTIiBulV5g=,tag:yflxLNyLeiP8UqA2pCVfcA==,type:str]
+auth-access:
+  - alerts:backups_*:wo
+  - alerts:backups:wo
+  - alerts:cron_*:wo
+  - alerts:systemd:wo
+  - alerts:uptime:wo
+  - alerts:prxmx:wo
+  - alerts:cron:wo
+  # unified push
+  - '*:up*:wo'
+cache-file: /var/lib/ntfy/cache.db
+cache-startup-queries: |
+  pragma journal_mode = WAL;
+  pragma synchronous = normal;
+  pragma temp_store = memory;
+  pragma busy_timeout = 15000;
+  vacuum;
+web-push-file: /var/lib/ntfy/webpush.db
+web-push-email-address: cloud@vrtx.sh
+web-push-startup-queries: |
+  pragma journal_mode = WAL;
+  pragma synchronous = normal;
+  pragma temp_store = memory;
+  pragma busy_timeout = 15000;
+  vacuum;
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyA1ZzdS
+        OHZieTB2WkdGNm1lSWhVc2drS3dZM09rV1dadnNuWlZadzE4OG5rClpWazB5RS9y
+        RDhPc0JzQmEvOWo3Q3haMzh0REFPTTA1S1A0QlFSVXR2bVkKLS0tIHZoKzB3MFlG
+        VHp2dGtoODFGNGRySldxdHBhcmpDbjdoYldnY1o3Q2FiNncK4IjHmZy/YQrtyHYh
+        ABg7Ni4PJjYRH/kRZ31SNsksguM/oY0Ln1r+f45Srtes3aailaS5Uk4KC25ue434
+        3RK5vg==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvODhYRHNXL0Y2Qy8wbkRS
+        U2hIbnM0Vm1Bakc4RFpPdDA5MURtZmxGS2owClRyRVpPMEZpNmVKVlRQNy9GVnl6
+        WUJ2VlQ1eG9mS3FZdDVGQzZFekFZYk0KLS0tIDNnUERFRU1Wa3RHRnFSZFlEUzdz
+        NUUwOHA5MDNMbHN2N0FGSlpob1lsZm8KHteL/Y2Se0B4BZnV793fZsFVQL2XsV4Z
+        mKPHDC84/pQw+mBmD1iAALl9QjFfkXZdAnFN1a9tJIPegycNRAhPZA==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:29Z"
+  mac: ENC[AES256_GCM,data:nZHLWuB3jXjhyuUF1APIytBjxR9kZbPqVR80L6ntbKfZB41+/1rvikIp2PpJ1R3C+FVxElPuUt3RweMpBAIKV7e4E5DIpojmUfE1XFTSy9DYDVdhpsrJauAzCOAg1sgtqaMeMqjqAklW89pmoUfbhqi/qdqj6mDZIeeYe0ju840=,iv:tIc9tJRzBAkQ32MK44HAdK8zRuDu15V0TZ7zitxWK/U=,tag:vb1zH5Cr9hWKvneZ7hMcfA==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

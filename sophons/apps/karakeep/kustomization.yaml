@@ -1,0 +1,13 @@
+namespace: karakeep
+resources:
+  - service.yaml
+  - namespace.yaml
+  - secret.sops.yaml
+  - persistentvolumeclaim.yaml
+
+configMapGenerator:
+  - name: litestream
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/litestream.yaml

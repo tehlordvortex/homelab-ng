@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -eo pipefail
+
+talos_version=v1.11.3
+spec=$1
+file=$2
+image_factory_id=$(curl --silent -X POST --data-binary "@$spec" https://factory.talos.dev/schematics | jq -r .id)
+
+if [[ "$file" != "" ]]; then
+  filename=$(basename $file)
+  curl -Lo $file "https://factory.talos.dev/image/$image_factory_id/$talos_version/$filename"
+fi
+
+echo "factory.talos.dev/installer/$image_factory_id:$talos_version"

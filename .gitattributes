@@ -1,0 +1,10 @@
+*.sops.yaml filter=sops
+*.sops.json filter=sops
+.sops.yaml -filter
+
+kubeconfig  filter=sops
+talosconfig filter=sops
+secrets.yaml  filter=sops
+secret.yaml  filter=sops
+.env  filter=sops
+age.txt  filter=sops

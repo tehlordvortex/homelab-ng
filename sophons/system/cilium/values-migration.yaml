@@ -1,0 +1,54 @@
+operator:
+  unmanagedPodWatcher:
+    restart: false # Migration: Don't restart unmigrated pods
+# tunnelProtocol: vxlan # Migration: Optional: default is VXLAN, configure as needed
+# tunnelPort: 8473 # Migration: Optional, change only if both networks use the same port by default
+cni:
+  customConf: true # Migration: Don't install a CNI configuration file
+  uninstall: false # Migration: Don't remove CNI configuration on shutdown
+  # operator:
+  #   # - 10.41.0.0/16 - 2001:cafe:41::/56
+  #   clusterPoolIPv4PodCIDRList: ["10.40.0.0/16"] # Migration: Ensure this is distinct and unused
+  #   clusterPoolIPv6PodCIDRList: ["2001:cafe:40::/56"]
+  #   clusterPoolIPv6MaskSize: 64
+policyEnforcementMode: "never" # Migration: Disable policy enforcement
+
+cgroup:
+  hostRoot: /sys/fs/cgroup
+  autoMount:
+    enabled: false
+
+k8sServiceHost: localhost
+k8sServicePort: 7445
+kubeProxyReplacement: true
+
+ipv6:
+  enabled: true
+routingMode: native # Migration: Optional: default is tunneling, configure as needed
+bpf:
+  hostLegacyRouting: true # Migration: Allow for routing between Cilium and the existing overlay
+ipam:
+  mode: "kubernetes"
+ipv4NativeRoutingCIDR: 10.41.0.0/16
+ipv6NativeRoutingCIDR: 2001:cafe:41::/56
+
+gatewayAPI:
+  enabled: true
+  enableAlpn: true
+  enableAppProtocol: true
+
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - "CHOWN"
+      - "KILL"
+      - "NET_ADMIN"
+      - "NET_RAW"
+      - "IPC_LOCK"
+      - "SYS_ADMIN"
+      - "SYS_RESOURCE"
+      - "DAC_OVERRIDE"
+      - "FOWNER"
+      - "SETGID"
+      - "SETUID"
+    cleanCiliumState: ["NET_ADMIN", SYS_ADMIN", "SYS_RESOURCE"]

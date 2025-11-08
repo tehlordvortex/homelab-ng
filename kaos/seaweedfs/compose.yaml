@@ -1,0 +1,133 @@
+services:
+  master:
+    restart: unless-stopped
+    image: chrislusf/seaweedfs:4.00
+    command: "master -ip=master -ip.bind=0.0.0.0 -metricsPort=9324"
+    volumes:
+      - ./master.toml:/etc/seaweedfs/master.toml
+    environment:
+      - WEED_STORAGE_BACKEND_S3_DEFAULT_AWS_ACCESS_KEY_ID=$BACKBLAZE_ACCOUNT_ID
+      - WEED_STORAGE_BACKEND_S3_DEFAULT_AWS_SECRET_ACCESS_KEY=$BACKBLAZE_MASTER_KEY
+
+  volume_lbb_hdd:
+    restart: unless-stopped
+    image: chrislusf/seaweedfs:4.00
+    command: 'volume -mserver="master:9333" -ip.bind=0.0.0.0 -port=8080  -metricsPort=9325'
+    volumes:
+      - /run/media/vrtx/less-big-boi/backups/weedfs:/data
+    depends_on:
+      - master
+
+  filer:
+    restart: unless-stopped
+    image: chrislusf/seaweedfs:4.00
+    command: 'filer -master="master:9333" -ip.bind=0.0.0.0 -metricsPort=9326 -encryptVolumeData'
+    volumes:
+      - filer:/data
+    network_mode: service:ts
+    tty: true
+    stdin_open: true
+    depends_on:
+      - master
+      - volume_lbb_hdd
+
+  # filer_replication:
+  #   restart: unless-stopped
+  #   image: chrislusf/seaweedfs:4.00
+  #   command: 'filer.backup -filer="localhost:8888" -retentionDays 5'
+  #   volumes:
+  #     - ./filer/replication.toml:/etc/seaweedfs/replication.toml:ro
+  #   environment:
+  #     - WEED_SINK_BACKBLAZE_B2_ACCOUNT_ID=$BACKBLAZE_ACCOUNT_ID
+  #     - WEED_SINK_BACKBLAZE_B2_MASTER_APPLICATION_KEY=$BACKBLAZE_MASTER_KEY
+  #   network_mode: service:ts
+  #   depends_on:
+  #     - filer
+
+  filer_backup:
+    restart: unless-stopped
+    # use _full image for sqlite store
+    image: chrislusf/seaweedfs:4.00_full
+    command: 'filer.meta.backup -filer="localhost:8888" -config="/backup.toml"'
+    volumes:
+      - filer_backup:/data
+      - ./filer/backup.toml:/backup.toml:ro
+    network_mode: service:ts
+    depends_on:
+      - litestream_restore
+      - filer
+
+  litestream_restore:
+    image: litestream/litestream:0.5.2
+    command: restore -config=/etc/litestream.yaml -if-replica-exists -if-db-not-exists /filer/filer.db
+    volumes:
+      - filer_backup:/filer
+      - ./litestream/litestream.yaml:/etc/litestream.yaml:ro
+    environment:
+      - LITESTREAM_ACCESS_KEY_ID=$LITESTREAM_ACCESS_KEY_ID
+      - LITESTREAM_SECRET_ACCESS_KEY=$LITESTREAM_SECRET_ACCESS_KEY
+
+  litestream:
+    restart: unless-stopped
+    image: litestream/litestream:0.5.2
+    command: replicate -config=/etc/litestream.yaml
+    volumes:
+      - filer_backup:/filer
+      - ./litestream/litestream.yaml:/etc/litestream.yaml:ro
+    environment:
+      - LITESTREAM_ACCESS_KEY_ID=$LITESTREAM_ACCESS_KEY_ID
+      - LITESTREAM_SECRET_ACCESS_KEY=$LITESTREAM_SECRET_ACCESS_KEY
+    depends_on:
+      - filer_backup
+
+  s3:
+    restart: unless-stopped
+    image: chrislusf/seaweedfs:4.00
+    command: 's3 -filer="localhost:8888" -ip.bind=0.0.0.0 -metricsPort=9327 -config=/s3.json'
+    network_mode: service:ts
+    volumes:
+      - ./s3.sops.json:/s3.json:ro
+    depends_on:
+      - master
+      - volume_lbb_hdd
+      - filer
+
+  # webdav:
+  #   image: chrislusf/seaweedfs # use a remote image
+  #   ports:
+  #     - 7333:7333
+  #   command: 'webdav -filer="filer:8888"'
+  #   depends_on:
+  #     - master
+  #     - volume
+  #     - filer
+
+  prometheus:
+    restart: unless-stopped
+    image: prom/prometheus:v2.21.0
+    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yaml
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    network_mode: service:ts
+    depends_on:
+      - s3
+
+  ts:
+    restart: unless-stopped
+    image: tailscale/tailscale:v1.90.6
+    cap_add:
+      - net_admin
+      - sys_module
+    environment:
+      - TS_HOSTNAME=weedfs
+      - TS_AUTHKEY=$TS_AUTHKEY
+      - TS_EXTRA_ARGS=--login-server=https://hs.vrtx.sh --accept-routes --ssh
+      - TS_USERSPACE=false
+      - TS_ENABLE_METRICS=true
+      - TS_ENABLE_HEALTH_CHECK=true
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
+volumes:
+  filer:
+  filer_backup:

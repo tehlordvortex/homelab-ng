@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1/namespace.json
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ntfy

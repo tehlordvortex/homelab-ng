@@ -1,0 +1,48 @@
+bpf:
+  hostLegacyRouting: true
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+cluster:
+  name: sophons
+cni:
+  customConf: false
+  uninstall: false
+gatewayAPI:
+  enableAlpn: true
+  enableAppProtocol: true
+  enabled: true
+ipam:
+  mode: kubernetes
+ipv4NativeRoutingCIDR: 10.41.0.0/16
+ipv6:
+  enabled: true
+ipv6NativeRoutingCIDR: 2001:cafe:41::/56
+k8sServiceHost: localhost
+k8sServicePort: 7445
+kubeProxyReplacement: true
+operator:
+  replicas: 1
+  unmanagedPodWatcher:
+    restart: true
+policyEnforcementMode: default
+routingMode: native
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE

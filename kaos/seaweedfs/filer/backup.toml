@@ -1,0 +1,3 @@
+[sqlite]
+enabled = true
+dbFile = "/data/filer.db"

@@ -1,0 +1,151 @@
+#
+# IMPORTANT NOTE
+#
+# This chart inherits from the bjw-s library chart. You can check the default values/options here:
+# https://github.com/bjw-s/helm-charts/tree/main/charts/library/common
+#
+applicationProtocol: http
+applicationHost: holding.kaos.nexus
+# enc!
+applicationSecretKey: ENC[AES256_GCM,data:SrNpIaA6E9Aa6LVj6q8Zjk+jHwRJ1q/QEbZuoeV/rFqcLxhwa8bFMwj+omFShdXf,iv:ZlNdiwtVSwozKPS4JH4TIYnJ6N+gT3yWR/2uif7nl70=,tag:CKRPcJ6d0m9hljTBcUbIiA==,type:str]
+# enc!
+meilisearchMasterKey: ENC[AES256_GCM,data:yu7/VTCgCROA9JpWGJndW9v7S6v9iDHoXhSeqfkA,iv:eqxx3+gH9h5GoO40reosA/t1LZgOLM8DFdx8Gj1tWRE=,tag:cYmXBqkgbzjn1rRCdnkUiQ==,type:str]
+controllers:
+  karakeep:
+    statefulset:
+      volumeClaimTemplates: []
+    containers:
+      karakeep:
+        envFrom:
+          - secretRef:
+              name: '{{ .Release.Name }}'
+          - secretRef:
+              name: '{{ .Release.Name }}-meilesearch'
+          - secretRef:
+              name: hoarder-access-key
+        env:
+          # DISABLE_SIGNUPS: "true"
+          DB_WAL_MODE: "true"
+          ASSET_STORE_S3_ENDPOINT: s3.eu-central-003.backblazeb2.com
+          ASSET_STORE_S3_REGION: eu-central-003
+          ASSET_STORE_S3_BUCKET: sophons-karakeep
+          ASSET_STORE_S3_FORCE_PATH_STYLE: "true"
+      litestream-replicate:
+        image:
+          repository: docker.io/litestream/litestream
+          tag: 0.5.2
+        args:
+          - replicate
+          - -config=/etc/litestream/litestream.yaml
+        envFrom:
+          - secretRef:
+              name: litestream-access-key
+        ports:
+          - name: metrics
+            containerPort: 9090
+    initContainers:
+      litestream-restore-db:
+        image:
+          repository: docker.io/litestream/litestream
+          tag: 0.5.2
+        args:
+          - restore
+          - -config=/etc/litestream/litestream.yaml
+          - -if-db-not-exists
+          - -if-replica-exists
+          - /data/db.db
+        envFrom:
+          - secretRef:
+              name: litestream-access-key
+      litestream-restore-queue:
+        image:
+          repository: docker.io/litestream/litestream
+          tag: 0.5.2
+        args:
+          - restore
+          - -config=/etc/litestream/litestream.yaml
+          - -if-db-not-exists
+          - -if-replica-exists
+          - /data/queue.db
+        envFrom:
+          - secretRef:
+              name: litestream-access-key
+  chrome:
+    pod:
+      nodeSelector:
+        topology.kubernetes.io/region: ng
+    containers:
+      chrome:
+        resources:
+          requests:
+            cpu: 100m
+persistence:
+  data:
+    type: emptyDir
+    advancedMounts:
+      karakeep:
+        karakeep:
+          - path: /data
+        litestream-replicate:
+          - path: /data
+        litestream-restore-db:
+          - path: /data
+        litestream-restore-queue:
+          - path: /data
+  chrome-tmp:
+    type: emptyDir
+    advancedMounts:
+      chrome:
+        chrome:
+          - path: /tmp
+  chrome-home:
+    type: emptyDir
+    advancedMounts:
+      chrome:
+        chrome:
+          - path: /home/chrome
+  chrome-cache:
+    type: emptyDir
+    advancedMounts:
+      chrome:
+        chrome:
+          - path: /var/cache
+  litestream:
+    type: configMap
+    name: litestream
+    advancedMounts:
+      karakeep:
+        litestream-replicate:
+          - path: /etc/litestream
+        litestream-restore-db:
+          - path: /etc/litestream
+        litestream-restore-queue:
+          - path: /etc/litestream
+meilisearch:
+  persistence:
+    existingClaim: karakeep-meilisearch
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBxbzE4
+        LzhGMFhVaFhkTWhydy85bkNkL1c2cGhLOVlCVXdHK0NpUnp3MG1FCkhMZnZBZis3
+        bmNFQ2pMWE5ra3paMkp5WXR2c2JrTWtxRGVjRzJzWGUrcVEKLS0tIGphWVY4RTl1
+        ZmhzWlQ4TTR0NktrNWExeExOTFlCbUhLWWJNeEt5dERlbWcKPq+YQzBMtYvLxamm
+        V0nryyLUlcpS9scrf0jOz0jlIWmNH+yulBFz4n5UeokfKvLiYLzLv46zfy1ua7KU
+        IGhVrQ==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJWEl5ZW5RcmlrSFAzd3RY
+        VDFGL3Z2RUlLRkg4cWJGUzVOek4rVnNCNkFVCldpNkx3UnVjWTd1SlJjSEtUdENM
+        OHdROVpKNXpGZGRVMW9JK0FoZEVlaXcKLS0tIGJERmpGZStZZG5Hb3VBajJ1ZU5y
+        SHcxVjlyUEVLMTI3SEdmTTA5SmRZMHMKNkQzvpVjCNQIkirYxaw1qHu7hcr4uPFk
+        1pA3LVx0lyDYI+Sa37JUJRP+zzNGTGPndzeaXzUczbfpMYEHBuGByg==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:29Z"
+  mac: ENC[AES256_GCM,data:PUlMNqkv3HtSanFF0jCZRVrAsF6XCR0ljBUZuWMAy9M0EC9jwHXbj4PupoM44we8YSt6WHg8TgiF9DqLSdHIMTcXvyeGuOupaEyVOPKhqXGGO/0ogWtmI6yaluB3WUzqrwwcfvybQxfTpnsH9cyaQcbFLm0L5kpKzv45KaAfP8c=,iv:akJ8yEu6fpZzEMDxzLFXXR5hGYOKvMNaa/1UyA1d0LI=,tag:y2CSLUekxaBqire1G2dEAg==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

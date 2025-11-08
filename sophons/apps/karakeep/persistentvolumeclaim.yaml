@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1/persistentvolumeclaim.json
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: karakeep-meilisearch
+  namespace: karakeep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: longhorn-global

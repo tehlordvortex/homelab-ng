@@ -1,0 +1,130 @@
+cluster:
+  discovery:
+    enabled: true
+    registries:
+      # Kubernetes registry is problematic with KubeSpan, if the control plane endpoint is routeable itself via KubeSpan.
+      kubernetes:
+        disabled: true
+      service: {}
+  network:
+    podSubnets:
+      - 10.41.0.0/16
+      - 2001:cafe:41::/56
+    serviceSubnets:
+      - 10.43.0.0/16
+      - 2001:cafe:43::/112
+  proxy:
+    disabled: true
+machine:
+  network:
+    kubespan:
+      enabled: true
+      advertiseKubernetesNetworks: true
+  sysctls:
+    # 128MiB
+    vm.min_free_kbytes: 131072
+    vm.watermark_scale_factor: 50
+    fs.inotify.max_user_watches: 4194304
+    fs.inotify.max_user_instances: 65536
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/lib/longhorn
+        options:
+          - bind
+          - rshared
+          - rw
+    extraConfig:
+      memorySwap:
+        swapBehavior: LimitedSwap
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyAzaGRT
+        ck4rMEZBM2wwd0ZxZGMwVHpwSzJQRmlVYkxIOUtsQVc1eWlhMlFRCmFiclJZTzhn
+        Qnlnbjc1K1krRHBaTHdhWUhGUVlROEZzWEExNFVtdzA0MHcKLS0tIEszeFJsSGF2
+        MzV4OEVnQXFKUVh6TFN1akFTdmI4T21qQys1YzhpWUNTcWcK0qZslqPSJdDEpV3p
+        9oN9UekQJ8jtN9ZfyRlbYqTrtUYgb2PWZDNiC+C0ZeiXLjiJDsAiZhvmctPm6VTL
+        aWqo1w==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjSTdCaWN0bC9XSVk0Y3Zn
+        SWNOOHFnWnBsTG1uT1Z1NUdIeE1pMG0xZURrCk0xaHc2d1BjcXRaYnhUM0x3MHVP
+        OXBkTXJ0QzRtNTdrcjBoK0xHcGRlSlkKLS0tIFhRQVRvWGoyQ2t4bmY0VWsrOTRN
+        Z0wxTWhPVmNwTEdzSnJKYTQxbmZHNTQKJuuQd8HDf6Zk714d9G8qGmsUAeVEGisM
+        a6ehXMlM02uSZbTIRxJPxn/HCn1geeKeO/8YDAcRVsw2crxSBcn41w==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:29Z"
+  mac: ENC[AES256_GCM,data:jhzLhm3jGdC6K1Cc8JItVntQ3FoeFEBvaGzCaczYYAB0Iyz1IIASEdyBav5faJ06xQomau8i9Dwdrq8x7HVTOhFfCFuWAD8RCF5kflutkyr/9z342SD9vAvEjkp33mx3AC7If8eFrhMNZveq8HNjhd/yMJn+Va6lwE74gIJLKSU=,iv:870o9sDd9gfZcQzshBSGEaj0hHj/8k657dD6eYiKOvQ=,tag:MqzOqlSScVOieEdOx6wOoQ==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0
+---
+apiVersion: v1alpha1
+kind: ZswapConfig
+# The maximum percent of memory that zswap can use.
+maxPoolPercent: 25
+# Enable the shrinker feature: kernel might move
+shrinkerEnabled: true
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyAzaGRT
+        ck4rMEZBM2wwd0ZxZGMwVHpwSzJQRmlVYkxIOUtsQVc1eWlhMlFRCmFiclJZTzhn
+        Qnlnbjc1K1krRHBaTHdhWUhGUVlROEZzWEExNFVtdzA0MHcKLS0tIEszeFJsSGF2
+        MzV4OEVnQXFKUVh6TFN1akFTdmI4T21qQys1YzhpWUNTcWcK0qZslqPSJdDEpV3p
+        9oN9UekQJ8jtN9ZfyRlbYqTrtUYgb2PWZDNiC+C0ZeiXLjiJDsAiZhvmctPm6VTL
+        aWqo1w==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjSTdCaWN0bC9XSVk0Y3Zn
+        SWNOOHFnWnBsTG1uT1Z1NUdIeE1pMG0xZURrCk0xaHc2d1BjcXRaYnhUM0x3MHVP
+        OXBkTXJ0QzRtNTdrcjBoK0xHcGRlSlkKLS0tIFhRQVRvWGoyQ2t4bmY0VWsrOTRN
+        Z0wxTWhPVmNwTEdzSnJKYTQxbmZHNTQKJuuQd8HDf6Zk714d9G8qGmsUAeVEGisM
+        a6ehXMlM02uSZbTIRxJPxn/HCn1geeKeO/8YDAcRVsw2crxSBcn41w==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:29Z"
+  mac: ENC[AES256_GCM,data:jhzLhm3jGdC6K1Cc8JItVntQ3FoeFEBvaGzCaczYYAB0Iyz1IIASEdyBav5faJ06xQomau8i9Dwdrq8x7HVTOhFfCFuWAD8RCF5kflutkyr/9z342SD9vAvEjkp33mx3AC7If8eFrhMNZveq8HNjhd/yMJn+Va6lwE74gIJLKSU=,iv:870o9sDd9gfZcQzshBSGEaj0hHj/8k657dD6eYiKOvQ=,tag:MqzOqlSScVOieEdOx6wOoQ==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: cloudflared
+environment:
+  # enc!
+  - ENC[AES256_GCM,data:wVl8EIBDqcTNAy9UXb7Qu7jw9ldKOXQ2w1jJ9UglK49FDSxkrrcCzb9TInAhR6A7Nt5akYtzPOMjnKOXwDdxZYvQAwJrk+76FQglHjcirtG+fznK57KomZrV7g6mDBqMc1Z9gDb6X7uMmvxDysv0S8r+dvTsoUeMgFXTt0csEg0RwTtiqwihcI4MZMfbMsHT+LRX5CDZ4itOfnNlYVtIjJnAWFqntUChS4xezEpqVcT569MsT15O6NFguFZB/DMN7uDqJ1E=,iv:fz6XT6ARf7KCCr0E3ND+T9scFXkjeLSfRUbhwmnMuG8=,tag:yhC3aZjj+lYQ+SabQ81hjw==,type:str]
+  - TUNNEL_METRICS=localhost:2000
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyAzaGRT
+        ck4rMEZBM2wwd0ZxZGMwVHpwSzJQRmlVYkxIOUtsQVc1eWlhMlFRCmFiclJZTzhn
+        Qnlnbjc1K1krRHBaTHdhWUhGUVlROEZzWEExNFVtdzA0MHcKLS0tIEszeFJsSGF2
+        MzV4OEVnQXFKUVh6TFN1akFTdmI4T21qQys1YzhpWUNTcWcK0qZslqPSJdDEpV3p
+        9oN9UekQJ8jtN9ZfyRlbYqTrtUYgb2PWZDNiC+C0ZeiXLjiJDsAiZhvmctPm6VTL
+        aWqo1w==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjSTdCaWN0bC9XSVk0Y3Zn
+        SWNOOHFnWnBsTG1uT1Z1NUdIeE1pMG0xZURrCk0xaHc2d1BjcXRaYnhUM0x3MHVP
+        OXBkTXJ0QzRtNTdrcjBoK0xHcGRlSlkKLS0tIFhRQVRvWGoyQ2t4bmY0VWsrOTRN
+        Z0wxTWhPVmNwTEdzSnJKYTQxbmZHNTQKJuuQd8HDf6Zk714d9G8qGmsUAeVEGisM
+        a6ehXMlM02uSZbTIRxJPxn/HCn1geeKeO/8YDAcRVsw2crxSBcn41w==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:29Z"
+  mac: ENC[AES256_GCM,data:jhzLhm3jGdC6K1Cc8JItVntQ3FoeFEBvaGzCaczYYAB0Iyz1IIASEdyBav5faJ06xQomau8i9Dwdrq8x7HVTOhFfCFuWAD8RCF5kflutkyr/9z342SD9vAvEjkp33mx3AC7If8eFrhMNZveq8HNjhd/yMJn+Va6lwE74gIJLKSU=,iv:870o9sDd9gfZcQzshBSGEaj0hHj/8k657dD6eYiKOvQ=,tag:MqzOqlSScVOieEdOx6wOoQ==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

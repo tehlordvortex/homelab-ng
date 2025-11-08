@@ -1,0 +1,14 @@
+namespace: ntfy
+resources:
+  - service.yaml
+  - namespace.yaml
+  - statefulset.yaml
+  - secret.sops.yaml
+
+configMapGenerator:
+  - name: litestream
+    files:
+      - config/litestream.yaml
+  - name: ntfy
+    files:
+      - config/server.sops.yaml

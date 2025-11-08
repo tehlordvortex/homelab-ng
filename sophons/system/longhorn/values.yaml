@@ -1,0 +1,7 @@
+defaultBackupStore:
+  backupTarget: s3://sophons-longhorn-backup@eu-central-003/
+  backupTargetCredentialSecret: backblaze-creds
+  pollInterval: "900"
+
+persistence:
+  defaultClass: false

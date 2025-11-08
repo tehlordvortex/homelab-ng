@@ -1,0 +1,104 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: internal
+  namespace: metallb-system
+spec:
+  addresses:
+    - 10.42.100.0/24
+  autoAssign: false
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBRL0k1
+        TEI3TmIySnBqOWViQlFpUDNpZlFacUtxTDA5d2xuN2xkRVJTbGxVCkdqL00zMDNO
+        ai9oTGlrK3JFYkp3a280WjJ5UWorVW1qNWJmbU5sa0VtS2sKLS0tIHhTNUhQcXVl
+        K3AvQVJRaVFHbk1MVmdhNXFqWTJta0RLVGpSVlRZT2IrS28K/X7zRIe9GvdwAH5/
+        QOr2kNn3rZscrWX5XHHH8armN++eo/4KdhTsDt0cAEojiQHUfmls5jALNf0V1t/e
+        hkPkHA==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB1WFVwRDBSYXRzRjRnMytS
+        OTEwVXVIcG9IY09FWTU5WnUvMEY3YzZ3Y0VrCnRWdlEyeVFPRVZRMlZHa2Y5NHQv
+        bk1oZFYyMjZOTHRCMGdTM3FjcHVFYmsKLS0tIDFiUTRkTk1zeFFlTC9pVkxtWmV4
+        NFcvV3drOTZlM2haY0Zia0crZ3hOYTgK5ALVTeGWNVSvRIlzKWI4UQMwVRh1VP0X
+        +4QiO80mqIbboOnPy3tVLULRmPWdHq2EGY57qkIifUNCuUEnLJ4TvA==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:30Z"
+  mac: ENC[AES256_GCM,data:c8ydVwu5gOnPWlB98g1JM56X+2SqtrwmHLDXSL+HC2MTbA7PEfrz+4gQ1m/sS+oql4nrpva8BBdl1nEONdjgT7QrqA8zGOiF9XAyExzRj6ZbShSiuCPLXSaAT5CKufftMEIAQh14TrfMRbde6baa+9TunZkIj0+QAWZsRHTa56M=,iv:ylGdRu0vruoyMiCOOVOonNSuu0p9GrOxoRGXUgPVREs=,tag:0dylnmgcHElsGkxRppV2zg==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: starlink
+  namespace: metallb-system
+spec:
+  addresses:
+    # enc!
+    - ENC[AES256_GCM,data:9Fz5Eiu4RPoH8hJ74MTxDYEIvfI/SzKaclxCBw==,iv:taAFfTGF6OJv1HGL9ClvCWtjCMUHqZGULCWI3Tactk8=,tag:J9vl5WdE1PgLaKhXFom7Cg==,type:str]
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBRL0k1
+        TEI3TmIySnBqOWViQlFpUDNpZlFacUtxTDA5d2xuN2xkRVJTbGxVCkdqL00zMDNO
+        ai9oTGlrK3JFYkp3a280WjJ5UWorVW1qNWJmbU5sa0VtS2sKLS0tIHhTNUhQcXVl
+        K3AvQVJRaVFHbk1MVmdhNXFqWTJta0RLVGpSVlRZT2IrS28K/X7zRIe9GvdwAH5/
+        QOr2kNn3rZscrWX5XHHH8armN++eo/4KdhTsDt0cAEojiQHUfmls5jALNf0V1t/e
+        hkPkHA==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB1WFVwRDBSYXRzRjRnMytS
+        OTEwVXVIcG9IY09FWTU5WnUvMEY3YzZ3Y0VrCnRWdlEyeVFPRVZRMlZHa2Y5NHQv
+        bk1oZFYyMjZOTHRCMGdTM3FjcHVFYmsKLS0tIDFiUTRkTk1zeFFlTC9pVkxtWmV4
+        NFcvV3drOTZlM2haY0Zia0crZ3hOYTgK5ALVTeGWNVSvRIlzKWI4UQMwVRh1VP0X
+        +4QiO80mqIbboOnPy3tVLULRmPWdHq2EGY57qkIifUNCuUEnLJ4TvA==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:30Z"
+  mac: ENC[AES256_GCM,data:c8ydVwu5gOnPWlB98g1JM56X+2SqtrwmHLDXSL+HC2MTbA7PEfrz+4gQ1m/sS+oql4nrpva8BBdl1nEONdjgT7QrqA8zGOiF9XAyExzRj6ZbShSiuCPLXSaAT5CKufftMEIAQh14TrfMRbde6baa+9TunZkIj0+QAWZsRHTa56M=,iv:ylGdRu0vruoyMiCOOVOonNSuu0p9GrOxoRGXUgPVREs=,tag:0dylnmgcHElsGkxRppV2zg==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: theta
+  namespace: metallb-system
+spec:
+  addresses:
+    # enc!
+    - ENC[AES256_GCM,data:Vu9dj/jfSTZw/y3XF1rOxfM4bhJWO0NBQKB/,iv:4jieQapgy+oAwo35/dhlTEOFom/HEt0dpJF3f/yrOZg=,tag:U/y1gia3c8yiy9CiFt1s7g==,type:str]
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBRL0k1
+        TEI3TmIySnBqOWViQlFpUDNpZlFacUtxTDA5d2xuN2xkRVJTbGxVCkdqL00zMDNO
+        ai9oTGlrK3JFYkp3a280WjJ5UWorVW1qNWJmbU5sa0VtS2sKLS0tIHhTNUhQcXVl
+        K3AvQVJRaVFHbk1MVmdhNXFqWTJta0RLVGpSVlRZT2IrS28K/X7zRIe9GvdwAH5/
+        QOr2kNn3rZscrWX5XHHH8armN++eo/4KdhTsDt0cAEojiQHUfmls5jALNf0V1t/e
+        hkPkHA==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB1WFVwRDBSYXRzRjRnMytS
+        OTEwVXVIcG9IY09FWTU5WnUvMEY3YzZ3Y0VrCnRWdlEyeVFPRVZRMlZHa2Y5NHQv
+        bk1oZFYyMjZOTHRCMGdTM3FjcHVFYmsKLS0tIDFiUTRkTk1zeFFlTC9pVkxtWmV4
+        NFcvV3drOTZlM2haY0Zia0crZ3hOYTgK5ALVTeGWNVSvRIlzKWI4UQMwVRh1VP0X
+        +4QiO80mqIbboOnPy3tVLULRmPWdHq2EGY57qkIifUNCuUEnLJ4TvA==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:30Z"
+  mac: ENC[AES256_GCM,data:c8ydVwu5gOnPWlB98g1JM56X+2SqtrwmHLDXSL+HC2MTbA7PEfrz+4gQ1m/sS+oql4nrpva8BBdl1nEONdjgT7QrqA8zGOiF9XAyExzRj6ZbShSiuCPLXSaAT5CKufftMEIAQh14TrfMRbde6baa+9TunZkIj0+QAWZsRHTa56M=,iv:ylGdRu0vruoyMiCOOVOonNSuu0p9GrOxoRGXUgPVREs=,tag:0dylnmgcHElsGkxRppV2zg==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

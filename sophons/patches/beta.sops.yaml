@@ -1,0 +1,113 @@
+cluster:
+  network:
+    cni:
+      name: none
+machine:
+  install:
+    disk: /dev/mmcblk0
+    extraKernelArgs:
+      - cma=512M
+  kubelet:
+    nodeIP:
+      validSubnets:
+        - 10.42.69.0/16
+        # enc!
+        - ENC[AES256_GCM,data:6Z2hZ3aWVQ4ybZlveyHPjR71KLrjTYo=,iv:Fk7tPw2zgBW+R/RKK9m0+ax0Y12uN+7/WfsTiZeoogM=,tag:V9Mz7Bgj7ss3FhRDC4uPkA==,type:str]
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/lib/longhorn
+        options:
+          - bind
+          - rshared
+          - rw
+  nodeLabels:
+    topology.kubernetes.io/region: ng
+    topology.kubernetes.io/zone: ng-east-1
+    io.cilium.migration/cilium-default: true
+  network:
+    hostname: sophons-beta
+    interfaces:
+      - interface: end0
+        dhcp: false
+        vlans:
+          - vlanId: 42
+            dhcp: true
+            dhcpOptions:
+              ipv4: false
+              ipv6: true
+            addresses:
+              - 10.42.69.3/16
+            routes:
+              - network: 0.0.0.0/0
+                gateway: 10.42.0.1
+              - network: ::/0
+                gateway: fe80::9c05:d6ff:fe69:64b7
+                metric: 200
+          - vlanId: 69
+            dhcp: false
+            # dhcpOptions:
+            #   ipv4: false
+            #   ipv6: true
+            addresses:
+              - 10.69.0.3/16
+            routes:
+              - network: 0.0.0.0/0
+                gateway: 10.69.0.1
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBkcXBm
+        VXNvZXcvbHlUMytlcjNZNmxvdlJRUWg2UC9HQ1BkbDkxNFdkWjFRCjIxbVdiMXU2
+        c1V4bGlkaEVGVVp6dWV6eDEvOG52bnlKTnZDZkgrMTJnZ3MKLS0tIGNYVVZVRmRE
+        d3RaUC9iQ2s3OWIvNXRSTDVReDdyQ2NUdS80RnZiLzZkbW8KGJzYWQixGzqli2At
+        ZigcdZdcN9PKK/5tPFCbFv0zSHtG6n+ZVrbOrgjVFHJ+0iBW4Fp8J0OfK3ffpNtD
+        BUCjiQ==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjRHFiUUo2YWpCQlg5d1l2
+        MmZJRDFBYmhybXJUbExZUHh0NmhDQ0lyWEI4CkExRFlBbDZXVmdNYWlsR09JNWht
+        YXdHKzgwNy94UzdTVjRpVlJ0SXZaZncKLS0tIElCZ2dkM0Nmb0thS1BwR290c281
+        Y0MwT3lFdkxHR2dYWlhtdDNGeHBQcTQKmB043oaCngf5b/+cV8c9xb2XEsvWa83e
+        6va6y5sz8j9/H8P69zprwPkGbYyC+3IDOh33I1Zk+ij5CFHwL9VYtA==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:29Z"
+  mac: ENC[AES256_GCM,data:4l+E5IcOk0lUN5A9cWb7NiHDmMjIGhh+SX/ca7rIW8zj/7SGOf3QwCRLhRzzVWHYImZmQs0XbZUhVH9f9Nc/1pOpnLyiXeHtWmE5U+HZeAOihqtaOUvQsQn78+2f8u7J9vaWxhB616RUvnIEXIFbeLk3c7TSdyIvyhDGdP+11OM=,iv:r1G4YDj65gBsZ59EX6+KLQj4iFYF9bQgp0EjIfZzCnQ=,tag:92s8XEjPmp5rdshGs3JKdA==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0
+---
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  diskSelector:
+    match: '''/dev/disk/by-id/ata-SSD_512GB_202312010062'' in disk.symlinks'
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBkcXBm
+        VXNvZXcvbHlUMytlcjNZNmxvdlJRUWg2UC9HQ1BkbDkxNFdkWjFRCjIxbVdiMXU2
+        c1V4bGlkaEVGVVp6dWV6eDEvOG52bnlKTnZDZkgrMTJnZ3MKLS0tIGNYVVZVRmRE
+        d3RaUC9iQ2s3OWIvNXRSTDVReDdyQ2NUdS80RnZiLzZkbW8KGJzYWQixGzqli2At
+        ZigcdZdcN9PKK/5tPFCbFv0zSHtG6n+ZVrbOrgjVFHJ+0iBW4Fp8J0OfK3ffpNtD
+        BUCjiQ==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjRHFiUUo2YWpCQlg5d1l2
+        MmZJRDFBYmhybXJUbExZUHh0NmhDQ0lyWEI4CkExRFlBbDZXVmdNYWlsR09JNWht
+        YXdHKzgwNy94UzdTVjRpVlJ0SXZaZncKLS0tIElCZ2dkM0Nmb0thS1BwR290c281
+        Y0MwT3lFdkxHR2dYWlhtdDNGeHBQcTQKmB043oaCngf5b/+cV8c9xb2XEsvWa83e
+        6va6y5sz8j9/H8P69zprwPkGbYyC+3IDOh33I1Zk+ij5CFHwL9VYtA==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-08T01:39:29Z"
+  mac: ENC[AES256_GCM,data:4l+E5IcOk0lUN5A9cWb7NiHDmMjIGhh+SX/ca7rIW8zj/7SGOf3QwCRLhRzzVWHYImZmQs0XbZUhVH9f9Nc/1pOpnLyiXeHtWmE5U+HZeAOihqtaOUvQsQn78+2f8u7J9vaWxhB616RUvnIEXIFbeLk3c7TSdyIvyhDGdP+11OM=,iv:r1G4YDj65gBsZ59EX6+KLQj4iFYF9bQgp0EjIfZzCnQ=,tag:92s8XEjPmp5rdshGs3JKdA==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

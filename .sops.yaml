@@ -1,0 +1,17 @@
+creation_rules:
+  - path_regex: (secrets\.yaml|talosconfig)$
+    age: &default_age >-
+      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos,
+      age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+  - path_regex: '.+\.sops\.yaml$'
+    encrypted_comment_regex: "enc!"
+    age: *default_age
+  - age: *default_age
+
+stores:
+  json:
+    indent: 2
+  json_binary:
+    indent: 2
+  yaml:
+    indent: 2

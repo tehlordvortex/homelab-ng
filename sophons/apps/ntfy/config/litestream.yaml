@@ -1,0 +1,26 @@
+# prometheus
+addr: ":9090"
+
+dbs:
+  - path: /var/lib/ntfy/cache.db
+    replica:
+      type: s3
+      path: ntfy/cache.db
+      force-path-style: true
+      bucket: ${LITESTREAM_BUCKET}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+      retention: ${LITESTREAM_RETENTION}
+      validation-interval: ${LITESTREAM_VALIDATION_INTERVAL}
+      snapshot-interval: ${LITESTREAM_SNAPSHOT_INTERVAL}
+  - path: /var/lib/ntfy/webpush.db
+    replica:
+      type: s3
+      path: ntfy/webpush.db
+      force-path-style: true
+      bucket: ${LITESTREAM_BUCKET}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+      retention: ${LITESTREAM_RETENTION}
+      validation-interval: ${LITESTREAM_VALIDATION_INTERVAL}
+      snapshot-interval: ${LITESTREAM_SNAPSHOT_INTERVAL}

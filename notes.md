@@ -1,0 +1,9 @@
+- IMPORTANT: <https://longhorn.io/docs/1.9.0/advanced-resources/os-distro-specific/talos-linux-support/#talos-linux-upgrades> - --preserve upgrades
+- <https://github.com/siderolabs/talos/discussions/8037> - removing kube-proxy and flannel
+  - `kubectl delete daemonset -n kube-system kube-flannel`
+  - `kubectl delete daemonset -n kube-system kube-proxy`
+  - `kubectl delete cm kube-flannel-cfg -n kube-system`
+- Installing cilium:
+  - <https://docs.cilium.io/en/stable/installation/k8s-install-migration/>
+  - <https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium>
+- <https://kubernetes.io/blog/2025/08/19/tuning-linux-swap-for-kubernetes-a-deep-dive/>

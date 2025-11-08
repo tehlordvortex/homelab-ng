@@ -1,0 +1,26 @@
+# prometheus
+addr: ":9090"
+
+dbs:
+  - path: /data/db.db
+    replica:
+      type: s3
+      path: karakeep/db.db
+      force-path-style: true
+      bucket: ${LITESTREAM_BUCKET}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+      retention: ${LITESTREAM_RETENTION}
+      validation-interval: ${LITESTREAM_VALIDATION_INTERVAL}
+      snapshot-interval: ${LITESTREAM_SNAPSHOT_INTERVAL}
+  - path: /data/queue.db
+    replica:
+      type: s3
+      path: karakeep/queue.db
+      force-path-style: true
+      bucket: ${LITESTREAM_BUCKET}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+      retention: ${LITESTREAM_RETENTION}
+      validation-interval: ${LITESTREAM_VALIDATION_INTERVAL}
+      snapshot-interval: ${LITESTREAM_SNAPSHOT_INTERVAL}

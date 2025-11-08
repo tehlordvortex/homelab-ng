@@ -1,0 +1,6 @@
+[sink.backblaze]
+enabled = true
+b2_region = "eu-central-003"
+bucket = "weedfs"
+directory = "backup/"
+is_incremental = true
