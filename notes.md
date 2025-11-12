@@ -7,3 +7,6 @@
   - <https://docs.cilium.io/en/stable/installation/k8s-install-migration/>
   - <https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium>
 - <https://kubernetes.io/blog/2025/08/19/tuning-linux-swap-for-kubernetes-a-deep-dive/>
+- CF IP ranges:
+  - <https://www.cloudflare.com/ips-v6>
+  - <https://www.cloudflare.com/ips-v4>

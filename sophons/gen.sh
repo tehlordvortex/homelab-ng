@@ -28,6 +28,7 @@ gen_controlplane() {
     --kubernetes-version=$kubernetes_version \
     --with-secrets "$self_dir/secrets.yaml" \
     --config-patch "@$patch_dir/common.sops.yaml" \
+    --config-patch "@$patch_dir/chrome.seccomp.yaml" \
     --config-patch "@$patch_dir/controlplane.sops.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
     --output-types controlplane \
@@ -50,14 +51,20 @@ gen_worker() {
     --kubernetes-version=$kubernetes_version \
     --with-secrets "$self_dir/secrets.yaml" \
     --config-patch "@$patch_dir/common.sops.yaml" \
+    --config-patch "@$patch_dir/chrome.seccomp.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
     --output-types worker \
     --output "$self_dir/generated/worker.$host_name.yaml"
 }
 
-gen_controlplane prime $prime_image
-gen_controlplane theta $vm_image
+mkdir -p $self_dir/generated
+rm -r $self_dir/generated/*.yaml
+
 gen_controlplane beta $pi_image
+gen_controlplane theta $vm_image
+gen_controlplane kaos $vm_image
+
+gen_worker prime $prime_image
 
 # talosctl gen config $cluster $endpoint \
 #   --force \

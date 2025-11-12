@@ -16,11 +16,14 @@ run = ["talosctl --nodes=$SOPHONS_BETA"]
 [tasks.'talos:theta']
 run = ["talosctl --nodes=$SOPHONS_THETA"]
 
+[tasks.'talos:kaos']
+run = ["talosctl --nodes=$SOPHONS_KAOS"]
+
 [tasks.'apply:prime']
 depends = ["gen"]
 dir = "{{config_root}}"
 run = [
-  "talosctl --nodes=$SOPHONS_PRIME apply-config -f generated/controlplane.prime.yaml",
+  "talosctl --nodes=$SOPHONS_PRIME apply-config -f generated/worker.prime.yaml",
 ]
 
 [tasks.'apply:beta']
@@ -37,6 +40,13 @@ run = [
   "talosctl --nodes=$SOPHONS_THETA apply-config -f generated/controlplane.theta.yaml",
 ]
 
+[tasks.'apply:kaos']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = [
+  "talosctl --nodes=$SOPHONS_KAOS apply-config -f generated/controlplane.kaos.yaml",
+]
+
 [tasks.'upgrade']
 # IMPORTANT: https://longhorn.io/docs/1.9.0/advanced-resources/os-distro-specific/talos-linux-support/#talos-linux-upgrades
 run = "talosctl upgrade --preserve"
@@ -51,4 +61,5 @@ run = [
   { task = "apply:prime" },
   { task = "apply:beta" },
   { task = "apply:theta" },
+  { task = "apply:kaos" },
 ]
