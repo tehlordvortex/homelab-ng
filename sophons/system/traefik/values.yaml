@@ -16,17 +16,40 @@ ports:
   traefik:
     expose:
       internal: true
+
   web:
     port: 80
     expose:
       internal: true
-      # starlink: true
-      # theta: true
+      starlink: true
+      theta: true
+    forwardedHeaders:
+      trustedIPs:
+        # Cloudflare
+        - 2400:cb00::/32
+        - 2606:4700::/32
+        - 2803:f800::/32
+        - 2405:b500::/32
+        - 2405:8100::/32
+        - 2a06:98c0::/29
+        - 2c0f:f248::/32
+
   websecure:
     port: 443
     expose:
+      internal: true
       starlink: true
       theta: true
+    forwardedHeaders:
+      trustedIPs:
+        # Cloudflare
+        - 2400:cb00::/32
+        - 2606:4700::/32
+        - 2803:f800::/32
+        - 2405:b500::/32
+        - 2405:8100::/32
+        - 2a06:98c0::/29
+        - 2c0f:f248::/32
 
 service:
   enabled: false
@@ -36,28 +59,44 @@ service:
       type: LoadBalancer
       annotations:
         metallb.io/address-pool: internal
+        external-dns.alpha.kubernetes.io/hostname: traefik-internal.kaos.nexus
+        external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
         trafficDistribution: PreferSameZone
+        externalTrafficPolicy: Local
     starlink:
       single: true
       type: LoadBalancer
       annotations:
         metallb.io/address-pool: starlink
-      ipFamilies: ["IPv6"]
+        external-dns.alpha.kubernetes.io/hostname: >
+          traefik-starlink.kaos.nexus,
+          traefik-star-theta.kaos.nexus
       spec:
+        ipFamilies: ["IPv6"]
         trafficDistribution: PreferSameZone
+        externalTrafficPolicy: Local
     theta:
       single: true
       type: LoadBalancer
       annotations:
         metallb.io/address-pool: theta
-      ipFamilies: ["IPv6"]
+        external-dns.alpha.kubernetes.io/hostname: >
+          traefik-theta.kaos.nexus,
+          traefik-star-theta.kaos.nexus
       spec:
+        ipFamilies: ["IPv6"]
         trafficDistribution: PreferSameZone
+        externalTrafficPolicy: Local
 
 providers:
+  kubernetesCRD:
+    nativeLBByDefault: true
+  kubernetesIngress:
+    nativeLBByDefault: true
   kubernetesGateway:
     enabled: true
+    nativeLBByDefault: true
 
 gateway:
   listeners:
@@ -68,24 +107,35 @@ gateway:
         from: All
 
 deployment:
-  replicas: null
+  kind: DaemonSet
 
 resources:
   requests:
     cpu: "50m"
-    memory: "50Mi"
+    memory: "64Mi"
   limits:
-    cpu: "150m"
-    memory: "128Mi"
+    cpu: "250m"
+    memory: "256Mi"
 
-autoscaling:
-  enabled: true
-  maxReplicas: 6
-  minReplicas: 3
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 80
+# autoscaling:
+#   enabled: true
+#   maxReplicas: 8
+#   minReplicas: 4
+#   metrics:
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         target:
+#           type: Utilization
+#           averageUtilization: 80
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: '{{ template "traefik.name" . }}'
+              app.kubernetes.io/instance: '{{ .Release.Name }}-{{ include "traefik.namespace" . }}'
+          topologyKey: kubernetes.io/hostname

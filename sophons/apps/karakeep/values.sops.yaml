@@ -7,9 +7,23 @@
 applicationProtocol: http
 applicationHost: holding.kaos.nexus
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:SrNpIaA6E9Aa6LVj6q8Zjk+jHwRJ1q/QEbZuoeV/rFqcLxhwa8bFMwj+omFShdXf,iv:ZlNdiwtVSwozKPS4JH4TIYnJ6N+gT3yWR/2uif7nl70=,tag:CKRPcJ6d0m9hljTBcUbIiA==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:epvhVMZBEN30P1STIAi56oDsCtLy+wDYSQQB4PMSZZfvGCbvCpYlUSswIkLJSfPr,iv:AkNQ3tUAAp6plyC2W9gbjjVzbMi4EmCWd+HPEykNEWc=,tag:53nsUdJkxPaoLWBDMjMHFg==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:yu7/VTCgCROA9JpWGJndW9v7S6v9iDHoXhSeqfkA,iv:eqxx3+gH9h5GoO40reosA/t1LZgOLM8DFdx8Gj1tWRE=,tag:cYmXBqkgbzjn1rRCdnkUiQ==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:PqunZ+CfTKy7lOgJgX2sAfvgnpM02GIZa+t7k8I1,iv:z47+2g3hwmNFfv/WMa1fIpR93wRWS9pWiscU0o9p5xo=,tag:sn8/CfeUgdegzDDRz8qBaA==,type:str]
+ingress:
+  karakeep:
+    annotations:
+      gethomepage.dev/description: Hoard all the things!
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/group: Second brain
+      gethomepage.dev/icon: karakeep.png
+      gethomepage.dev/name: Karakeep
+      external-dns.alpha.kubernetes.io/target: traefik-star-theta.kaos.nexus
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tls:
+      - hosts:
+          - holding.kaos.nexus
+        secretName: karakeep-ingress-cert
 controllers:
   karakeep:
     statefulset:
@@ -24,7 +38,7 @@ controllers:
           - secretRef:
               name: hoarder-access-key
         env:
-          # DISABLE_SIGNUPS: "true"
+          DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
           ASSET_STORE_S3_ENDPOINT: s3.eu-central-003.backblazeb2.com
           ASSET_STORE_S3_REGION: eu-central-003
@@ -76,6 +90,10 @@ controllers:
         topology.kubernetes.io/region: ng
     containers:
       chrome:
+        securityContext:
+          seccompProfile:
+            type: Localhost
+            localhostProfile: profiles/chrome.json
         resources:
           requests:
             cpu: 100m
@@ -92,24 +110,24 @@ persistence:
           - path: /data
         litestream-restore-queue:
           - path: /data
-  chrome-tmp:
-    type: emptyDir
-    advancedMounts:
-      chrome:
-        chrome:
-          - path: /tmp
-  chrome-home:
-    type: emptyDir
-    advancedMounts:
-      chrome:
-        chrome:
-          - path: /home/chrome
-  chrome-cache:
-    type: emptyDir
-    advancedMounts:
-      chrome:
-        chrome:
-          - path: /var/cache
+  # chrome-tmp:
+  #   type: emptyDir
+  #   advancedMounts:
+  #     chrome:
+  #       chrome:
+  #         - path: /tmp
+  # chrome-home:
+  #   type: emptyDir
+  #   advancedMounts:
+  #     chrome:
+  #       chrome:
+  #         - path: /home/chrome
+  # chrome-cache:
+  #   type: emptyDir
+  #   advancedMounts:
+  #     chrome:
+  #       chrome:
+  #         - path: /var/cache
   litestream:
     type: configMap
     name: litestream
@@ -129,23 +147,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBxbzE4
-        LzhGMFhVaFhkTWhydy85bkNkL1c2cGhLOVlCVXdHK0NpUnp3MG1FCkhMZnZBZis3
-        bmNFQ2pMWE5ra3paMkp5WXR2c2JrTWtxRGVjRzJzWGUrcVEKLS0tIGphWVY4RTl1
-        ZmhzWlQ4TTR0NktrNWExeExOTFlCbUhLWWJNeEt5dERlbWcKPq+YQzBMtYvLxamm
-        V0nryyLUlcpS9scrf0jOz0jlIWmNH+yulBFz4n5UeokfKvLiYLzLv46zfy1ua7KU
-        IGhVrQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyAyK2VS
+        cEYyUE9Ob1dsaWV0MVczY1JuK01ITUVjNzBkVTlYZEo3NytyR1J3CmpHSDNjVG5P
+        ZDdyV0xkSjV1ODVqY2dvU2JIUGRWZGUvRXVqdTJEZWpXNWcKLS0tIFFvZWl5WVU1
+        azhMWk12TUJBVUUzWTBwVTNnODlxZGViSkl6TkNWdTVwbHcKBjDVxvZBV5rjq7RV
+        7mGgC3nQpr+zkOSxIqzVrvMTE3R1SlC707lD1mAJcKPqBulcR3hRH0CVzdKimWHn
+        1k8OIA==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJWEl5ZW5RcmlrSFAzd3RY
-        VDFGL3Z2RUlLRkg4cWJGUzVOek4rVnNCNkFVCldpNkx3UnVjWTd1SlJjSEtUdENM
-        OHdROVpKNXpGZGRVMW9JK0FoZEVlaXcKLS0tIGJERmpGZStZZG5Hb3VBajJ1ZU5y
-        SHcxVjlyUEVLMTI3SEdmTTA5SmRZMHMKNkQzvpVjCNQIkirYxaw1qHu7hcr4uPFk
-        1pA3LVx0lyDYI+Sa37JUJRP+zzNGTGPndzeaXzUczbfpMYEHBuGByg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAralBRSXc5b1YxU2NrcHpa
+        cmlsV1h4bElMM01Yb0JKUzZnMWxKaE5uRmlNCi9zelY0K3NkU0psUXE5ZlJRTE9l
+        MjZRMzBIZVpBSysvVERWU09tNVhXQzQKLS0tIEZhYnF2VWZldmJ6QTh3YVNjVStm
+        ais3eHRtMGNBbDFSNFlaWk1EVDd1cWMKoJxWujaT/AwRjeDnFVGtnWUU44JNCHmE
+        X/wCOp6hIwr/89n95Otqmezb7rehlWHT/kxdCUa2RxS55R6wR/vshg==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-08T01:39:29Z"
-  mac: ENC[AES256_GCM,data:PUlMNqkv3HtSanFF0jCZRVrAsF6XCR0ljBUZuWMAy9M0EC9jwHXbj4PupoM44we8YSt6WHg8TgiF9DqLSdHIMTcXvyeGuOupaEyVOPKhqXGGO/0ogWtmI6yaluB3WUzqrwwcfvybQxfTpnsH9cyaQcbFLm0L5kpKzv45KaAfP8c=,iv:akJ8yEu6fpZzEMDxzLFXXR5hGYOKvMNaa/1UyA1d0LI=,tag:y2CSLUekxaBqire1G2dEAg==,type:str]
+  lastmodified: "2025-11-12T16:29:04Z"
+  mac: ENC[AES256_GCM,data:nz3h63qmiipWFXVJZW73M73vQB879vIP8emxh3PxjjN6IXRqf2kOou+Q1DB2Dj3p1YPxmH0qugOW5ZQZJbK1KXRuWBa3hZdgXrvtdOJ0i4thZuRgUtiMr/eL2hdZNHkzm5x7ggzExpsMcjUTIsw2ZaoapOzoaCmuw81mGKXyLEU=,iv:+aazN41CKpL5LHI3GWz2DJO8oAwzlQajtG0BKmpRLrs=,tag:oNXfUqtl5g6lnTWhi6QclQ==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

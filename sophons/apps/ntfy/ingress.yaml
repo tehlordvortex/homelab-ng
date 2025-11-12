@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1/ingress.json
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ntfy
+  namespace: ntfy
+  labels:
+    app.kubernetes.io/name: ntfy
+  annotations:
+    gethomepage.dev/description: Push notifications
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Alerting & Notifications
+    gethomepage.dev/icon: ntfy.png
+    gethomepage.dev/name: Ntfy
+    external-dns.alpha.kubernetes.io/target: traefik-star-theta.kaos.nexus
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: "ntfy.kaos.nexus"
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: ntfy
+                port:
+                  number: 80
+    - host: "ntfy.vrtx.sh"
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: ntfy
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - ntfy.kaos.nexus
+        - ntfy.vrtx.sh
+      secretName: ntfy-ingress-cert

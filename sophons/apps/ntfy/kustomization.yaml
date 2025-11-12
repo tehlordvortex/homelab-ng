@@ -1,5 +1,6 @@
 namespace: ntfy
 resources:
+  - ingress.yaml
   - service.yaml
   - namespace.yaml
   - statefulset.yaml

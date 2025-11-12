@@ -1,3 +1,7 @@
+logLevel: debug
+extraArgs:
+  - --cloudflare-proxied
+
 provider:
   name: cloudflare
 env:

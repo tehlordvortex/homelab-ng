@@ -1,5 +1,6 @@
 namespace: karakeep
 resources:
+  - ingress.yaml
   - service.yaml
   - namespace.yaml
   - secret.sops.yaml
