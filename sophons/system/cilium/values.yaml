@@ -1,33 +1,53 @@
-bpf:
-  hostLegacyRouting: true
 cgroup:
   autoMount:
     enabled: false
   hostRoot: /sys/fs/cgroup
+
 cluster:
   name: sophons
+
 cni:
   customConf: false
   uninstall: false
+
 gatewayAPI:
   enableAlpn: true
   enableAppProtocol: true
   enabled: true
+
+ipv6:
+  enabled: true
 ipam:
   mode: kubernetes
 ipv4NativeRoutingCIDR: 10.41.0.0/16
-ipv6:
-  enabled: true
 ipv6NativeRoutingCIDR: 2001:cafe:41::/56
+
 k8sServiceHost: localhost
 k8sServicePort: 7445
+
+routingMode: tunnel
+tunnelProtocol: geneve
+bpf:
+  masquerade: true
+  hostLegacyRouting: true
+  lbModeAnnotation: true
 kubeProxyReplacement: true
+loadBalancer:
+  # mode: dsr
+  dsrDispatch: geneve
+
+hubble:
+  ui:
+    enabled: true
+  relay:
+    enabled: true
+
 operator:
-  replicas: 1
+  replicas: 3
   unmanagedPodWatcher:
     restart: true
+
 policyEnforcementMode: default
-routingMode: native
 securityContext:
   capabilities:
     ciliumAgent:

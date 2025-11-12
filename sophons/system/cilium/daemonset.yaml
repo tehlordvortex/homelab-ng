@@ -73,8 +73,9 @@ spec:
                     continue
                   fi
 
-                  # Add secondary IP address with the proper NODE_V6_CIDR_MASK_SIZE
-                  echo "cilium_host IP is $pod_ip, adding: ${pod_ip}/${NODE_V6_CIDR_MASK_SIZE}"
+                  # Replace IP address with the proper NODE_V6_CIDR_MASK_SIZE
+                  echo "cilium_host IP is $pod_ip/128, replacing with: ${pod_ip}/${NODE_V6_CIDR_MASK_SIZE}"
+                  ip -6 addr del "${pod_ip}/128" dev cilium_host && \
                   ip -6 addr add "${pod_ip}/${NODE_V6_CIDR_MASK_SIZE}" dev cilium_host
 
                   echo "Added new cilium_host IP address with mask /${NODE_V6_CIDR_MASK_SIZE}"
