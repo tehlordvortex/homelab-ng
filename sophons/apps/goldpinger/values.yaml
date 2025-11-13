@@ -1,4 +1,9 @@
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
-    effect: NoSchedule
+  - key: orunmila.sophons.cloud/ase-orun
+    operator: Exists
+
+extraEnv:
+  - name: PING_TIMEOUT
+    value: 500ms

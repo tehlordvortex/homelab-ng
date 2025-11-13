@@ -65,14 +65,4 @@ gen_controlplane theta $vm_image
 gen_controlplane kaos $vm_image
 
 gen_worker prime $prime_image
-
-# talosctl gen config $cluster $endpoint \
-#   --force \
-#   --with-secrets "$self_dir/secrets.yaml" \
-#   --kubernetes-version=$kubernetes_version \
-#   --talos-version=$talos_version \
-#   --config-patch "@$patch_dir/common.yaml" \
-#   --config-patch "@$patch_dir/controlplane.yaml" \
-#   --config-patch "@$patch_dir/sophons-prime.yaml" \
-#   --output-types controlplane \
-#   --output "$self_dir/generated/controlplane.sophons-prime.yaml"
+gen_worker oduduwa $vm_image

@@ -7,6 +7,9 @@ sources = ["patches/*.yaml", "secrets.yaml", "gen.sh", ".env"]
 dir = "{{config_root}}"
 run = "./gen.sh"
 
+[tasks.'talos:all']
+run = ["talosctl --nodes=$SOPHONS_NODES"]
+
 [tasks.'talos:prime']
 run = ["talosctl --nodes=$SOPHONS_PRIME"]
 
@@ -18,6 +21,9 @@ run = ["talosctl --nodes=$SOPHONS_THETA"]
 
 [tasks.'talos:kaos']
 run = ["talosctl --nodes=$SOPHONS_KAOS"]
+
+[tasks.'talos:oduduwa']
+run = ["talosctl --nodes=$SOPHONS_ODUDUWA"]
 
 [tasks.'apply:prime']
 depends = ["gen"]
@@ -47,6 +53,13 @@ run = [
   "talosctl --nodes=$SOPHONS_KAOS apply-config -f generated/controlplane.kaos.yaml",
 ]
 
+[tasks.'apply:oduduwa']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = [
+  "talosctl --nodes=$SOPHONS_ODUDUWA apply-config -f generated/worker.oduduwa.yaml",
+]
+
 [tasks.'upgrade']
 # IMPORTANT: https://longhorn.io/docs/1.9.0/advanced-resources/os-distro-specific/talos-linux-support/#talos-linux-upgrades
 run = "talosctl upgrade --preserve"
@@ -59,6 +72,7 @@ depends = ["gen"]
 dir = "{{config_root}}"
 run = [
   { task = "apply:prime" },
+  { task = "apply:oduduwa" },
   { task = "apply:beta" },
   { task = "apply:theta" },
   { task = "apply:kaos" },
