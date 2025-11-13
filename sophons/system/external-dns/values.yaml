@@ -1,6 +1,8 @@
 logLevel: debug
 extraArgs:
   - --cloudflare-proxied
+  # Don't want wildcard DNS records when creating wildcard SSL certs
+  - --ignore-ingress-tls-spec
 
 provider:
   name: cloudflare
