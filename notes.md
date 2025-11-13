@@ -10,3 +10,5 @@
 - CF IP ranges:
   - <https://www.cloudflare.com/ips-v6>
   - <https://www.cloudflare.com/ips-v4>
+- `docker run --rm authelia/authelia:latest authelia crypto rand --length 72 --charset rfc3986`
+  - <https://www.authelia.com/configuration/identity-providers/openid-connect/clients/>

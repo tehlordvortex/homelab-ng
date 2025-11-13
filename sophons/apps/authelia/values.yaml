@@ -1,0 +1,147 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/authelia/chartrepo/refs/tags/authelia-0.10.49/charts/authelia/values.schema.json
+persistence:
+  enabled: false
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/target: traefik-star-theta.sophons.cloud
+  certManager: true
+  tls:
+    enabled: true
+  # traefikCRD:
+  #   enabled: false
+
+pod:
+  kind: StatefulSet
+  replicas: 1
+  initContainers:
+    - name: lightstream-restore-db
+      image: docker.io/litestream/litestream:0.5.2
+      args:
+        [
+          "restore",
+          "-config=/etc/litestream/litestream.yaml",
+          "-if-db-not-exists",
+          "-if-replica-exists",
+          "/data/db.sqlite3",
+        ]
+      envFrom:
+        - secretRef:
+            name: litestream-access-key
+      volumeMounts:
+        - name: authelia
+          mountPath: "/data"
+        - name: litestream
+          mountPath: "/etc/litestream"
+          readOnly: true
+
+  extraContainers:
+    - name: lightstream-replicate
+      image: docker.io/litestream/litestream:0.5.2
+      args: ["replicate", "-config=/etc/litestream/litestream.yaml"]
+      envFrom:
+        - secretRef:
+            name: litestream-access-key
+      ports:
+        - name: metrics
+          containerPort: 9090
+      volumeMounts:
+        - name: authelia
+          mountPath: "/data"
+        - name: litestream
+          mountPath: "/etc/litestream"
+          readOnly: true
+
+  extraVolumeMounts:
+    - name: authelia
+      mountPath: /data
+    - name: authelia-users
+      mountPath: /auth
+
+  extraVolumes:
+    - name: authelia
+      emptyDir:
+        sizeLimit: 100Mi
+    - name: authelia-users
+      configMap:
+        name: authelia-users
+    - name: litestream
+      configMap:
+        name: litestream
+
+configMap:
+  log:
+    level: debug
+
+  authentication_backend:
+    password_reset:
+      disable: true
+    password_change:
+      disable: true
+    file:
+      enabled: true
+      path: /auth/users.yaml
+      password:
+        algorithm: "argon2"
+        argon2:
+          variant: "argon2id"
+          iterations: 3
+          memory: 65536
+          parallelism: 4
+          key_length: 32
+          salt_length: 16
+
+  storage:
+    local:
+      enabled: true
+      path: /data/db.sqlite3
+
+  session:
+    cookies:
+      - domain: sophons.cloud
+        subdomain: auth
+      - domain: vrtx.sh
+        subdomain: auth
+      - domain: kaos.nexus
+        subdomain: auth
+    expiration: 24 hours
+    inactivity: 30 minutes
+    remember_me: 1 month
+
+  notifier:
+    smtp:
+      enabled: true
+      address: "smtp://in-v3.mailjet.com:588"
+      username: "1744ca110f7f119167b0b2a29123845d"
+      timeout: "15 seconds"
+      sender: "Authelia <auth@vrtx.sh>"
+      ## HELO/EHLO Identifier. Some SMTP Servers may reject the default of localhost.
+      identifier: "vrtx.sh"
+      ## {title} is replaced by the text from the notifier
+      subject: "{title}"
+      startup_check_address: "noreply@vrtx.sh"
+
+  identity_providers:
+    oidc:
+      enabled: true
+      jwks:
+        - key:
+            path: /secrets/authelia/oidc.jwk.rs256.pem
+      clients:
+        - client_name: Karakeep
+          client_id: "OL.LOB-j9of8ut9bmhjN~sEddOQGQYABpcZZHCUYaagHzi6Xl76kxcZgCNPaE2NI4JzXttD4"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.karakeep.digest"
+          redirect_uris:
+            - https://holding.sophons.cloud/api/auth/callback/custom
+
+secret:
+  existingSecret: authelia
+  additionalSecrets:
+    authelia:
+      items:
+        - key: oidc.jwk.rs256.pem
+        - key: oidc.client.karakeep.digest

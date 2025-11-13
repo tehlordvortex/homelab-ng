@@ -1,0 +1,15 @@
+# prometheus
+addr: ":9090"
+
+dbs:
+  - path: /data/db.sqlite3
+    replica:
+      type: s3
+      path: authelia/db.sqlite3
+      force-path-style: true
+      bucket: ${LITESTREAM_BUCKET}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+      retention: ${LITESTREAM_RETENTION}
+      validation-interval: ${LITESTREAM_VALIDATION_INTERVAL}
+      snapshot-interval: ${LITESTREAM_SNAPSHOT_INTERVAL}

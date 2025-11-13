@@ -1,0 +1,35 @@
+users:
+  vrtx:
+    disabled: false
+    displayname: vrtx
+    # enc!
+    password: ENC[AES256_GCM,data:XY1jn8Zd/LnrZGuT+kr8qhlS/yiiUN7blAOyuVg+G4Y0SbhH/UahVt289/aoB9ODIVBYtCVn3rITy3GNFxAOzcJx7cTNwBcZMA6axLvM4Co/4C/k0kQu1r7eO6yUgu6EtA==,iv:JyD+EU304dHcN1CThm7JO0itEg2AgpLx/x6LBieh7B4=,tag:BxLmkJE780FYAHyAyqKg+g==,type:str]
+    email: me@vrtx.sh
+    groups:
+      - admins
+      - dev
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBXSy93
+        RHlRVkdTcTdHV0VPaTIwSEE3RDU4VWdCTEJZU29Ud1Rka2lVL1ZzCmdvUW9VcnFY
+        RmZFSVhWYTcyeXVMd3BZdEVXSktGeCsxTHZ5Y2U2aGJVOHcKLS0tIDNXWGYyNndE
+        NTJCUURrM05oNGY2N09vZGxmWWIyQ3JFMC9kYUdhdjRCbmMKyxIGEHxgaHQRdYXl
+        XwG2GHDtFFQ4XTHEbzAtjmshwN+FVb1YaMuPup9LuMqGSAJ43CUbkR19H28qGKyE
+        PXWG/A==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBaK3FlNDl3OENpV1dMTzIz
+        K2d5TDdWaFM4ME1yVkZCOG1xandoYk5EVnlBClJHekw1bVlnOTBBTnc3UDN1V2hF
+        VXFPL2xJWFNrQmtnc2l6elpXUVNSSTgKLS0tICtDUk9oekRGMjJPenMwVHVVVU1J
+        MjVLK01DUlBNQ2t2b1NJZk9hZW05aW8Kw+cla1clo8PTSnGE5JLMkj9C6FHCAydZ
+        8PKGpf0i7QIY+CG6fFLbQ+c8zQ0EcyhZzMf9siR8sxGQmeBRFKiPzQ==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-13T02:42:24Z"
+  mac: ENC[AES256_GCM,data:JfNiXB/yP/w+papZHPHxcJTCHaeILPYyAZDV+5tn5n1D9WOedaGctUwvbRg1KpLvgQ7BwoUjMW+AO6KPGSMTq4DPaQ8FpoSlUzH9KjNal0SLibKeqQ31UU9NtkR69w9+iiQMd/uGmOwLl680UsrsqYoNBevjv4QK0CzJikgNIS8=,iv:14JIQKUVzqNPb3dMtFOuIPnTJ74bjPu+fKB+qdUnXwU=,tag:BiQW0mxV5MV1I+Gr8qNp2w==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

@@ -1,0 +1,15 @@
+namespace: authelia
+resources:
+  - secret.sops.yaml
+
+configMapGenerator:
+  - name: authelia-users
+    options:
+      disableNameSuffixHash: true
+    files:
+      - users.yaml=config/users.sops.yaml
+  - name: litestream
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/litestream.yaml
