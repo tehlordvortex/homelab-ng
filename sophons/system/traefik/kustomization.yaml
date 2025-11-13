@@ -1,0 +1,9 @@
+namespace: traefik
+resources:
+  - namespace.yaml
+  - deployment.sops.yaml
+
+configMapGenerator:
+  - name: haproxy
+    files:
+      - haproxy.cfg

@@ -7,9 +7,9 @@
 applicationProtocol: https
 applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:BmWA1CB3ii3e237fO9xiH3bSF4rMgGpvr7KExqejbWTS8r+DTFJUXwRXsq6/u31v,iv:MBf316O9hUoiBWW74tNzhGsi0ib4DKE0oGbea+h3pBw=,tag:1SeNSkwJ/0OM62GwBHL7Uw==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:8Iub00dQz3gHU+a9/Nah/4O0T+v+CvuFLaN6FsA1N9hEWvunAtlqfMueXGSbYtx4,iv:8ENRZ9KfCKgcqMwF0mZYPaX6NXW6LGRYHu8YygSi9Ac=,tag:TgChK8Jo19k/keU4zkBaIw==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:HBZajqKBNoj8xU3oPeHJsphMZHUwMx81cwap/7vq,iv:HkF8dDNDIlxsScJEeOQOLEsAdQlxQBZEh/FeHHPrsJk=,tag:IaRSQqNZ6gaR5opGW/lK0g==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:idAgSBqM2nZUbMCQtZRgxo9CKlYEIDli4SQ3Wna1,iv:0hsDmtG5TlUyq1tHbNFKhwQUbNCc+n/xj4Qjjc7wcGQ=,tag:BvfbIpFQ0WT9fLwq6zJaGA==,type:str]
 ingress:
   karakeep:
     annotations:
@@ -18,7 +18,7 @@ ingress:
       gethomepage.dev/group: Second brain
       gethomepage.dev/icon: karakeep.png
       gethomepage.dev/name: Karakeep
-      external-dns.alpha.kubernetes.io/target: traefik-star-theta.sophons.cloud
+      external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
       cert-manager.io/cluster-issuer: letsencrypt-prod
     tls:
       - hosts:
@@ -170,23 +170,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyB5ZTEx
-        RXZiY1lZK1JBWUNzcjZ2UVVuSXphVFdrckNKY0JTeUVZU1RhL2xJClA5QnlMNXB1
-        aVB4MU5KYnd4SmlERjRHZHIxYkFxTjdydkExSDlxVmJoTkUKLS0tIGdWbndZTWVo
-        cXo1dytaaWxnZXBWMEFsaTc4TzUycGh5WjJQblQrWnF5ajAKrUBvaqbK3t6CFOB/
-        FHeEzQhaSeTaP/wA86VOrwWR3VL0dLigq+Ft5g21OFkc2bvp3wziELKTc22/pqkS
-        r7Xc5g==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBiNGx4
+        V1V1THptTmhUL3J6OE5hVGZFTEF2VUFMcTZXajltd1NlbW5kRGhNCk5wV3BVbDdI
+        R2ZHVk5oaFQzU3RTSjBiSk9uSHZHQ2VocTdZZllWVXM4WEUKLS0tIE00Z3dLYU1C
+        VXJlVVZRbmtMRnpFSmJaZmpPSHhqcjVhMjBIYUFxQXRoNFkKumtFqM1L2OY6Ytdp
+        V1wwmcQsk6TqNYDaBfFHdRD5yn8D/FxbOji2AsnZTQ1xItHJgY+KVVgSfJWy4SqY
+        Yre7AA==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBmZTVEWXF6aTA1cTFLSmtG
-        RHkyRGhydThiMVIwOXMwbUo2elZZZnM3ZFRvCmc2a3RabG5VVlQ3c0VIbUs3OEMz
-        bVlpZmlmMzFXZmovRWVNWVdxeE9vM3cKLS0tIGRYSzdTUW5SS0R5SC9tRkZTRnM1
-        Q0lDYjdHc3dwWi9ZQmQzQmM1VWtobGMKjB3lIa8qNstHDtxPVhNGUTqK05VmFOSi
-        g/f4cJPNIATWfEdIEUAbnYn/wxkEb9U5EcxGDIPqdwIPtT3LKts5Sg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAwc1JId0g4ellUVkZIRElP
+        cVNzT1NzVEdFS2l4Ky94R2ZkMHdlUExLK3pZClhBUzBYeDU4cXFrdVdTaHR1ZTla
+        ZitoRFVHUzdxd0czMWdrRDJGL2ZpYlEKLS0tIG9xcjl2YXJyTVpQWmw4VnV2V1cr
+        Q05QWVdORDN6OVJ0UnRRNjRrSmVWelEKw1GMm/lI8uGysYoFKLBPpDd/2T5adVTP
+        wQRzdPM4wPyEnO59xkRhzX91kkWZIIHiBIJkp8IXRpYgk3ZODHaNRQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-13T02:41:07Z"
-  mac: ENC[AES256_GCM,data:suphbCuejcfaNflhchkZ8Ea1tQxCwvtza/eExa15Uv5r3Q+B0WO9poI8Lzd8Fvo/IRz31zzV7mj9tkRbGmBeaGoJqOAettIaRrJPUf5QI1yvA7Xoyj0gPTN6owHGthSW56Z5MiuvPZTmqlOotqRndbHW5SUL2GeIBStELYs1/DU=,iv:f9+7w1LwBw/deI0+OwDwtU/wn6J8Zi7gGydxF8qdbpw=,tag:GUpZTCVDSauiXCehC/dtyw==,type:str]
+  lastmodified: "2025-11-13T13:01:46Z"
+  mac: ENC[AES256_GCM,data:rgR3ovPab9tGDwdvEErK+8ILvCqsdRkfvekds8Tt6BmOrxcwCfM0Z5UOuQ+0TZT/LKdibEYDvBG5b369WnQ+Q06XW57hC0rbDpZVBWSNtM5BfjIXsHqvIBnpGPVKayavGVPWsZ27lK/8xXAtVcJqUY09C7m35ad1aeSorthkbpA=,iv:nYNRWauK8hpL+JSLsoxwJYtBdUArojJPSrHYOyMt8r4=,tag:+E2nFA8/rmtJVI1a519qGw==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

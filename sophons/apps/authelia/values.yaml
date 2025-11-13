@@ -7,7 +7,7 @@ ingress:
   className: traefik
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    external-dns.alpha.kubernetes.io/target: traefik-star-theta.sophons.cloud
+    external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
   certManager: true
   tls:
     enabled: true

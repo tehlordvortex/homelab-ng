@@ -12,3 +12,8 @@ env:
       secretKeyRef:
         name: cf-dns-api-token
         key: api-token
+
+sources:
+  - service
+  - ingress
+  - pod

@@ -12,7 +12,7 @@ metadata:
     gethomepage.dev/group: Alerting & Notifications
     gethomepage.dev/icon: ntfy.png
     gethomepage.dev/name: Ntfy
-    external-dns.alpha.kubernetes.io/target: traefik-star-theta.sophons.cloud
+    external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
