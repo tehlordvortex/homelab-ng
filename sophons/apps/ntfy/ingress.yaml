@@ -12,22 +12,12 @@ metadata:
     gethomepage.dev/group: Alerting & Notifications
     gethomepage.dev/icon: ntfy.png
     gethomepage.dev/name: Ntfy
-    external-dns.alpha.kubernetes.io/target: traefik-star-theta.kaos.nexus
+    external-dns.alpha.kubernetes.io/target: traefik-star-theta.sophons.cloud
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
   rules:
-    - host: "ntfy.kaos.nexus"
-      http:
-        paths:
-          - path: "/"
-            pathType: Prefix
-            backend:
-              service:
-                name: ntfy
-                port:
-                  number: 80
-    - host: "ntfy.vrtx.sh"
+    - host: "ntfy.sophons.cloud"
       http:
         paths:
           - path: "/"
@@ -39,6 +29,5 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - ntfy.kaos.nexus
-        - ntfy.vrtx.sh
-      secretName: ntfy-ingress-cert
+        - "*.sophons.cloud"
+      secretName: ntfy-tls

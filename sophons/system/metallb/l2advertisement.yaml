@@ -12,8 +12,25 @@ spec:
         kubernetes.io/hostname: sophons-prime
     - matchLabels:
         kubernetes.io/hostname: sophons-beta
+    - matchLabels:
+        kubernetes.io/hostname: sophons-kaos
   interfaces:
     - end0.42
+    - enp1s0
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: kaos
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - kaos
+  nodeSelectors:
+    - matchLabels:
+        kubernetes.io/hostname: sophons-kaos
+  interfaces:
+    - enp1s0
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

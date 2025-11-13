@@ -21,6 +21,7 @@ ports:
     port: 80
     expose:
       internal: true
+      kaos: true
       starlink: true
       theta: true
     forwardedHeaders:
@@ -38,6 +39,7 @@ ports:
     port: 443
     expose:
       internal: true
+      kaos: true
       starlink: true
       theta: true
     forwardedHeaders:
@@ -52,14 +54,30 @@ ports:
         - 2c0f:f248::/32
 
 service:
-  enabled: false
+  enabled: true
+  type: ClusterIP
+  spec:
+    internalTrafficPolicy: Local
+
   additionalServices:
     internal:
       single: true
       type: LoadBalancer
       annotations:
         metallb.io/address-pool: internal
-        external-dns.alpha.kubernetes.io/hostname: traefik-internal.kaos.nexus
+        external-dns.alpha.kubernetes.io/hostname: >
+          traefik-internal.sophons.cloud
+        external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+      spec:
+        trafficDistribution: PreferSameZone
+        externalTrafficPolicy: Local
+    kaos:
+      single: true
+      type: LoadBalancer
+      annotations:
+        metallb.io/address-pool: kaos
+        external-dns.alpha.kubernetes.io/hostname: >
+          traefik-kaos.sophons.cloud
         external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
         trafficDistribution: PreferSameZone
@@ -70,8 +88,8 @@ service:
       annotations:
         metallb.io/address-pool: starlink
         external-dns.alpha.kubernetes.io/hostname: >
-          traefik-starlink.kaos.nexus,
-          traefik-star-theta.kaos.nexus
+          traefik-starlink.sophons.cloud,
+          traefik-star-theta.sophons.cloud
       spec:
         ipFamilies: ["IPv6"]
         trafficDistribution: PreferSameZone
@@ -82,8 +100,8 @@ service:
       annotations:
         metallb.io/address-pool: theta
         external-dns.alpha.kubernetes.io/hostname: >
-          traefik-theta.kaos.nexus,
-          traefik-star-theta.kaos.nexus
+          traefik-theta.sophons.cloud,
+          traefik-star-theta.sophons.cloud
       spec:
         ipFamilies: ["IPv6"]
         trafficDistribution: PreferSameZone
@@ -117,25 +135,6 @@ resources:
     cpu: "250m"
     memory: "256Mi"
 
-# autoscaling:
-#   enabled: true
-#   maxReplicas: 8
-#   minReplicas: 4
-#   metrics:
-#     - type: Resource
-#       resource:
-#         name: cpu
-#         target:
-#           type: Utilization
-#           averageUtilization: 80
-
-affinity:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 1
-        podAffinityTerm:
-          labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: '{{ template "traefik.name" . }}'
-              app.kubernetes.io/instance: '{{ .Release.Name }}-{{ include "traefik.namespace" . }}'
-          topologyKey: kubernetes.io/hostname
+tolerations:
+  - key: orunmila.sophons.cloud/ase-orun
+    operator: Exists

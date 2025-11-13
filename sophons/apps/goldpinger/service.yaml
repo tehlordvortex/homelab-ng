@@ -6,6 +6,8 @@ metadata:
     app.kubernetes.io/name: goldpinger
   annotations:
     metallb.io/address-pool: internal
+    external-dns.alpha.kubernetes.io/hostname: goldpinger.sophons.cloud
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
   name: goldpinger-internal
   namespace: goldpinger
 spec:

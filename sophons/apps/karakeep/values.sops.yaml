@@ -4,12 +4,12 @@
 # This chart inherits from the bjw-s library chart. You can check the default values/options here:
 # https://github.com/bjw-s/helm-charts/tree/main/charts/library/common
 #
-applicationProtocol: http
-applicationHost: holding.kaos.nexus
+applicationProtocol: https
+applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:epvhVMZBEN30P1STIAi56oDsCtLy+wDYSQQB4PMSZZfvGCbvCpYlUSswIkLJSfPr,iv:AkNQ3tUAAp6plyC2W9gbjjVzbMi4EmCWd+HPEykNEWc=,tag:53nsUdJkxPaoLWBDMjMHFg==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:BmWA1CB3ii3e237fO9xiH3bSF4rMgGpvr7KExqejbWTS8r+DTFJUXwRXsq6/u31v,iv:MBf316O9hUoiBWW74tNzhGsi0ib4DKE0oGbea+h3pBw=,tag:1SeNSkwJ/0OM62GwBHL7Uw==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:PqunZ+CfTKy7lOgJgX2sAfvgnpM02GIZa+t7k8I1,iv:z47+2g3hwmNFfv/WMa1fIpR93wRWS9pWiscU0o9p5xo=,tag:sn8/CfeUgdegzDDRz8qBaA==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:HBZajqKBNoj8xU3oPeHJsphMZHUwMx81cwap/7vq,iv:HkF8dDNDIlxsScJEeOQOLEsAdQlxQBZEh/FeHHPrsJk=,tag:IaRSQqNZ6gaR5opGW/lK0g==,type:str]
 ingress:
   karakeep:
     annotations:
@@ -18,18 +18,28 @@ ingress:
       gethomepage.dev/group: Second brain
       gethomepage.dev/icon: karakeep.png
       gethomepage.dev/name: Karakeep
-      external-dns.alpha.kubernetes.io/target: traefik-star-theta.kaos.nexus
+      external-dns.alpha.kubernetes.io/target: traefik-star-theta.sophons.cloud
       cert-manager.io/cluster-issuer: letsencrypt-prod
     tls:
       - hosts:
-          - holding.kaos.nexus
-        secretName: karakeep-ingress-cert
+          - '*.sophons.cloud'
+        secretName: karakeep-tls
 controllers:
   karakeep:
     statefulset:
       volumeClaimTemplates: []
     containers:
       karakeep:
+        image:
+          tag: 0.28.0
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            # Next.js is a plague :(
+            cpu: 750m
+            memory: 756Mi
         envFrom:
           - secretRef:
               name: '{{ .Release.Name }}'
@@ -37,6 +47,8 @@ controllers:
               name: '{{ .Release.Name }}-meilesearch'
           - secretRef:
               name: hoarder-access-key
+          - secretRef:
+              name: karakeep-oauth
         env:
           DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
@@ -44,6 +56,10 @@ controllers:
           ASSET_STORE_S3_REGION: eu-central-003
           ASSET_STORE_S3_BUCKET: sophons-karakeep
           ASSET_STORE_S3_FORCE_PATH_STYLE: "true"
+          OAUTH_WELLKNOWN_URL: https://auth.sophons.cloud/.well-known/openid-configuration
+          OAUTH_CLIENT_ID: OL.LOB-j9of8ut9bmhjN~sEddOQGQYABpcZZHCUYaagHzi6Xl76kxcZgCNPaE2NI4JzXttD4
+          OAUTH_PROVIDER_NAME: Authelia
+          OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING: "true"
       litestream-replicate:
         image:
           repository: docker.io/litestream/litestream
@@ -140,6 +156,13 @@ persistence:
         litestream-restore-queue:
           - path: /etc/litestream
 meilisearch:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
   persistence:
     existingClaim: karakeep-meilisearch
 sops:
@@ -147,23 +170,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyAyK2VS
-        cEYyUE9Ob1dsaWV0MVczY1JuK01ITUVjNzBkVTlYZEo3NytyR1J3CmpHSDNjVG5P
-        ZDdyV0xkSjV1ODVqY2dvU2JIUGRWZGUvRXVqdTJEZWpXNWcKLS0tIFFvZWl5WVU1
-        azhMWk12TUJBVUUzWTBwVTNnODlxZGViSkl6TkNWdTVwbHcKBjDVxvZBV5rjq7RV
-        7mGgC3nQpr+zkOSxIqzVrvMTE3R1SlC707lD1mAJcKPqBulcR3hRH0CVzdKimWHn
-        1k8OIA==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyB5ZTEx
+        RXZiY1lZK1JBWUNzcjZ2UVVuSXphVFdrckNKY0JTeUVZU1RhL2xJClA5QnlMNXB1
+        aVB4MU5KYnd4SmlERjRHZHIxYkFxTjdydkExSDlxVmJoTkUKLS0tIGdWbndZTWVo
+        cXo1dytaaWxnZXBWMEFsaTc4TzUycGh5WjJQblQrWnF5ajAKrUBvaqbK3t6CFOB/
+        FHeEzQhaSeTaP/wA86VOrwWR3VL0dLigq+Ft5g21OFkc2bvp3wziELKTc22/pqkS
+        r7Xc5g==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAralBRSXc5b1YxU2NrcHpa
-        cmlsV1h4bElMM01Yb0JKUzZnMWxKaE5uRmlNCi9zelY0K3NkU0psUXE5ZlJRTE9l
-        MjZRMzBIZVpBSysvVERWU09tNVhXQzQKLS0tIEZhYnF2VWZldmJ6QTh3YVNjVStm
-        ais3eHRtMGNBbDFSNFlaWk1EVDd1cWMKoJxWujaT/AwRjeDnFVGtnWUU44JNCHmE
-        X/wCOp6hIwr/89n95Otqmezb7rehlWHT/kxdCUa2RxS55R6wR/vshg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBmZTVEWXF6aTA1cTFLSmtG
+        RHkyRGhydThiMVIwOXMwbUo2elZZZnM3ZFRvCmc2a3RabG5VVlQ3c0VIbUs3OEMz
+        bVlpZmlmMzFXZmovRWVNWVdxeE9vM3cKLS0tIGRYSzdTUW5SS0R5SC9tRkZTRnM1
+        Q0lDYjdHc3dwWi9ZQmQzQmM1VWtobGMKjB3lIa8qNstHDtxPVhNGUTqK05VmFOSi
+        g/f4cJPNIATWfEdIEUAbnYn/wxkEb9U5EcxGDIPqdwIPtT3LKts5Sg==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-12T16:29:04Z"
-  mac: ENC[AES256_GCM,data:nz3h63qmiipWFXVJZW73M73vQB879vIP8emxh3PxjjN6IXRqf2kOou+Q1DB2Dj3p1YPxmH0qugOW5ZQZJbK1KXRuWBa3hZdgXrvtdOJ0i4thZuRgUtiMr/eL2hdZNHkzm5x7ggzExpsMcjUTIsw2ZaoapOzoaCmuw81mGKXyLEU=,iv:+aazN41CKpL5LHI3GWz2DJO8oAwzlQajtG0BKmpRLrs=,tag:oNXfUqtl5g6lnTWhi6QclQ==,type:str]
+  lastmodified: "2025-11-13T02:41:07Z"
+  mac: ENC[AES256_GCM,data:suphbCuejcfaNflhchkZ8Ea1tQxCwvtza/eExa15Uv5r3Q+B0WO9poI8Lzd8Fvo/IRz31zzV7mj9tkRbGmBeaGoJqOAettIaRrJPUf5QI1yvA7Xoyj0gPTN6owHGthSW56Z5MiuvPZTmqlOotqRndbHW5SUL2GeIBStELYs1/DU=,iv:f9+7w1LwBw/deI0+OwDwtU/wn6J8Zi7gGydxF8qdbpw=,tag:GUpZTCVDSauiXCehC/dtyw==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

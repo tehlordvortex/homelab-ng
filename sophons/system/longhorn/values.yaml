@@ -5,3 +5,14 @@ defaultBackupStore:
 
 persistence:
   defaultClass: false
+
+defaultSettings:
+  systemManagedComponentsNodeSelector: "hugeloads.sophons.cloud/longhorn:true"
+
+longhornManager:
+  nodeSelector:
+    hugeloads.sophons.cloud/longhorn: "true"
+
+longhornDriver:
+  nodeSelector:
+    hugeloads.sophons.cloud/longhorn: "true"

@@ -1,3 +1,4 @@
 namespace: kube-system
 resources:
+  - service.yaml
   - daemonset.yaml

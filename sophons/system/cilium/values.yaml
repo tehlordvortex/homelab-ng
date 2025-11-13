@@ -6,6 +6,14 @@ cgroup:
 cluster:
   name: sophons
 
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 750m
+    memory: 256Mi
+
 cni:
   customConf: false
   uninstall: false
