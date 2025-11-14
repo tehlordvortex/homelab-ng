@@ -1,0 +1,71 @@
+# docs.siderolabs.com/talos/v1.11/platform-specific-installations/local-platforms/docker#docker
+# docker run --rm -it
+#   --name tutorial
+#   --hostname talos-cp
+#   --read-only
+#   --privileged
+#   --security-opt seccomp=unconfined
+#   --mount type=tmpfs,destination=/run
+#   --mount type=tmpfs,destination=/system
+#   --mount type=tmpfs,destination=/tmp
+#   --mount type=volume,destination=/system/state
+#   --mount type=volume,destination=/var
+#   --mount type=volume,destination=/etc/cni
+#   --mount type=volume,destination=/etc/kubernetes
+#   --mount type=volume,destination=/usr/libexec/kubernetes
+#   --mount type=volume,destination=/opt
+#   -e PLATFORM=container
+#   ghcr.io/siderolabs/talos:v1.11.5
+
+services:
+  talos:
+    restart: unless-stopped
+    hostname: sophons-caeneus
+    image: ghcr.io/siderolabs/talos:v1.11.3
+    privileged: true
+    cpus: 8
+    mem_limit: 8G
+    security_opt:
+      - seccomp=unconfined
+    read_only: true
+    tmpfs:
+      - /run
+      - /system
+      - /tmp
+    volumes:
+      - system-state:/system/state
+      - var:/var
+      - etc-cni:/etc/cni
+      - etc-kubernetes:/etc/kubernetes
+      - usr-libexec-kubernetes:/usr/libexec/kubernetes
+      - opt:/opt
+    environment:
+      - PLATFORM=container
+      - TALOSSKU=8CPU-8192RAM
+    devices:
+      - /dev/dri
+      - /dev/net
+    networks:
+      lab:
+        ipv4_address: 10.42.42.5
+        ipv6_address: ${IPV6_ADDRESS}
+
+volumes:
+  system-state:
+  var:
+  etc-cni:
+  etc-kubernetes:
+  usr-libexec-kubernetes:
+  opt:
+
+networks:
+  lab:
+    driver: ipvlan
+    driver_opts:
+      parent: lab1
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 10.42.0.0/16
+          gateway: 10.42.0.1
+        - subnet: ${IPV6_SUBNET}

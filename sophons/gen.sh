@@ -23,7 +23,7 @@ gen_controlplane() {
 
   talosctl gen config $cluster $endpoint \
     --force --with-examples=false \
-    --install-image factory.talos.dev/installer/$image:$talos_version \
+    --install-image=$image \
     --talos-version=$talos_version \
     --kubernetes-version=$kubernetes_version \
     --with-secrets "$self_dir/secrets.yaml" \
@@ -46,7 +46,7 @@ gen_worker() {
 
   talosctl gen config $cluster $endpoint \
     --force --with-examples=false \
-    --install-image factory.talos.dev/installer/$image:$talos_version \
+    --install-image=$image \
     --talos-version=$talos_version \
     --kubernetes-version=$kubernetes_version \
     --with-secrets "$self_dir/secrets.yaml" \
@@ -60,9 +60,10 @@ gen_worker() {
 mkdir -p $self_dir/generated
 rm -r $self_dir/generated/*.yaml
 
-gen_controlplane beta $pi_image
-gen_controlplane theta $vm_image
-gen_controlplane kaos $vm_image
+gen_controlplane beta factory.talos.dev/installer/$pi_image:$talos_version
+gen_controlplane theta factory.talos.dev/installer/$vm_image:$talos_version
+gen_controlplane kaos factory.talos.dev/installer/$vm_image:$talos_version
 
-gen_worker prime $prime_image
-gen_worker oduduwa $vm_image
+gen_worker prime factory.talos.dev/installer/$prime_image:$talos_version
+gen_worker oduduwa factory.talos.dev/installer/$vm_image:$talos_version
+gen_worker caeneus ghcr.io/siderolabs/talos:v1.11.3

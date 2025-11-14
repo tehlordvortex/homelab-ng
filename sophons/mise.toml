@@ -10,9 +10,6 @@ run = "./gen.sh"
 [tasks.'talos:all']
 run = ["talosctl --nodes=$SOPHONS_NODES"]
 
-[tasks.'talos:prime']
-run = ["talosctl --nodes=$SOPHONS_PRIME"]
-
 [tasks.'talos:beta']
 run = ["talosctl --nodes=$SOPHONS_BETA"]
 
@@ -22,43 +19,44 @@ run = ["talosctl --nodes=$SOPHONS_THETA"]
 [tasks.'talos:kaos']
 run = ["talosctl --nodes=$SOPHONS_KAOS"]
 
+[tasks.'talos:prime']
+run = ["talosctl --nodes=$SOPHONS_PRIME"]
+
 [tasks.'talos:oduduwa']
 run = ["talosctl --nodes=$SOPHONS_ODUDUWA"]
 
-[tasks.'apply:prime']
-depends = ["gen"]
-dir = "{{config_root}}"
-run = [
-  "talosctl --nodes=$SOPHONS_PRIME apply-config -f generated/worker.prime.yaml",
-]
+[tasks.'talos:caeneus']
+run = ["talosctl --nodes=$SOPHONS_CAENEUS"]
 
 [tasks.'apply:beta']
 depends = ["gen"]
 dir = "{{config_root}}"
-run = [
-  "talosctl --nodes=$SOPHONS_BETA apply-config -f generated/controlplane.beta.yaml",
-]
+run = ["mise taos:beta apply-config -f generated/controlplane.beta.yaml"]
 
 [tasks.'apply:theta']
 depends = ["gen"]
 dir = "{{config_root}}"
-run = [
-  "talosctl --nodes=$SOPHONS_THETA apply-config -f generated/controlplane.theta.yaml",
-]
+run = ["mise talos:theta apply-config -f generated/controlplane.theta.yaml"]
 
 [tasks.'apply:kaos']
 depends = ["gen"]
 dir = "{{config_root}}"
-run = [
-  "talosctl --nodes=$SOPHONS_KAOS apply-config -f generated/controlplane.kaos.yaml",
-]
+run = ["mise talos:kaos apply-config -f generated/controlplane.kaos.yaml"]
+
+[tasks.'apply:prime']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = ["mise talos:prime apply-config -f generated/worker.prime.yaml"]
 
 [tasks.'apply:oduduwa']
 depends = ["gen"]
 dir = "{{config_root}}"
-run = [
-  "talosctl --nodes=$SOPHONS_ODUDUWA apply-config -f generated/worker.oduduwa.yaml",
-]
+run = ["mise talos:oduduwa apply-config -f generated/worker.oduduwa.yaml"]
+
+[tasks.'apply:caeneus']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = ["mise talos:prime apply-config -f generated/worker.caeneus.yaml"]
 
 [tasks.'upgrade']
 # IMPORTANT: https://longhorn.io/docs/1.9.0/advanced-resources/os-distro-specific/talos-linux-support/#talos-linux-upgrades
@@ -73,6 +71,7 @@ dir = "{{config_root}}"
 run = [
   { task = "apply:prime" },
   { task = "apply:oduduwa" },
+  { task = "apply:caeneus" },
   { task = "apply:beta" },
   { task = "apply:theta" },
   { task = "apply:kaos" },
