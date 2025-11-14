@@ -7,23 +7,24 @@
 applicationProtocol: https
 applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:h9+2DQdzb8aqwoLgO2ViRgMx/3LQFJmN8/8iSc8YQeHIZkjNKirmNNgUQNc89kF1,iv:OHCg1JGrNbtPDvcvQfFry16kJxwYZWlffoN3ob18GUU=,tag:kwJN94z64hQR3PdK6tplbw==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:qz2rikaM3Qee6UBSUuJpmLl4eogVQzuAQ0DZ65pmPmAJklReLuImwgDRzQ9FQJPk,iv:U1vE2wOA3+0Fo1T5a+nA7tnDfB1h0kBrbjXpULRA0OQ=,tag:Qz5FXd9B6EQ0qb917BYf4A==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:XrERx+gKpTAK1y798U/fndpnR0Kfl86VBJs3TOq7,iv:mhggI5dooOVFoY4EvEx166KAQ5odO0RG5zzvc5ql0Cg=,tag:4HRk2pGxWmnm++zVI+359A==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:OQq+lFyerfu3gEJaMtaVoW1EdV+MSK8TLvPplXhb,iv:jnEpoggNAOmLsRaKT+GptHdUxMEYqJetcRWkiLp7ISE=,tag:cSJ0vLE+4cBU4GpPzqwiLw==,type:str]
 ingress:
   karakeep:
-    annotations:
-      gethomepage.dev/description: Hoard all the things!
-      gethomepage.dev/enabled: "true"
-      gethomepage.dev/group: Second brain
-      gethomepage.dev/icon: karakeep.png
-      gethomepage.dev/name: Karakeep
-      external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-    tls:
-      - hosts:
-          - '*.sophons.cloud'
-        secretName: karakeep-tls
+    enabled: false
+    # annotations:
+    #   gethomepage.dev/description: Hoard all the things!
+    #   gethomepage.dev/enabled: "true"
+    #   gethomepage.dev/group: Second brain
+    #   gethomepage.dev/icon: karakeep.png
+    #   gethomepage.dev/name: Karakeep
+    #   external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
+    #   cert-manager.io/cluster-issuer: letsencrypt-prod
+    # tls:
+    #   - hosts:
+    #       - "*.sophons.cloud"
+    #     secretName: karakeep-tls
 controllers:
   karakeep:
     type: deployment
@@ -253,23 +254,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyB0b3RQ
-        L2crWHUxWFQ2alptWEQ2QWxzaE16RUlDalJ3RjRwYTB1WHl2TUFjCkJid2lBdFJi
-        ZGtzeFJQMzA0RTY1Z0hKcWQ4T1MyTUlLdlBXeEs1YzVmd3MKLS0tIGxSVzJuN2Qv
-        Z21TT0FmYmtCSzIzTUVjSE9yTndjWnFFS2VNeDZ6d0k4M0EKusO776/a6gzL7vua
-        JTlrZerBGBKGujuOgO1nRKG1HTvJfnPBDz8A0l+YFmW3YUohWoSpI8L6f049oiQA
-        annb3Q==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBaOWR2
+        b2Z1TkV6SitFU3c5SDBPK0RnMzBlMVBiM1FrN242eEVXQUVsVkJ3ClVlUEQrWWpI
+        TVpUZXlMdDV5bkhoUjJjSTNXQ3I0VzVCNnZtMEQ4SGpxYlUKLS0tIGJmNTFNQjBw
+        bTMzRkx4TVBZNURWbys5WDF5OTVLdGdMU25icmZ2VlduYTQKhJs21diJtqYp4c3n
+        CR7zZxfAR0M/0BfYH/PMGI1LGnLL+2XbijJqOUgcC4df2sfcfVyAt6xwU6KZNTAT
+        bbeHxA==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBnREt0enB3T08wSWU4ZmlF
-        aXNMT3VreFpqeWJRNFphQW5QQTFwUkt3TUJBCmdaNDh4bk1PS1Nhdmgrdi9hME1Y
-        cDBkRStGZTgyam9PbWlGVzJYem4yT28KLS0tIEpWWkY1WUN2MWhDbVJpd3IyQ0tJ
-        bkRhaC9lc3hMcGQ1aXliWE1zbkNZRHcKCjxODGewYlBoL/PmZlgPTUMa7FI/a1v2
-        IHwRthE6xEUgC0g1YZbXHd1lSGBbIwzI1uveEGDMiJLq83gR3p+2iA==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBieDBGWGo4MUdEdlFkNDZL
+        d2lEY2g3QUdLTGV0NlphcEsrbGZXUGJuUzJJCnd5V2FIQkFJZjd5d00vWHo5QlNu
+        djJzOU5FeVNYWis0dHFORjMrSlExYU0KLS0tIGVPYU9KSlUzOVpuRnNSWmpJMHlP
+        cURGL3hVZDExZ21wR3lvOWFKenpwc3MKGdcNP6ujZdlw9lKvjhCrsiMqeYofIdbB
+        SN3c/QHenx46GBt28nvbfjbrkPInTBZyDcfDgKvaaUGe3XqiY1/spQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-14T10:32:32Z"
-  mac: ENC[AES256_GCM,data:/fv4zZbUjo9yQ9rUUPL/lKC8Tobkn26wNDoKajDPBhxlv7NJ8MJT/tu548BXEWWN4XqNlTOugMk0K3ouA9/zU9jxrTfIfO8YRg3UnTF8YeFr9dnI2szaM9yFwMCw98LEz++VWfAYmFWZSlXhuInktFW4bBZ2g3YUweaqT+PgbOs=,iv:ho3LFg8LtSwqe6ynQJvIWWLeEkYnnpEGyH0zzKbwjA4=,tag:EGRgbNVEeBqBgftVaQGVAg==,type:str]
+  lastmodified: "2025-11-14T13:56:15Z"
+  mac: ENC[AES256_GCM,data:J0ynuSrvV3m5Z8EaNuxyF15nYgQex4PIMeZYJvsFcSBrDNQ5tLaHAuokWZud7z0U9N4fRgqJuUpiE/toj4OXlg5v6aK8VxG+1tlHKDzy73JDpPSnndBANP6CdBfeYioHSQNZL9K+jGJlvyhllDQ/b4g8xcXt0qGluzFtaN9t/O4=,iv:ZfPQNdhWtx8LyFsdgzLAMekWrqU0bh/UcMGDcAe86Zg=,tag:dLRCQ9SDwzJuKFVtzefq8w==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

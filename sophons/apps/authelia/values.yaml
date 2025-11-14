@@ -3,16 +3,18 @@ persistence:
   enabled: false
 
 ingress:
-  enabled: true
-  className: traefik
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
-  certManager: true
-  tls:
+  enabled: false
+  # className: traefik
+  # annotations:
+  #   cert-manager.io/cluster-issuer: letsencrypt-prod
+  #   external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
+  #   traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  # certManager: true
+  # tls:
+  #   enabled: true
+  traefikCRD:
     enabled: true
-  # traefikCRD:
-  #   enabled: false
+    disableIngressRoute: true
 
 pod:
   kind: Deployment

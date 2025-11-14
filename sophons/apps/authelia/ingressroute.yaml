@@ -1,0 +1,25 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: authelia
+  namespace: authelia
+  annotations:
+    external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/href: "https://auth.sophons.cloud"
+    gethomepage.dev/description: Authzzz
+    gethomepage.dev/group: Admin
+    gethomepage.dev/icon: authelia.png
+    gethomepage.dev/name: Authelia
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: wildcard-sophons-cloud-tls
+  routes:
+    - kind: Rule
+      match: Host(`auth.sophons.cloud`)
+      services:
+        - kind: Service
+          name: authelia
+          port: 80
