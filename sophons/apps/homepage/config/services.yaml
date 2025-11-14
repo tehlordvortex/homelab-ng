@@ -1,0 +1,5 @@
+- Admin:
+    - Longhorn:
+        icon: longhorn.png
+        href: http://longhorn.sophons.cloud/
+        description: HA Storage Service

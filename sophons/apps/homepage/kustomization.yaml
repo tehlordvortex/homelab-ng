@@ -1,0 +1,23 @@
+namespace: homepage
+resources:
+  - service.yaml
+  - deployment.yaml
+  - clusterrole.yaml
+  - ingressroute.yaml
+  - serviceaccount.yaml
+
+configMapGenerator:
+  - name: homepage
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/widgets.yaml
+      - config/settings.yaml
+      - config/services.yaml
+      - config/bookmarks.yaml
+      - config/kubernetes.yaml
+    literals:
+      - proxmox.yaml=""
+      - docker.yaml=""
+      - custom.js=""
+      - custom.css=""
