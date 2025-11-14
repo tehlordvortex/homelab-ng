@@ -7,9 +7,9 @@
 applicationProtocol: https
 applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:8Iub00dQz3gHU+a9/Nah/4O0T+v+CvuFLaN6FsA1N9hEWvunAtlqfMueXGSbYtx4,iv:8ENRZ9KfCKgcqMwF0mZYPaX6NXW6LGRYHu8YygSi9Ac=,tag:TgChK8Jo19k/keU4zkBaIw==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:h9+2DQdzb8aqwoLgO2ViRgMx/3LQFJmN8/8iSc8YQeHIZkjNKirmNNgUQNc89kF1,iv:OHCg1JGrNbtPDvcvQfFry16kJxwYZWlffoN3ob18GUU=,tag:kwJN94z64hQR3PdK6tplbw==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:idAgSBqM2nZUbMCQtZRgxo9CKlYEIDli4SQ3Wna1,iv:0hsDmtG5TlUyq1tHbNFKhwQUbNCc+n/xj4Qjjc7wcGQ=,tag:BvfbIpFQ0WT9fLwq6zJaGA==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:XrERx+gKpTAK1y798U/fndpnR0Kfl86VBJs3TOq7,iv:mhggI5dooOVFoY4EvEx166KAQ5odO0RG5zzvc5ql0Cg=,tag:4HRk2pGxWmnm++zVI+359A==,type:str]
 ingress:
   karakeep:
     annotations:
@@ -26,6 +26,8 @@ ingress:
         secretName: karakeep-tls
 controllers:
   karakeep:
+    type: deployment
+    strategy: Recreate
     statefulset:
       volumeClaimTemplates: []
     containers:
@@ -38,7 +40,7 @@ controllers:
             memory: 128Mi
           limits:
             # Next.js is a plague :(
-            cpu: 750m
+            cpu: 850m
             memory: 756Mi
         envFrom:
           - secretRef:
@@ -60,6 +62,24 @@ controllers:
           OAUTH_CLIENT_ID: OL.LOB-j9of8ut9bmhjN~sEddOQGQYABpcZZHCUYaagHzi6Xl76kxcZgCNPaE2NI4JzXttD4
           OAUTH_PROVIDER_NAME: Authelia
           OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING: "true"
+          # 15s
+          OAUTH_TIMEOUT: "15000"
+          OPENAI_API_KEY: clankerstudio
+          # lmstudio on kaos
+          OPENAI_BASE_URL: http://100.64.0.26:11433/v1
+          INFERENCE_TEXT_MODEL: openai/gpt-oss-20b
+          INFERENCE_IMAGE_MODEL: qwen/qwen3-vl-8b
+          EMBEDDING_TEXT_MODEL: qwen/qwen3-embedding-4b
+          INFERENCE_CONTEXT_LENGTH: "49152"
+          INFERENCE_MAX_OUTPUT_TOKENS: "16384"
+          INFERENCE_ENABLE_AUTO_TAGGING: "true"
+          INFERENCE_ENABLE_AUTO_SUMMARIZATION: "true"
+          # 2.5 minutes
+          INFERENCE_JOB_TIMEOUT_SEC: "150"
+          CRAWLER_FULL_PAGE_ARCHIVE: "true"
+          # 3 minutes
+          CRAWLER_JOB_TIMEOUT_SEC: "300"
+          CRAWLER_SCREENSHOT_TIMEOUT_SEC: "60"
       litestream-replicate:
         image:
           repository: docker.io/litestream/litestream
@@ -73,6 +93,46 @@ controllers:
         ports:
           - name: metrics
             containerPort: 9090
+      tailscale:
+        image:
+          repository: ghcr.io/tailscale/tailscale
+          tag: v1.90.6
+        envFrom:
+          - secretRef:
+              name: tailscale-ephemeral-auth
+        env:
+          - name: TS_EXTRA_ARGS
+            value: $(TS_BASE_ARGS)
+          - name: TS_TAILSCALED_EXTRA_ARGS
+            value: $(TSD_BASE_ARGS)
+          - name: TS_HOSTNAME
+            value: karakeep
+          - name: TS_USERSPACE
+            value: "false"
+        ports:
+          - name: ts-metrics
+            containerPort: 9002
+        securityContext:
+          privileged: true
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        liveness:
+          enabled: true
+          spec:
+            initialDelaySeconds: 10
+            httpGet:
+              path: /healthz
+              port: 9002
+        readiness:
+          enabled: true
+          spec:
+            initialDelaySeconds: 10
+            httpGet:
+              path: /healthz
+              port: 9002
     initContainers:
       litestream-restore-db:
         image:
@@ -106,10 +166,26 @@ controllers:
         topology.kubernetes.io/region: ng
     containers:
       chrome:
+        args:
+          # FIXME: CHROME SANDBOX
+          - --no-sandbox
+          - --remote-debugging-address=0.0.0.0
+          - --remote-debugging-port=9222
+          - --headless
+          - --hide-scrollbars
+          - --disable-gpu
+          - --disable-dev-shm-usage
         securityContext:
+          capabilities:
+            drop:
+              - ALL
+            add: []
           seccompProfile:
-            type: Localhost
-            localhostProfile: profiles/chrome.json
+            type: RuntimeDefault
+        # TODO: WHY WON'T THIS SHIT WORK
+        # seccompProfile:
+        #   type: Localhost
+        #   localhostProfile: profiles/chrome.json
         resources:
           requests:
             cpu: 100m
@@ -126,6 +202,13 @@ persistence:
           - path: /data
         litestream-restore-queue:
           - path: /data
+  # tailscale-state:
+  #   type: emptyDir
+  #   medium: Memory
+  #   advancedMounts:
+  #     karakeep:
+  #       tailscale:
+  #         - path: /var/lib/tailscale
   # chrome-tmp:
   #   type: emptyDir
   #   advancedMounts:
@@ -162,7 +245,7 @@ meilisearch:
       memory: 128Mi
     limits:
       cpu: 250m
-      memory: 256Mi
+      memory: 512Mi
   persistence:
     existingClaim: karakeep-meilisearch
 sops:
@@ -170,23 +253,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBiNGx4
-        V1V1THptTmhUL3J6OE5hVGZFTEF2VUFMcTZXajltd1NlbW5kRGhNCk5wV3BVbDdI
-        R2ZHVk5oaFQzU3RTSjBiSk9uSHZHQ2VocTdZZllWVXM4WEUKLS0tIE00Z3dLYU1C
-        VXJlVVZRbmtMRnpFSmJaZmpPSHhqcjVhMjBIYUFxQXRoNFkKumtFqM1L2OY6Ytdp
-        V1wwmcQsk6TqNYDaBfFHdRD5yn8D/FxbOji2AsnZTQ1xItHJgY+KVVgSfJWy4SqY
-        Yre7AA==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyB0b3RQ
+        L2crWHUxWFQ2alptWEQ2QWxzaE16RUlDalJ3RjRwYTB1WHl2TUFjCkJid2lBdFJi
+        ZGtzeFJQMzA0RTY1Z0hKcWQ4T1MyTUlLdlBXeEs1YzVmd3MKLS0tIGxSVzJuN2Qv
+        Z21TT0FmYmtCSzIzTUVjSE9yTndjWnFFS2VNeDZ6d0k4M0EKusO776/a6gzL7vua
+        JTlrZerBGBKGujuOgO1nRKG1HTvJfnPBDz8A0l+YFmW3YUohWoSpI8L6f049oiQA
+        annb3Q==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAwc1JId0g4ellUVkZIRElP
-        cVNzT1NzVEdFS2l4Ky94R2ZkMHdlUExLK3pZClhBUzBYeDU4cXFrdVdTaHR1ZTla
-        ZitoRFVHUzdxd0czMWdrRDJGL2ZpYlEKLS0tIG9xcjl2YXJyTVpQWmw4VnV2V1cr
-        Q05QWVdORDN6OVJ0UnRRNjRrSmVWelEKw1GMm/lI8uGysYoFKLBPpDd/2T5adVTP
-        wQRzdPM4wPyEnO59xkRhzX91kkWZIIHiBIJkp8IXRpYgk3ZODHaNRQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBnREt0enB3T08wSWU4ZmlF
+        aXNMT3VreFpqeWJRNFphQW5QQTFwUkt3TUJBCmdaNDh4bk1PS1Nhdmgrdi9hME1Y
+        cDBkRStGZTgyam9PbWlGVzJYem4yT28KLS0tIEpWWkY1WUN2MWhDbVJpd3IyQ0tJ
+        bkRhaC9lc3hMcGQ1aXliWE1zbkNZRHcKCjxODGewYlBoL/PmZlgPTUMa7FI/a1v2
+        IHwRthE6xEUgC0g1YZbXHd1lSGBbIwzI1uveEGDMiJLq83gR3p+2iA==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-13T13:01:46Z"
-  mac: ENC[AES256_GCM,data:rgR3ovPab9tGDwdvEErK+8ILvCqsdRkfvekds8Tt6BmOrxcwCfM0Z5UOuQ+0TZT/LKdibEYDvBG5b369WnQ+Q06XW57hC0rbDpZVBWSNtM5BfjIXsHqvIBnpGPVKayavGVPWsZ27lK/8xXAtVcJqUY09C7m35ad1aeSorthkbpA=,iv:nYNRWauK8hpL+JSLsoxwJYtBdUArojJPSrHYOyMt8r4=,tag:+E2nFA8/rmtJVI1a519qGw==,type:str]
+  lastmodified: "2025-11-14T10:32:32Z"
+  mac: ENC[AES256_GCM,data:/fv4zZbUjo9yQ9rUUPL/lKC8Tobkn26wNDoKajDPBhxlv7NJ8MJT/tu548BXEWWN4XqNlTOugMk0K3ouA9/zU9jxrTfIfO8YRg3UnTF8YeFr9dnI2szaM9yFwMCw98LEz++VWfAYmFWZSlXhuInktFW4bBZ2g3YUweaqT+PgbOs=,iv:ho3LFg8LtSwqe6ynQJvIWWLeEkYnnpEGyH0zzKbwjA4=,tag:EGRgbNVEeBqBgftVaQGVAg==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

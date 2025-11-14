@@ -5,7 +5,7 @@ dbs:
   - path: /data/db.sqlite3
     replica:
       type: s3
-      path: authelia/db.sqlite3
+      path: authelia-ng/db.sqlite3
       force-path-style: true
       bucket: ${LITESTREAM_BUCKET}
       endpoint: ${LITESTREAM_ENDPOINT}

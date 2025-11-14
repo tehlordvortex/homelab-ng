@@ -3,13 +3,17 @@ resources:
   - ingress.yaml
   - service.yaml
   - namespace.yaml
-  - statefulset.yaml
+  - deployment.yaml
   - secret.sops.yaml
 
 configMapGenerator:
   - name: litestream
+    options:
+      disableNameSuffixHash: true
     files:
       - config/litestream.yaml
   - name: ntfy
+    options:
+      disableNameSuffixHash: true
     files:
       - server.yaml=config/server.sops.yaml

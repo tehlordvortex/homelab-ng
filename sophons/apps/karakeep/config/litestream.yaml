@@ -5,7 +5,7 @@ dbs:
   - path: /data/db.db
     replica:
       type: s3
-      path: karakeep/db.db
+      path: karakeep-ng/db.db
       force-path-style: true
       bucket: ${LITESTREAM_BUCKET}
       endpoint: ${LITESTREAM_ENDPOINT}
@@ -16,7 +16,7 @@ dbs:
   - path: /data/queue.db
     replica:
       type: s3
-      path: karakeep/queue.db
+      path: karakeep-ng/queue.db
       force-path-style: true
       bucket: ${LITESTREAM_BUCKET}
       endpoint: ${LITESTREAM_ENDPOINT}

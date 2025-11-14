@@ -1,16 +1,19 @@
-# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1/statefulset.json
+# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1/deployment.json
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: ntfy
   namespace: ntfy
   labels:
     app.kubernetes.io/name: ntfy
 spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+
   selector:
     matchLabels:
       app.kubernetes.io/name: ntfy
-  serviceName: ntfy
   template:
     metadata:
       labels:

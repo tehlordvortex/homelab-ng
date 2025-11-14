@@ -15,19 +15,21 @@ ingress:
   #   enabled: false
 
 pod:
-  kind: StatefulSet
+  kind: Deployment
   replicas: 1
+  strategy:
+    type: Recreate
+
   initContainers:
     - name: lightstream-restore-db
       image: docker.io/litestream/litestream:0.5.2
       args:
-        [
-          "restore",
-          "-config=/etc/litestream/litestream.yaml",
-          "-if-db-not-exists",
-          "-if-replica-exists",
-          "/data/db.sqlite3",
-        ]
+        - "restore"
+        - "-config=/etc/litestream/litestream.yaml"
+        - "-if-db-not-exists"
+        - "-if-replica-exists"
+        - "/data/db.sqlite3"
+
       envFrom:
         - secretRef:
             name: litestream-access-key

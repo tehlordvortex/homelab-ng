@@ -7,7 +7,7 @@ spec:
   cron: "0 0 * * *"
   task: "snapshot"
   groups: ["default"]
-  retain: 5
+  retain: 7
   concurrency: 2
 ---
 apiVersion: longhorn.io/v1beta2
@@ -19,5 +19,5 @@ spec:
   cron: "0 0 * * *"
   task: "backup"
   groups: ["default"]
-  retain: 2
+  retain: 3
   concurrency: 1
