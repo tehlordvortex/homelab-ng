@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/persistentvolume.json
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pds-blobstore
+  namespace: bluesky
+spec:
+  capacity:
+    storage: 10Gi # required, ignored
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  claimRef:
+    namespace: bluesky
+    name: pds-blobstore
+  mountOptions:
+    - endpoint-url https://s3.eu-central-003.backblazeb2.com
+    - region eu-central-003
+    - prefix bluesky/pds/
+    - uid 1000
+    - gid 1000
+    - allow-delete
+    - allow-other
+  csi:
+    driver: s3.csi.aws.com
+    volumeHandle: bluesky-pds-blobstore
+    volumeAttributes:
+      bucketName: sophons
+      cache: emptyDir
+      cacheEmptyDirSizeLimit: 5Gi
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/persistentvolumeclaim.json
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pds-blobstore
+  namespace: bluesky
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Gi # required, ignored
+  volumeName: pds-blobstore
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/persistentvolumeclaim.json
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pds-data
+  namespace: bluesky
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-global
+  resources:
+    requests:
+      storage: 1Gi

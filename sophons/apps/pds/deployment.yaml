@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bluesky-pds
+  namespace: bluesky
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bluesky-pds
+      app.kubernetes.io/instance: pds
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bluesky-pds
+        app.kubernetes.io/instance: pds
+    spec:
+      serviceAccountName: bluesky-pds
+
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+
+      containers:
+        - name: bluesky-pds
+          image: "ghcr.io/bluesky-social/pds:0.4.193"
+          # command: ["sleep", "10000"]
+          env:
+            - name: PDS_HOSTNAME
+              value: pds.vrtx.sh
+            - name: PDS_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: bluesky-pds
+                  key: jwtSecret
+            - name: PDS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bluesky-pds
+                  key: adminPassword
+            - name: PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: bluesky-pds
+                  key: plcRotationKey
+            - name: PDS_EMAIL_SMTP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: bluesky-pds
+                  key: emailSmtpUrl
+            - name: PDS_DATA_DIRECTORY
+              value: "/pds"
+            - name: PDS_BLOBSTORE_DISK_LOCATION
+              value: "/blobstore"
+            - name: PDS_DID_PLC_URL
+              value: "https://plc.directory"
+            - name: PDS_BSKY_APP_VIEW_URL
+              value: "https://api.bsky.app"
+            - name: PDS_BSKY_APP_VIEW_DID
+              value: "did:web:api.bsky.app"
+            - name: PDS_REPORT_SERVICE_URL
+              value: "https://mod.bsky.app"
+            - name: PDS_REPORT_SERVICE_DID
+              value: "did:plc:ar7c4by46qjdydhdevvrndac"
+            - name: PDS_CRAWLERS
+              value: "https://bsky.network"
+            - name: LOG_ENABLED
+              value: "true"
+            - name: PDS_EMAIL_FROM_ADDRESS
+              value: "bsky@vrtx.sh"
+
+          ports:
+            - name: pds-port
+              containerPort: 3000
+              protocol: TCP
+
+          volumeMounts:
+            - name: data
+              mountPath: /pds
+            - name: blobstore
+              mountPath: /blobstore
+
+          livenessProbe:
+            httpGet:
+              path: /xrpc/_health
+              port: pds-port
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pds-data
+        - name: blobstore
+          persistentVolumeClaim:
+            claimName: pds-blobstore

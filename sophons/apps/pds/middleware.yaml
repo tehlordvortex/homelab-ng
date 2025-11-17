@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-to-bsky-app
+  namespace: bluesky
+spec:
+  redirectRegex:
+    regex: ^https://bsky.vrtx.sh
+    replacement: https://bsky.app/profile/bsky.vrtx.sh

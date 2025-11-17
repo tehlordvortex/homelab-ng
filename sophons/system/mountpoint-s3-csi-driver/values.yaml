@@ -1,0 +1,16 @@
+controller:
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
+
+node:
+  resources:
+    limits:
+      memory: 128Mi
+
+mountpointPod:
+  namespace: mountpoint-s3
+
+awsAccessSecret:
+  name: trisolaris-access-key
+  keyId: AWS_ACCESS_KEY_ID
+  accessKey: AWS_SECRET_ACCESS_KEY

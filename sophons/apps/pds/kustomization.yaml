@@ -1,0 +1,15 @@
+namespace: bluesky
+labels:
+  - pairs:
+      app.kubernetes.io/name: bluesky-pds
+      app.kubernetes.io/instance: pds
+      app.kubernetes.io/version: "0.4.193"
+
+resources:
+  - service.yaml
+  - deployment.yaml
+  - middleware.yaml
+  - secret.sops.yaml
+  - ingressroute.yaml
+  - serviceaccount.yaml
+  - persistentvolumeclaim.yaml
