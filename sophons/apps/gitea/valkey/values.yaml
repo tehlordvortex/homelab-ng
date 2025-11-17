@@ -1,0 +1,14 @@
+commonLabels:
+  app.kubernetes.io/component: cache
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "32Mi"
+  limits:
+    cpu: "150m"
+    memory: "128Mi"
+
+dataStorage:
+  enabled: true
+  requestedSize: 512Mi

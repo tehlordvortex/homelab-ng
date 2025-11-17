@@ -22,3 +22,25 @@ spec:
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-vrtx-sh
+spec:
+  secretName: wildcard-vrtx-sh-tls
+
+  secretTemplate:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: >
+        gitea
+
+  dnsNames:
+    - "*.vrtx.sh"
+    - "vrtx.sh"
+
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer

@@ -1,0 +1,19 @@
+namespace: gitea
+resources:
+  - service.yaml
+  - namespace.yaml
+  - statefulset.yaml
+  - secret.sops.yaml
+  - ingressroute.yaml
+
+configMapGenerator:
+  - name: litestream
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/litestream.yaml
+  - name: gitea-runner
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/act_runner.yaml

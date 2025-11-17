@@ -1,0 +1,226 @@
+valkey-cluster:
+  enabled: false
+valkey:
+  enabled: false
+postgresql:
+  enabled: false
+postgresql-ha:
+  enabled: false
+
+image:
+  rootless: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+persistence:
+  size: 1Gi
+
+extraVolumes:
+  - name: db
+    emptyDir: {}
+  - name: litestream
+    configMap:
+      name: litestream
+
+extraContainerVolumeMounts:
+  - name: db
+    mountPath: /db
+
+extraInitVolumeMounts:
+  - name: db
+    mountPath: /db
+
+podSecurityContext:
+  fsGroupChangePolicy: "OnRootMismatch"
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+preExtraInitContainers:
+  - name: lightstream-restore-db
+    image: docker.io/litestream/litestream:0.5.2
+    args:
+      - "restore"
+      - "-config=/etc/litestream/litestream.yaml"
+      - "-if-db-not-exists"
+      - "-if-replica-exists"
+      - "/db/gitea.db"
+    envFrom:
+      - secretRef:
+          name: litestream-access-key
+    volumeMounts:
+      - name: db
+        mountPath: "/db"
+      - name: litestream
+        mountPath: "/etc/litestream"
+        readOnly: true
+    securityContext:
+      readOnlyRootFilesystem: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
+extraContainers:
+  - name: lightstream-replicate
+    image: docker.io/litestream/litestream:0.5.2
+    args: ["replicate", "-config=/etc/litestream/litestream.yaml"]
+    envFrom:
+      - secretRef:
+          name: litestream-access-key
+    ports:
+      - name: metrics
+        containerPort: 9090
+    volumeMounts:
+      - name: db
+        mountPath: "/db"
+      - name: litestream
+        mountPath: "/etc/litestream"
+        readOnly: true
+    securityContext:
+      readOnlyRootFilesystem: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
+replicaCount: 1
+strategy:
+  type: Recreate
+deployment:
+  env:
+    - name: GOMEMLIMIT
+      value: 500MiB
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: trisolaris-access-key
+          key: AWS_ACCESS_KEY_ID
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: trisolaris-access-key
+          key: AWS_SECRET_ACCESS_KEY
+    - name: GITEA_RUNNER_REGISTRATION_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: gitea-runner
+          key: GITEA_RUNNER_REGISTRATION_TOKEN
+
+affinity:
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: valkey
+          topologyKey: topology.kubernetes.io/zone
+
+# Prevent the services from being headless
+service:
+  http:
+    clusterIP: null
+  ssh:
+    clusterIP: null
+
+gitea:
+  admin:
+    username: vrtx
+    email: me@vrtx.sh
+    passwordMode: initialOnlyRequireReset
+
+  config:
+    server:
+      DOMAIN: tig.vrtx.sh
+      SSH_DOMAIN: ssh.tig.vrtx.sh
+      ROOT_URL: https://tig.vrtx.sh/
+      OFFLINE_MODE: true
+      LFS_START_SERVER: true
+
+    service:
+      NO_REPLY_ADDRESS: noreply.tig.vrtx.sh
+      DISABLE_REGISTRATION: true
+
+    openid:
+      ENABLE_OPENID_SIGNIN: true
+      # WHITELISTED_URIS: 'auth.sophons.cloud'
+
+    cache:
+      ADAPTER: redis
+      HOST: redis://valkey:6379/0?pool_size=16&idle_timeout=180s
+    queue:
+      TYPE: redis
+      CONN_STR: redis://valkey:6379/1?pool_size=16&idle_timeout=180s
+    session:
+      PROVIDER: redis
+      PROVIDER_CONFIG: redis://valkey:6379/2?pool_size=16&idle_timeout=180s
+
+    database:
+      DB_TYPE: sqlite3
+      SQLITE_TIMEOUT: 15000
+      SQLITE_JOURNAL_MODE: wal
+      PATH: /db/gitea.db
+
+    storage:
+      STORAGE_TYPE: minio
+      MINIO_ENDPOINT: s3.eu-central-003.backblazeb2.com
+      MINIO_USE_SSL: true
+      MINIO_LOCATION: eu-central-003
+      MINIO_BUCKET: sophons
+    "storage.attachments":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/attachments/
+    "storage.lfs":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/lfs/
+    "storage.avatars":
+      MINIO_BASE_PATH: gitea/avatars/
+    "storage.repo-avatars":
+      MINIO_BASE_PATH: gitea/repo-avatars/
+    "storage.repo-archive":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/repo-archive/
+    "storage.packages":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/packages/
+    "storage.actions_log":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/actions_log/
+    "storage.actions_artifacts":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/actions_artifacts/
+
+    actions:
+      ENABLED: true
+
+    security:
+      REVERSE_PROXY_TRUSTED_PROXIES: 10.41.0.0/16,2001:cafe:41::/56
+
+  additionalConfigSources:
+    - secret:
+        secretName: gitea-config
