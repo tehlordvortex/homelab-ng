@@ -4,11 +4,11 @@ kind: Service
 metadata:
   labels:
     akri.sh/configuration: inverter-cam
-    app: inverter-cam-svc-internal
+    app: inverter-cam-svc-prime
     controller: akri.sh
   annotations:
-    metallb.io/address-pool: internal
-  name: inverter-cam-svc-internal
+    metallb.io/address-pool: prime
+  name: inverter-cam-svc-prime
   namespace: akri-system
 spec:
   type: LoadBalancer

@@ -9,8 +9,6 @@ spec:
     - starlink
   nodeSelectors:
     - matchLabels:
-        kubernetes.io/hostname: sophons-prime
-    - matchLabels:
         kubernetes.io/hostname: sophons-beta
     - matchLabels:
         kubernetes.io/hostname: sophons-kaos
@@ -31,6 +29,20 @@ spec:
         kubernetes.io/hostname: sophons-kaos
   interfaces:
     - enp1s0
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: prime
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - prime
+  nodeSelectors:
+    - matchLabels:
+        kubernetes.io/hostname: sophons-prime
+  interfaces:
+    - end0.42
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

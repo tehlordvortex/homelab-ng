@@ -159,7 +159,6 @@ service:
           traefik-internal.sophons.cloud
         external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
-        trafficDistribution: PreferSameZone
         externalTrafficPolicy: Local
     kaos:
       single: true
@@ -170,7 +169,6 @@ service:
           traefik-kaos.sophons.cloud
         external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
-        trafficDistribution: PreferSameZone
         externalTrafficPolicy: Local
     starlink:
       single: true
@@ -183,7 +181,6 @@ service:
           traefik-sango-star-theta.sophons.cloud
       spec:
         ipFamilies: ["IPv6"]
-        trafficDistribution: PreferSameZone
         externalTrafficPolicy: Local
     theta:
       single: true
@@ -196,7 +193,6 @@ service:
           traefik-sango-star-theta.sophons.cloud
       spec:
         ipFamilies: ["IPv6"]
-        trafficDistribution: PreferSameZone
         externalTrafficPolicy: Local
 
 providers:
