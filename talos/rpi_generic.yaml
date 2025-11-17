@@ -22,3 +22,4 @@ customization:
       - siderolabs/vc4
       - siderolabs/iscsi-tools
       - siderolabs/util-linux-tools
+      - siderolabs/binfmt-misc

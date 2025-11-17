@@ -12,9 +12,13 @@ overlay:
       enable_uart=1
       avoid_warnings=2
       dtoverlay=vc4-kms-v3d,noaudio
+      over_voltage=5
+      arm_freq=1900
 customization:
   systemExtensions:
     officialExtensions:
       - siderolabs/vc4
       - siderolabs/iscsi-tools
       - siderolabs/util-linux-tools
+      - siderolabs/v4l-uvc-drivers
+      - siderolabs/binfmt-misc
