@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    akri.sh/configuration: inverter-cam
+    app: inverter-cam-svc-internal
+    controller: akri.sh
+  annotations:
+    metallb.io/address-pool: internal
+  name: inverter-cam-svc-internal
+  namespace: akri-system
+spec:
+  type: LoadBalancer
+  ports:
+    - name: grpc
+      port: 80
+      protocol: TCP
+      targetPort: 8083
+  selector:
+    akri.sh/configuration: inverter-cam
+    controller: akri.sh

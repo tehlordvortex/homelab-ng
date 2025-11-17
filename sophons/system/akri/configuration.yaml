@@ -1,0 +1,53 @@
+apiVersion: akri.sh/v0
+kind: Configuration
+metadata:
+  name: inverter-cam
+spec:
+  discoveryHandler:
+    name: udev
+    discoveryDetails: |+
+      groupRecursive: false
+      udevRules:
+      - KERNEL=="video[0-9]*", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="0810", ATTR{index}=="0"
+  brokerSpec:
+    brokerPodSpec:
+      containers:
+        - name: akri-udev-broker
+          image: ghcr.io/project-akri/akri/udev-video-broker:v0.13.16-dev
+
+          env:
+            - name: FRAMES_PER_SECOND
+              value: "30"
+            - name: RESOLUTION_WIDTH
+              value: "1280"
+            - name: RESOLUTION_HEIGHT
+              value: "720"
+
+          securityContext:
+            privileged: true
+
+          resources:
+            requests:
+              "{{PLACEHOLDER}}": "1"
+              memory: 10Mi
+              cpu: 10m
+            limits:
+              "{{PLACEHOLDER}}": "1"
+              memory: 30Mi
+              cpu: 29m
+  instanceServiceSpec:
+    type: ClusterIP
+    ports:
+      - name: grpc
+        port: 80
+        protocol: TCP
+        targetPort: 8083
+  configurationServiceSpec:
+    type: ClusterIP
+    ports:
+      - name: grpc
+        port: 80
+        protocol: TCP
+        targetPort: 8083
+  brokerProperties: {}
+  capacity: 1

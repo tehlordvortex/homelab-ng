@@ -1,0 +1,4 @@
+namespace: akri-system
+resources:
+  - service.yaml
+  - configuration.yaml
