@@ -8,10 +8,9 @@ cluster:
 
 resources:
   requests:
-    cpu: 100m
+    cpu: 250m
     memory: 128Mi
   limits:
-    cpu: 750m
     memory: 512Mi
 
 cni:
@@ -42,7 +41,10 @@ bpf:
 kubeProxyReplacement: true
 loadBalancer:
   # mode: dsr
+  acceleration: best-effort
   dsrDispatch: geneve
+bandwidthManager:
+  enabled: true
 
 hubble:
   ui:
