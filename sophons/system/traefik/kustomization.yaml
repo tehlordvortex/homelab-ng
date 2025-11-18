@@ -1,7 +1,7 @@
 namespace: traefik
 resources:
-  - namespace.yaml
   - deployment.sops.yaml
+  - dnsendpoint.sops.yaml
 
 configMapGenerator:
   - name: haproxy

@@ -1,0 +1,40 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: traefik-sango-noproxy
+  namespace: traefik
+spec:
+  endpoints:
+    - dnsName: traefik-sango-noproxy.sophons.cloud
+      recordType: A
+      # enc!
+      targets:
+        - ENC[AES256_GCM,data:P3gVrqcTaHHZ55VPqsE=,iv:Jc7tnLTTf1fYsXnsPHVF7p+cGkNpoPaHxFmtTzaaxkU=,tag:gJNUDH25GMKPNOqZM5Z5xg==,type:str]
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBIQkE2
+        TFdXazdOejh2MzQ1OUtsLzhQbWNRY1NnVkVYaFBmR1lNb1BBN0JnCkF5OWdqeWts
+        dUNzVHdud0Rzc2dKeU5zRURuN1k4eUJDQUVsekZJUk5JS3cKLS0tIFI3TWN1ZXMv
+        UTlNYmFVOVNja1hPdE9HK04xa3FTU0RTalFiUUtVTzQ2NXcKPEAjfOsyJwhuWpra
+        zrRGKgXgMJ6EuG/7Y7uqI2HtUtLnBlBniNgDPopKClVS4GgJhPsz2xGV2YqOZZ3T
+        n+SdaA==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBSSUJrVWxJRi94N2F5THpw
+        L1NwbDVBaVlTQ0ZSTFZ6V0E1QSt5ZGlSSXlJCitUczhJZEQvaHR0WWlEUHN6dGM5
+        bjJlQU02ZUJLNDBPSjhzc2hqditwSHMKLS0tIGdlL1RlQXZubUVSVHNEUHRWbWQ0
+        QmJGTEVuZjhhZWptN285aVFMZ3VDS0kKn66uhQHZl/eF1xCd3EyyCq8DbAmtAK6J
+        foQqUaF+kYd78uPQ0Uk7/f7ShFFhuHHZ11xgTN/2aq51m1ez3Ga1SQ==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-18T13:01:52Z"
+  mac: ENC[AES256_GCM,data:1BUe9uth1DF9XeueVpCKry8Emqs867m+hCoA5ffryLhVd1JieMFCzxxDxO/cOPTLg71sBopvMvlyzBapOed3r1g70TJo4uxlk+J2xkGHUhcPS7LBDZax1mPrFl72yOiShXuzDOO2WPKi+/oqlxz91flkq4H4mywKT1uCz8nLjfE=,iv:zeQjoeVDWXLZQWwI1nkKvCRnX3OJjOwoWuprQ1CDwEA=,tag:gohzQSflyifP5Oof51RJVw==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

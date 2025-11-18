@@ -24,7 +24,7 @@ spec:
         external-dns.alpha.kubernetes.io/hostname: |
           traefik-sango.sophons.cloud, traefik-sango-star-theta.sophons.cloud
         # enc!
-        external-dns.alpha.kubernetes.io/target: ENC[AES256_GCM,data:YXHIQZd/QBzUa2Q4E+Y=,iv:Mpw13GoKAwDvdc5KfeLhC/cwMoNaVpNdUxpe2NuN8gk=,tag:Wf/FgNdrgH6cjC7Wd/Vg/A==,type:str]
+        external-dns.alpha.kubernetes.io/target: ENC[AES256_GCM,data:K8x4A2HxTSpFzeZZMgQ=,iv:i8U04ATnuk/RhdZ+MrldVf9q2IlPTBxgbDsAxRfv+Go=,tag:+rysjfZHVIusxheQr7QDgg==,type:str]
     spec:
       tolerations:
         - key: orunmila.sophons.cloud/ase-orun
@@ -40,6 +40,9 @@ spec:
               name: haproxy
               readOnly: true
           ports:
+            - containerPort: 22
+              name: ssh
+              hostPort: 22
             - containerPort: 80
               name: http
               hostPort: 80
@@ -59,8 +62,10 @@ spec:
                 - NET_BIND_SERVICE
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 64Mi
+            limits:
+              memory: 128Mi
       volumes:
         - name: haproxy
           configMap:
@@ -72,23 +77,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBVVXo3
-        TnBTRDFXdVZyUnVQK2tsMC80YVlMZ0FRaWdjOXRUS1UvajZKWW5NCnRxdHk1Q0la
-        Z0RwV2kvdkdYQXRHckNza2NqRE5yNnptdVhWVDk0Vm5oeVEKLS0tIE9uenB1MzUy
-        T0FpMC96QXJsVENQT0FaMi9NR2xVVnl3bHNpK3NQNm1iQzgKu8194BjGp7qlDFJl
-        YbnPoU4cUHh1GjP1zLKtJsxKZoh80a+bE5FuWXMVtDmoc6CF7A4SFqywMq9B3yLU
-        e5I0Pw==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyByeHhy
+        WVVGaDd1NmRXQ1Nsc2VYUUF0bTFGbFVRcERFMTh5Z2x6aXFuZzA4ClBCTmc3eU4r
+        L2Fxd3p6K3BSZW5TYUFveVV6NXZPS1hZeTVkWUUzSTlCdkEKLS0tIGNEVjdZV1Vu
+        bUp3TWhMRnhROWZyZE1sUVlrWnZPbGFsNENtS2lsUjBlZTAKdZzzjdbMO79psQAA
+        VQT1ktXkleFx2tJbtRAGabm/vGPtVFeaCasfXPsVTzZjGVh5GzBfDhwEFHwc6YCY
+        +7SWzw==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB5U2NiaHJrS09CSVdmeVNj
-        YVVwUWRMTHZPWVBTdEoyQjBhN1JVdlRFL0hzClhPNm14R3c5Ym1RRytGb2JjSEVQ
-        NjhVTHBZWkRad3ZIdmVzVHgxUnE4ZzgKLS0tIGI4bk9QYVVla21teFB0WmlsUDEv
-        Q1BmZ0dvbXhUdlgwNVJRQXFDbVMxeUEKjOClwtCDR73lvLoQBPr5DkaxQTKD/EUD
-        xz8Bm1oO0sv/zaNe+FzNihoEmf7SzyPtdLWyFxrLHZ93fX3BI95xoA==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA5dUJlVEcxNGdkamxUaVRF
+        NSttTXdEdXdXVjBPQmhWUEw3U0tSMHhvdDBnCnU3c3lBY2EraWZqUzB1c0tRRHJ1
+        aTRmYitjY0VSdnFkaVpyWHBCRkJ0bmcKLS0tIFp2aHpXa0tCU0hGM3krQlNSZkgw
+        S3duMldMMmtBVlp4dEpTK0xuRDhvYlUKe4rN3g/afBNMwW0I1u2utybjZUpGHtDY
+        q6iWWUhTNxqlNRNSwOkRKsBHaX8Vur+Qy2MiB0jwgacqcXcSBZMbvQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-13T13:00:44Z"
-  mac: ENC[AES256_GCM,data:gA+dmI9DrCks44PuAfWgQldJ70LWxM2mJuNYLTveUu0ZskpqVAuyw4JsAlg4UyAS4g4VjFdAk3A4vHchYVnbNBWWuDLO5Lf0NlvetT7Ltlz0QOVnVoQwWoDDDvJPGW+RbOAi7HnPTUTQb3mCaYVZ+TV+vuZmcXRC4jVrA4fbKM4=,iv:W2qlQhsA9aZxAZI4uZ9gZhfWLnlTbXqGraSptg/AUJQ=,tag:HnjGPVioij5AcUPUzud+lg==,type:str]
+  lastmodified: "2025-11-18T13:01:52Z"
+  mac: ENC[AES256_GCM,data:ny9xiZVSylMdeC/KKXH5haoDZhUUVIQSFl/pHNWM2nr2RVLVgYs4PH90A9ZaFPtSqkTDTGgTuC12WihPBwVFU0Tus2P2MwbXusAh0hTgzJnKNc3o+Ps7h+amSBZzYyruAyRWVf5TklGHF4w1HobjSM8aYmR+ZT+9uIsJ3/szJ9Y=,iv:fTLVkAQhWmJthEDgHpCy1hIfmm0LFTqWnLekZmwk/Yg=,tag:C/v5NW7IzjYVbaQwrATacw==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

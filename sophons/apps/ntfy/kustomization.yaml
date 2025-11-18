@@ -1,7 +1,6 @@
 namespace: ntfy
 resources:
   - service.yaml
-  - namespace.yaml
   - deployment.yaml
   - secret.sops.yaml
   - ingressroute.yaml

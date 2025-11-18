@@ -1,7 +1,6 @@
 namespace: karakeep
 resources:
   - service.yaml
-  - namespace.yaml
   - secret.sops.yaml
   - ingressroute.yaml
   - persistentvolumeclaim.yaml

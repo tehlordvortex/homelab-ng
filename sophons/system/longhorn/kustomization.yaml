@@ -1,7 +1,6 @@
 namespace: longhorn-system
 resources:
   - service.yaml
-  - namespace.yaml
   - secret.sops.yaml
   - storageclass.yaml
   - recurringjob.yaml

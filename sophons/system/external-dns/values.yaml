@@ -12,9 +12,19 @@ env:
       secretKeyRef:
         name: cf-dns-api-token
         key: api-token
+  - name: GOMEMLIMIT
+    value: 60MiB
 
 sources:
+  - crd
+  - pod
   - service
   - ingress
-  - pod
   - traefik-proxy
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 64Mi

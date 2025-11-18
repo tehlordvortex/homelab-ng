@@ -87,6 +87,11 @@ ports:
       kaos: true
       starlink: true
       theta: true
+    transport:
+      respondingTimeouts:
+        # uploading blobs to gitea etc can take a while
+        # thanks [fuck-all]mbps upload internet.
+        readTimeout: 300
 
     proxyProtocol:
       trustedIPs:

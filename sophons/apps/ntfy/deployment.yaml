@@ -19,6 +19,20 @@ spec:
       labels:
         app.kubernetes.io/name: ntfy
     spec:
+      tolerations:
+        - key: "orunmila.sophons.cloud/ase-orun"
+          operator: Exists
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - sophons-oduduwa
+
       containers:
         - name: ntfy
           image: binwiederhier/ntfy
@@ -35,6 +49,12 @@ spec:
           envFrom:
             - secretRef:
                 name: ntfy
+          resources:
+            requests:
+              cpu: 50m
+              mem: 30Mi
+            limits:
+              mem: 64Mi
 
         - name: lightstream-replicate
           image: docker.io/litestream/litestream:0.5.2

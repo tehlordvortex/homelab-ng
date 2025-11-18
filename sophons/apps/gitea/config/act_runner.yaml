@@ -41,12 +41,9 @@ runner:
   # If it's empty when registering, it will ask for inputting labels.
   # If it's empty when execute `daemon`, will use labels in `.runner` file.
   labels:
-    # - "ubuntu-latest:docker://docker.gitea.com/runner-images:ubuntu-latest"
-    # - "ubuntu-22.04:docker://docker.gitea.com/runner-images:ubuntu-22.04"
-    # - "ubuntu-20.04:docker://docker.gitea.com/runner-images:ubuntu-20.04"
-    - "ubuntu-latest:host"
-    - "ubuntu-22.04:host"
-    - "ubuntu-20.04:host"
+    - "ubuntu-latest:docker://docker.gitea.com/runner-images:ubuntu-latest"
+    - "ubuntu-22.04:docker://docker.gitea.com/runner-images:ubuntu-22.04"
+    - "ubuntu-20.04:docker://docker.gitea.com/runner-images:ubuntu-20.04"
 
 cache:
   # Enable cache server to use actions/cache.
@@ -57,7 +54,7 @@ cache:
   # The host of the cache server.
   # It's not for the address to listen, but the address to connect from job containers.
   # So 0.0.0.0 is a bad choice, leave it empty to detect automatically.
-  host: "host.docker.internal"
+  host: "localhost"
   # The port of the cache server.
   # 0 means to use a random available port.
   port: 8088
@@ -70,7 +67,7 @@ container:
   # Specifies the network to which the container will connect.
   # Could be host, bridge or the name of a custom network.
   # If it's empty, act_runner will create a network automatically.
-  network: "bridge"
+  network: "host"
   # Whether to use privileged mode or not when launching task containers (privileged mode is required for Docker-in-Docker).
   privileged: false
   # And other options to be used when the container is started (eg, --add-host=my.gitea.url:host-gateway).
