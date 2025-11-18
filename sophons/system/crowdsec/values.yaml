@@ -1,0 +1,86 @@
+container_runtime: containerd
+
+tls:
+  enabled: true
+  agent:
+    tlsClientAuth: true
+
+config:
+  config.yaml.local: |
+    db_config:
+      flush:
+        agents_autodelete:
+          cert: 60m # This is TLS client authentication
+          login_password: 60m # This includes the auto registration token as well
+        ## Flush both login types if the machine has not logged in for 60 minutes or more
+
+    api:
+      server:
+        auto_registration:
+          enabled: true
+          token: "${REGISTRATION_TOKEN}" # /!\ Do not modify this variable (auto-generated and handled by the chart)
+          allowed_ranges:
+            - "127.0.0.1/32"
+            - "192.168.0.0/16"
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "10.41.0.0/16"
+            - "2001:cafe:41::/56"
+
+secrets:
+  externalSecret:
+    name: crowdsec
+
+lapi:
+  resources:
+    requests:
+      cpu: 150m
+      memory: 128Mi
+    limits:
+      cpu: null
+      memory: 384Mi
+
+  persistentVolume:
+    config:
+      enabled: false
+    data:
+      enabled: false
+  env:
+    - name: ENROLL_KEY
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec
+          key: enrollKey
+    - name: BOUNCER_KEY_traefik
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec
+          key: traefikBouncerKey
+    - name: ENROLL_INSTANCE_NAME
+      value: "sophons"
+    - name: ENROLL_TAGS
+      value: "k8s linux"
+
+agent:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: null
+      memory: 128Mi
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
+
+  persistentVolume:
+    config:
+      enabled: false
+
+  acquisition:
+    - namespace: traefik
+      podName: traefik-*
+      program: traefik
+    - namespace: traefik
+      podName: haproxy-*
+      program: haproxy

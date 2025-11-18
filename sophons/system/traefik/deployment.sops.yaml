@@ -24,17 +24,22 @@ spec:
         external-dns.alpha.kubernetes.io/hostname: |
           traefik-sango.sophons.cloud, traefik-sango-star-theta.sophons.cloud
         # enc!
-        external-dns.alpha.kubernetes.io/target: ENC[AES256_GCM,data:K8x4A2HxTSpFzeZZMgQ=,iv:i8U04ATnuk/RhdZ+MrldVf9q2IlPTBxgbDsAxRfv+Go=,tag:+rysjfZHVIusxheQr7QDgg==,type:str]
+        external-dns.alpha.kubernetes.io/target: ENC[AES256_GCM,data:q+OF+4LcwHzjqiFmAeU=,iv:fdakIB2qC7ATgU4V6R07RrNnun7tClyFMdaUTQ8Ht08=,tag:VrGwJAq9mKdaL5tp1McTHA==,type:str]
     spec:
       tolerations:
         - key: orunmila.sophons.cloud/ase-orun
           operator: Exists
+        - key: node.kubernetes.io/memory-pressure
+          operator: Exists
       containers:
         - name: proxy
           image: haproxy:3.2.8-alpine3.22
-          args:
-            - -f
-            - /etc/haproxy/haproxy.cfg
+          # override the entrypoint preprending extra args
+          # which shouldn't be happening but idk
+          command:
+            - sh
+            - -c
+            - haproxy -db -f /etc/haproxy/haproxy.cfg
           volumeMounts:
             - mountPath: /etc/haproxy
               name: haproxy
@@ -63,9 +68,9 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 64Mi
+              memory: 32Mi
             limits:
-              memory: 128Mi
+              memory: 100Mi
       volumes:
         - name: haproxy
           configMap:
@@ -77,23 +82,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyByeHhy
-        WVVGaDd1NmRXQ1Nsc2VYUUF0bTFGbFVRcERFMTh5Z2x6aXFuZzA4ClBCTmc3eU4r
-        L2Fxd3p6K3BSZW5TYUFveVV6NXZPS1hZeTVkWUUzSTlCdkEKLS0tIGNEVjdZV1Vu
-        bUp3TWhMRnhROWZyZE1sUVlrWnZPbGFsNENtS2lsUjBlZTAKdZzzjdbMO79psQAA
-        VQT1ktXkleFx2tJbtRAGabm/vGPtVFeaCasfXPsVTzZjGVh5GzBfDhwEFHwc6YCY
-        +7SWzw==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBEak4r
+        UVVPUFhUdEJCcm9yWUl5dmR6K29SQXQ4dXZ1NDdKOEVOUUtvb1djCjIwU3Q2Wjk4
+        MjFQbnZDc09Fc25NUTh4QnpTNDFad0FjVEpmMGQ2YjJaOVkKLS0tIDAzNDN1ck4w
+        ZGlBYnFmUlZWNDNpWVF1enFyL1JjVUVJTDVnSnRBWHVNakEKgmWgSjYoKaXyZ+SW
+        KA8035pfWq0dMXM7QT1Sg7f3Vn4urwTz2J4vm3tZkExozSGmnK1pTgz/31RSPV2T
+        n6qrjQ==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA5dUJlVEcxNGdkamxUaVRF
-        NSttTXdEdXdXVjBPQmhWUEw3U0tSMHhvdDBnCnU3c3lBY2EraWZqUzB1c0tRRHJ1
-        aTRmYitjY0VSdnFkaVpyWHBCRkJ0bmcKLS0tIFp2aHpXa0tCU0hGM3krQlNSZkgw
-        S3duMldMMmtBVlp4dEpTK0xuRDhvYlUKe4rN3g/afBNMwW0I1u2utybjZUpGHtDY
-        q6iWWUhTNxqlNRNSwOkRKsBHaX8Vur+Qy2MiB0jwgacqcXcSBZMbvQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBudWhyY1lxOWxYblR0NEtW
+        MWpIN0dacVpscVhmSi9MOXkvWUZqTExqUW5nCjU3RGcyS0kzNlZjWU14VEZsTGFq
+        djgrWWJXOW9EMVcxWmo1ZW1mWEk2WkkKLS0tIGZwOTkxS1VJMUI1WVZwUFI1NUFU
+        dmlNYkR6ZndYY0NGTStyRGhxa0xLUzAKoYNHqggbdiTCwRbu7ps0FkWUgcJl/n+7
+        WEeSlt2ob5BT0ydpmScgpIbKbE1vM4QqwNaLhiKGGRlbbSiO2ODb3A==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-18T13:01:52Z"
-  mac: ENC[AES256_GCM,data:ny9xiZVSylMdeC/KKXH5haoDZhUUVIQSFl/pHNWM2nr2RVLVgYs4PH90A9ZaFPtSqkTDTGgTuC12WihPBwVFU0Tus2P2MwbXusAh0hTgzJnKNc3o+Ps7h+amSBZzYyruAyRWVf5TklGHF4w1HobjSM8aYmR+ZT+9uIsJ3/szJ9Y=,iv:fTLVkAQhWmJthEDgHpCy1hIfmm0LFTqWnLekZmwk/Yg=,tag:C/v5NW7IzjYVbaQwrATacw==,type:str]
+  lastmodified: "2025-11-18T18:44:41Z"
+  mac: ENC[AES256_GCM,data:Cdkb0KOfOmbtqzjV73NTB4cdsgxuvDMGdt6+3yxD+uz88i24BUlQIcuz/s8/gPv5ihoCBQaVZwmUNXz1rhSqvmvgnDSGCkLyJraDqc3d/240vr0fcidhykNSrwN18S/7tWBBkgiqUidc2JwGJS8B5S7ALscka7gD0BlW78t3kQU=,iv:L+JkkxT8c4mYxcQzpQbEdl85TYu0jdXOcFQ4BQNvflw=,tag:Rafe4dMXNJWjcKFTTY5UAQ==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

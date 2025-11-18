@@ -52,9 +52,9 @@ spec:
           resources:
             requests:
               cpu: 50m
-              mem: 30Mi
+              memory: 30Mi
             limits:
-              mem: 64Mi
+              memory: 64Mi
 
         - name: lightstream-replicate
           image: docker.io/litestream/litestream:0.5.2

@@ -1,0 +1,4 @@
+namespace: crowdsec
+resources:
+  - secret.sops.yaml
+  - middleware.sops.yaml

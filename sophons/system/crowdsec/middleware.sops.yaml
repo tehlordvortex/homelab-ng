@@ -1,0 +1,40 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: crowdsec-bouncer
+  namespace: crowdsec
+spec:
+  plugin:
+    crowdsec-bouncer-traefik-plugin:
+      enabled: true
+      crowdsecMode: stream
+      crowdsecLapiScheme: https
+      crowdsecLapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
+      crowdsecLapiTlsInsecureVerify: true
+      # enc!
+      crowdsecLapiKey: ENC[AES256_GCM,data:89+9GiJyXp1MQ4j57+kDRXpfYnTJEfPeHeKmEftcpSOnmD/PLvZEmoyCKDsdd/l4Z89ZFdusD/5Acg/QOOmLxjrwfTh6yKXZK81AS/yoHlAuoemyz0py7NEnQeUV/AlAzzbmhsANCwbZGnNV/aMNaPJP3Dl/5M50FeLa7TxLjBM=,iv:AAWndtgBNzu0vYOTv69ySQXSBSJLp3383RC7EYWErPE=,tag:laqt7TCyGXVTY/gaphsxyA==,type:str]
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBDUDls
+        aFFHc3lIQldZbktCMmEyTTB0Q2o0eFhsK1Y0OFVoM3V5YldQYTFzCmFCdHZSQTda
+        RTlxaVUwNHZscDNpS2tzbk9RWi9sSm9hT1laMndHRTJndFUKLS0tIFM3bkRibFZ0
+        UWplL2tHVXVDamdBVUJzb2NwL1dMQ2pLa2w1M3A3ZndWb0EKKrFzAbdfhp718s73
+        cWl/Pt0dnNN7ipQr/qujPOlEDVrPO+HFdPheRYKfKP/zEspSwuCvr35kY8y61PDj
+        WwxAhQ==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA0N2s3WWFZQ1o0Ykh2WGNy
+        dVM0Q2liOFE1QkNFZjBQdkZrQlhDN1g0dGs0CnY2cThRcENwc3JpZkx2RDZRRFZS
+        aVpUVkNjYnBzZGpzeCtuMDFCc0IwekkKLS0tIGRwUzloL1dmN0R3aktyRlhZYlpz
+        cDNrYlRyQnRCR21iR05tOWpBUHBET2MKwLcSc6cGcHBCwtNzhFICe/7q4TBBtU6b
+        CccbDeGaqUlA+c4cnMME70UoHFlJ3onAor5Gdc4l/mpfj76l9BusGQ==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-11-18T18:43:22Z"
+  mac: ENC[AES256_GCM,data:MDf7bbqZwjRYConUv2YbKH7x0swUptVxEw26E2E/ZzBZv8iHyIG5GuhUFlC4n1Hv99DlKEiqK6kf7HBPgRqLcInxXkH0VdCWoAuZSgLDnf9ECiWlQE6OO77f/fN3BRw1LRf5IuRoEeh5T+JgeWvGRx8L1691Hvox8WBKmKOffyQ=,iv:oH6aQR/hBDoI3X9V3bS9PHjIREjN9yxERhK+J9nkluI=,tag:8Ieo30Uz7XXiqY5e3MXUSA==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

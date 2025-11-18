@@ -25,6 +25,8 @@ ports:
       kaos: true
       starlink: true
       theta: true
+    middlewares:
+      - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs:
@@ -92,6 +94,8 @@ ports:
         # uploading blobs to gitea etc can take a while
         # thanks [fuck-all]mbps upload internet.
         readTimeout: 300
+    middlewares:
+      - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs:
@@ -153,6 +157,7 @@ service:
   spec:
     trafficDistribution: PreferSameZone
     internalTrafficPolicy: Local
+    clusterIP: 10.43.69.0
 
   additionalServices:
     internal:
@@ -203,11 +208,14 @@ service:
 providers:
   kubernetesCRD:
     nativeLBByDefault: true
+    allowCrossNamespace: true
   kubernetesIngress:
     nativeLBByDefault: true
+    allowCrossNamespace: true
   kubernetesGateway:
     enabled: true
     nativeLBByDefault: true
+    allowCrossNamespace: true
 
 gateway:
   listeners:
@@ -225,9 +233,14 @@ resources:
     cpu: "50m"
     memory: "64Mi"
   limits:
-    cpu: "250m"
     memory: "256Mi"
 
 tolerations:
   - key: orunmila.sophons.cloud/ase-orun
     operator: Exists
+
+experimental:
+  plugins:
+    crowdsec-bouncer-traefik-plugin:
+      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      version: "v1.4.6"

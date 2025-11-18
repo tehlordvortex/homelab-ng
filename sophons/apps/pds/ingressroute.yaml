@@ -19,6 +19,10 @@ spec:
           port: 3000
     - kind: Rule
       match: Host(`bsky.vrtx.sh`)
-      services: []
+      # this is required /shrug
+      services:
+        - kind: Service
+          name: bluesky-pds
+          port: 3000
       middlewares:
         - name: redirect-to-bsky-app
