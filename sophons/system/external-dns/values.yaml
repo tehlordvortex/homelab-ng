@@ -13,7 +13,7 @@ env:
         name: cf-dns-api-token
         key: api-token
   - name: GOMEMLIMIT
-    value: 60MiB
+    value: 120MiB
 
 sources:
   - crd
@@ -27,4 +27,4 @@ resources:
     cpu: 50m
     memory: 64Mi
   limits:
-    memory: 64Mi
+    memory: 128Mi
