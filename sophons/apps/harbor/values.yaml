@@ -1,0 +1,142 @@
+expose:
+  type: route
+  tls:
+    enabled: false
+  route:
+    annotations:
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/app: harbor
+      gethomepage.dev/name: Harbor
+      gethomepage.dev/icon: harbor.svg
+      gethomepage.dev/href: "https://harbor.sophons.cloud"
+      gethomepage.dev/group: Code & Packages
+      gethomepage.dev/description: OCI Kontainer Registry
+
+    parentRefs:
+      - name: traefik-gateway
+        namespace: traefik
+        sectionName: web
+      - name: traefik-gateway
+        namespace: traefik
+        sectionName: websecure
+    hosts:
+      - harbor.sophons.cloud
+      - oci.sphns.run
+      - poci.sphns.run
+
+externalURL: https://harbor.sophons.cloud
+existingSecretAdminPassword: trisolaris-harbor-access-key
+
+redis:
+  type: external
+  external:
+    addr: "valkey.harbor.svc.cluster.local:6379"
+
+database:
+  type: external
+  external:
+    host: postgres-rw.harbor.svc.cluster.local
+    port: 5432
+    sslmode: require
+    username: app
+    coreDatabase: "app"
+    existingSecret: "postgres-app"
+  maxIdleConns: 4
+  maxOpenConns: 16
+
+persistence:
+  imageChartStorage:
+    type: s3
+    s3:
+      existingSecret: trisolaris-harbor-access-key
+      region: eu-central-003
+      regionendpoint: https://s3.eu-central-003.backblazeb2.com
+      bucket: sophons
+      rootdirectory: harbor/registry/
+
+imagePullSecrets:
+  - name: tig-pull-cred
+
+nginx:
+  image:
+    repository: ppkg.tig.vrtx.sh/sophons/nginx-photon
+    tag: v2.14.0
+
+portal:
+  image:
+    repository: ppkg.tig.vrtx.sh/sophons/harbor-portal
+    tag: v2.14.0
+
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                cnpg.io/instanceRole: primary
+            topologyKey: topology.kubernetes.io/region
+
+core:
+  image:
+    repository: ppkg.tig.vrtx.sh/sophons/harbor-core
+    tag: v2.14.0
+
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                cnpg.io/instanceRole: primary
+            topologyKey: topology.kubernetes.io/region
+
+jobservice:
+  image:
+    repository: ppkg.tig.vrtx.sh/sophons/harbor-jobservice
+    tag: v2.14.0
+
+  jobLoggers:
+    - database
+
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                cnpg.io/instanceRole: primary
+            topologyKey: topology.kubernetes.io/region
+
+registry:
+  registry:
+    image:
+      repository: ppkg.tig.vrtx.sh/sophons/registry-photon
+      tag: v2.14.0
+  controller:
+    image:
+      repository: ppkg.tig.vrtx.sh/sophons/harbor-registryctl
+      tag: v2.14.0
+
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                cnpg.io/instanceRole: primary
+            topologyKey: topology.kubernetes.io/region
+
+trivy:
+  enabled: false
+  image:
+    repository: ppkg.tig.vrtx.sh/sophons/trivy-adapter-photon
+    tag: v2.14.0
+
+exporter:
+  image:
+    repository: ppkg.tig.vrtx.sh/sophons/harbor-exporter
+    tag: v2.14.0

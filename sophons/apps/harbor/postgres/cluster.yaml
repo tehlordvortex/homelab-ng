@@ -1,0 +1,36 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  namespace: harbor
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.5
+
+  instances: 3
+  affinity:
+    nodeSelector:
+      hugeloads.sophons.cloud/postgres: "true"
+    enablePodAntiAffinity: true # Default value
+    topologyKey: topology.kubernetes.io/zone
+    podAntiAffinityType: required
+
+  postgresql:
+    parameters:
+      shared_buffers: "48MB"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+  storage:
+    storageClass: longhorn-local
+    size: 1Gi
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: pgbooze

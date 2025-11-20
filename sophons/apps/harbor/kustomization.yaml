@@ -1,0 +1,6 @@
+namespace: harbor
+resources:
+  - secret.sops.yaml
+  - dnsendpoint.yaml
+  - postgres/cluster.yaml
+  - postgres/objectstore.yaml

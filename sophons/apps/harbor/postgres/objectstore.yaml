@@ -1,0 +1,21 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: pgbooze
+  namespace: harbor
+spec:
+  configuration:
+    destinationPath: s3://pgbooze/sophons/harbor
+    endpointURL: https://s3.eu-central-003.backblazeb2.com
+    s3Credentials:
+      accessKeyId:
+        name: barman-access-key
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: barman-access-key
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: zstd
+    data:
+      compression: bzip2
+  retentionPolicy: 7d

@@ -7,24 +7,12 @@
 applicationProtocol: https
 applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:qz2rikaM3Qee6UBSUuJpmLl4eogVQzuAQ0DZ65pmPmAJklReLuImwgDRzQ9FQJPk,iv:U1vE2wOA3+0Fo1T5a+nA7tnDfB1h0kBrbjXpULRA0OQ=,tag:Qz5FXd9B6EQ0qb917BYf4A==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:fY/OzWkxBPp0VU/Lz47V+U04LAKoj0UrRnd7I/KLhEe8jjddF/4m8wPlrQkiuT2e,iv:c++SSFv5rEfgKMnIFqpoAHUm9iMRXhV4yJGGkkZGAEY=,tag:CIINI0r6qsT+oHYvOr8NgQ==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:OQq+lFyerfu3gEJaMtaVoW1EdV+MSK8TLvPplXhb,iv:jnEpoggNAOmLsRaKT+GptHdUxMEYqJetcRWkiLp7ISE=,tag:cSJ0vLE+4cBU4GpPzqwiLw==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:D7KgM7tFWXDOB2HY+mDrE7xpc/pB1Kirdt690y6j,iv:Xj6IgPFB+bD8Ln7M8hoXqPVSCIEEcLKJB4cVrXyUIXw=,tag:KsoW44I915eEB0Ao8diEZA==,type:str]
 ingress:
   karakeep:
     enabled: false
-    # annotations:
-    #   gethomepage.dev/description: Hoard all the things!
-    #   gethomepage.dev/enabled: "true"
-    #   gethomepage.dev/group: Second brain
-    #   gethomepage.dev/icon: karakeep.png
-    #   gethomepage.dev/name: Karakeep
-    #   external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
-    #   cert-manager.io/cluster-issuer: letsencrypt-prod
-    # tls:
-    #   - hosts:
-    #       - "*.sophons.cloud"
-    #     secretName: karakeep-tls
 controllers:
   karakeep:
     type: deployment
@@ -35,13 +23,12 @@ controllers:
       karakeep:
         image:
           tag: 0.28.0
+        # Next.js is a plague :(
         resources:
           requests:
-            cpu: 50m
-            memory: 128Mi
+            cpu: 150m
+            memory: 300Mi
           limits:
-            # Next.js is a plague :(
-            cpu: 850m
             memory: 756Mi
         envFrom:
           - secretRef:
@@ -60,7 +47,7 @@ controllers:
           ASSET_STORE_S3_BUCKET: sophons-karakeep
           ASSET_STORE_S3_FORCE_PATH_STYLE: "true"
           OAUTH_WELLKNOWN_URL: https://auth.sophons.cloud/.well-known/openid-configuration
-          OAUTH_CLIENT_ID: OL.LOB-j9of8ut9bmhjN~sEddOQGQYABpcZZHCUYaagHzi6Xl76kxcZgCNPaE2NI4JzXttD4
+          OAUTH_CLIENT_ID: sphns_q1F-KFdfxuwpzFejpdac311zzc65t0eiT.X1Vu3mE5
           OAUTH_PROVIDER_NAME: Authelia
           OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING: "true"
           # 15s
@@ -169,7 +156,7 @@ controllers:
       chrome:
         args:
           # FIXME: CHROME SANDBOX
-          - --no-sandbox
+          # - --no-sandbox
           - --remote-debugging-address=0.0.0.0
           - --remote-debugging-port=9222
           - --headless
@@ -177,19 +164,23 @@ controllers:
           - --disable-gpu
           - --disable-dev-shm-usage
         securityContext:
+          runAsNonRootUser: true
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
           capabilities:
-            drop:
-              - ALL
-            add: []
+            add:
+              - SYS_ADMIN
           seccompProfile:
             type: RuntimeDefault
-        # TODO: WHY WON'T THIS SHIT WORK
-        # seccompProfile:
-        #   type: Localhost
-        #   localhostProfile: profiles/chrome.json
+            # # TODO: WHY WON'T THIS SHIT WORK
+            # seccompProfile:
+            #   type: Localhost
+            #   localhostProfile: profiles/chrome.json
         resources:
           requests:
             cpu: 100m
+          limits:
+            cpu: null
 persistence:
   data:
     type: emptyDir
@@ -210,18 +201,18 @@ persistence:
   #     karakeep:
   #       tailscale:
   #         - path: /var/lib/tailscale
-  # chrome-tmp:
-  #   type: emptyDir
-  #   advancedMounts:
-  #     chrome:
-  #       chrome:
-  #         - path: /tmp
-  # chrome-home:
-  #   type: emptyDir
-  #   advancedMounts:
-  #     chrome:
-  #       chrome:
-  #         - path: /home/chrome
+  chrome-tmp:
+    type: emptyDir
+    advancedMounts:
+      chrome:
+        chrome:
+          - path: /tmp
+  chrome-home:
+    type: emptyDir
+    advancedMounts:
+      chrome:
+        chrome:
+          - path: /home/chrome
   # chrome-cache:
   #   type: emptyDir
   #   advancedMounts:
@@ -254,23 +245,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBaOWR2
-        b2Z1TkV6SitFU3c5SDBPK0RnMzBlMVBiM1FrN242eEVXQUVsVkJ3ClVlUEQrWWpI
-        TVpUZXlMdDV5bkhoUjJjSTNXQ3I0VzVCNnZtMEQ4SGpxYlUKLS0tIGJmNTFNQjBw
-        bTMzRkx4TVBZNURWbys5WDF5OTVLdGdMU25icmZ2VlduYTQKhJs21diJtqYp4c3n
-        CR7zZxfAR0M/0BfYH/PMGI1LGnLL+2XbijJqOUgcC4df2sfcfVyAt6xwU6KZNTAT
-        bbeHxA==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBQbi9n
+        WW1reXpVT0dkeVlPZlkxdjFteXlpeElEbmxtY2ZXNFdHSHdTdjFzCjkyM2xzY3l1
+        RG5XbVF1b0w2ZkpJOXBMb1NJYWowUEVkWk5jbXV0OE5KM1kKLS0tIHFLQi9CZEZ6
+        Z1ppNmVYc2xvdUViTlFPRlh3TDhRSjBwMURReDlsTkV4TU0K8ggMlKD6km/E7L6J
+        tDPYkMnX7uhdju0cByBJdxZRAQ7OBMghCCqS/R4ZcS2tE/pk9QwyJbLn4S4i6ZLm
+        /qvaDw==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBieDBGWGo4MUdEdlFkNDZL
-        d2lEY2g3QUdLTGV0NlphcEsrbGZXUGJuUzJJCnd5V2FIQkFJZjd5d00vWHo5QlNu
-        djJzOU5FeVNYWis0dHFORjMrSlExYU0KLS0tIGVPYU9KSlUzOVpuRnNSWmpJMHlP
-        cURGL3hVZDExZ21wR3lvOWFKenpwc3MKGdcNP6ujZdlw9lKvjhCrsiMqeYofIdbB
-        SN3c/QHenx46GBt28nvbfjbrkPInTBZyDcfDgKvaaUGe3XqiY1/spQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB5K0U2cmRXb28xZmJlY0M0
+        WXZBWS9UMlBWSE45SXZ5dGMxLzJuRTYybmx3CithS0FvSTNqSGxRSnZ0dzVPbE1x
+        MmVCQTE0WG5Ld0RWNnpXUGxQU29va28KLS0tIEpCejVvbXVxbjhONTJrTUs2c3hZ
+        TGlrQ0dxUVk1YzVuMUZNR3JoNlc3azQK3pC18KAp9H7PrLiZxd4+ldx2UqN8idik
+        pB7g69BnSFVbQQNIy/A9xXpkmW68IRWjf8URaBQU8dSic8L/ay0xGg==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-14T13:56:15Z"
-  mac: ENC[AES256_GCM,data:J0ynuSrvV3m5Z8EaNuxyF15nYgQex4PIMeZYJvsFcSBrDNQ5tLaHAuokWZud7z0U9N4fRgqJuUpiE/toj4OXlg5v6aK8VxG+1tlHKDzy73JDpPSnndBANP6CdBfeYioHSQNZL9K+jGJlvyhllDQ/b4g8xcXt0qGluzFtaN9t/O4=,iv:ZfPQNdhWtx8LyFsdgzLAMekWrqU0bh/UcMGDcAe86Zg=,tag:dLRCQ9SDwzJuKFVtzefq8w==,type:str]
+  lastmodified: "2025-11-20T00:40:56Z"
+  mac: ENC[AES256_GCM,data:yuvBGKc2q1z15NeGd/L0BIN840Ugqi9K25YCKnH9HVv4qau97Kfw30bVOoE8gOutC0oa+F46FXaFziJITzg5rrspAH7G+fcRlO7HGBAGjiDOqN4jL/pk2cfLqjZXhG3uKI/Er6tspIUjYj0zqeRJRXqYs8F2SZnKwJVyAtJXHt4=,iv:i2LI+AKGD8LfvSPg+l10Nex1kEUtaVZvjZV3UwXtU7I=,tag:SDlUo+c7GT2J6Gf2akg28w==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

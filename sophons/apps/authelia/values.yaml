@@ -4,14 +4,6 @@ persistence:
 
 ingress:
   enabled: false
-  # className: traefik
-  # annotations:
-  #   cert-manager.io/cluster-issuer: letsencrypt-prod
-  #   external-dns.alpha.kubernetes.io/target: traefik-sango-star-theta.sophons.cloud
-  #   traefik.ingress.kubernetes.io/router.entrypoints: websecure
-  # certManager: true
-  # tls:
-  #   enabled: true
   traefikCRD:
     enabled: true
     disableIngressRoute: true
@@ -134,13 +126,80 @@ configMap:
       jwks:
         - key:
             path: /secrets/authelia/oidc.jwk.rs256.pem
+      claims_policies:
+        karakeep:
+          id_token: [email]
+        headscale:
+          id_token: [email, groups]
       clients:
         - client_name: Karakeep
-          client_id: "OL.LOB-j9of8ut9bmhjN~sEddOQGQYABpcZZHCUYaagHzi6Xl76kxcZgCNPaE2NI4JzXttD4"
+          client_id: "sphns_q1F-KFdfxuwpzFejpdac311zzc65t0eiT.X1Vu3mE5"
           client_secret:
             path: "/secrets/authelia/oidc.client.karakeep.digest"
           redirect_uris:
             - https://holding.sophons.cloud/api/auth/callback/custom
+          # workaround because karakeep doesn't actually implement oidc correctly:
+          # https://www.authelia.com/integration/openid-connect/clients/karakeep/#configuration-escape-hatch
+          claims_policy: karakeep
+          scopes:
+            - openid
+            - profile
+            - email
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
+        - client_name: Gitea
+          client_id: "sphns_cufg6XmWtrPDXfNi_lOfqr2pHP2wdVkF_OKNeIrKye"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.gitea.digest"
+          redirect_uris:
+            - https://tig.vrtx.sh/user/oauth2/authelia/callback
+          scopes:
+            - openid
+            - email
+            - profile
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
+        - client_name: Harbor
+          client_id: "sphns_RcLbPRn4w1MOETla2DzD3sYe3msk_oRvFHFl8WoPop"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.harbor.digest"
+          redirect_uris:
+            - https://harbor.sophons.cloud/c/oidc/callback
+            - https://oci.sphns.run/c/oidc/callback
+          scopes:
+            - openid
+            - offline_access
+            - profile
+            - groups
+            - email
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
+            - refresh_token
+        - client_name: Headscale
+          client_id: "sphns_NOVzB7ZaA_wjYbmD_GnTrX2SiUKFZmTL7zSEASd~tG"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.headscale.digest"
+          require_pkce: true
+          pkce_challenge_method: "S256"
+          # https://www.authelia.com/integration/openid-connect/clients/headscale/#configuration-escape-hatch
+          claims_policy: headscale
+          redirect_uris:
+            - https://hs.vrtx.sh/oidc/callback
+          scopes:
+            - openid
+            - profile
+            - groups
+            - email
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
 
 secret:
   existingSecret: authelia
@@ -149,3 +208,5 @@ secret:
       items:
         - key: oidc.jwk.rs256.pem
         - key: oidc.client.karakeep.digest
+        - key: oidc.client.gitea.digest
+        - key: oidc.client.harbor.digest

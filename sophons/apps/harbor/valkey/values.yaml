@@ -1,0 +1,19 @@
+commonLabels:
+  app.kubernetes.io/component: cache
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "32Mi"
+  limits:
+    memory: "128Mi"
+
+affinity:
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              cnpg.io/instanceRole: primary
+          topologyKey: topology.kubernetes.io/region

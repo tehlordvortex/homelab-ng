@@ -1,0 +1,32 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: harbor
+  namespace: harbor
+spec:
+  endpoints:
+    - dnsName: harbor.sophons.cloud
+      recordType: CNAME
+      targets:
+        - traefik-star-theta.sophons.cloud
+    - dnsName: oci.sphns.run
+      recordType: CNAME
+      targets:
+        - traefik-sango-noproxy.sophons.cloud
+      providerSpecific:
+        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
+          value: "false"
+    - dnsName: poci.sphns.run
+      recordType: A
+      targets:
+        - 10.43.69.0
+      providerSpecific:
+        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
+          value: "false"
+    - dnsName: poci.sphns.run
+      recordType: AAAA
+      targets:
+        - 2001:cafe:43::69
+      providerSpecific:
+        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
+          value: "false"

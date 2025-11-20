@@ -12,6 +12,7 @@
   - <https://www.cloudflare.com/ips-v4>
 - `docker run --rm authelia/authelia:latest authelia crypto rand --length 72 --charset rfc3986`
   - <https://www.authelia.com/configuration/identity-providers/openid-connect/clients/>
+  - `docker run --rm authelia/authelia:latest authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 64 --random.charset rfc3986 --iterations=100000`
 - sysctl: user.max_user_namespaces must be > 0 for container inception.
   - todo: is this why chrome didn't work?
 - <https://web.archive.org/web/20220805232857/https://home.robusta.dev/blog/stop-using-cpu-limits/>
