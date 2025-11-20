@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1/service.json
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,23 +6,6 @@ metadata:
   namespace: ntfy
 spec:
   type: ClusterIP
-  selector:
-    app.kubernetes.io/name: ntfy
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
----
-# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1/service.json
-apiVersion: v1
-kind: Service
-metadata:
-  name: ntfy-internal
-  namespace: ntfy
-  annotations:
-    metallb.io/address-pool: internal
-spec:
-  type: LoadBalancer
   selector:
     app.kubernetes.io/name: ntfy
   ports:
