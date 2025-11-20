@@ -167,8 +167,7 @@ gitea:
       DISABLE_REGISTRATION: true
 
     openid:
-      ENABLE_OPENID_SIGNIN: true
-      # WHITELISTED_URIS: 'auth.sophons.cloud'
+      WHITELISTED_URIS: "auth.sophons.cloud"
 
     cache:
       ADAPTER: redis

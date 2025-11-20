@@ -1,9 +1,10 @@
 namespace: ntfy
 resources:
   - service.yaml
+  - httproute.yaml
   - deployment.yaml
   - secret.sops.yaml
-  - ingressroute.yaml
+  - dnsendpoint.yaml
 
 configMapGenerator:
   - name: litestream

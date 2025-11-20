@@ -1,10 +1,12 @@
 namespace: homepage
 resources:
   - service.yaml
+  - httproute.yaml
   - deployment.yaml
+  - dnsendpoint.yaml
   - clusterrole.yaml
-  - ingressroute.yaml
   - serviceaccount.yaml
+  - traefikservice.yaml
 
 configMapGenerator:
   - name: homepage

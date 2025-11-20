@@ -1,7 +1,8 @@
 namespace: authelia
 resources:
+  - httproute.yaml
   - secret.sops.yaml
-  - ingressroute.yaml
+  - dnsendpoint.yaml
 
 configMapGenerator:
   - name: authelia-users

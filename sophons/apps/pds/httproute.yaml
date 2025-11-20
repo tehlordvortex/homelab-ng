@@ -1,0 +1,52 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bluesky-pds
+  namespace: bluesky
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Bluesky Personal Data Server
+    gethomepage.dev/group: Admin
+    gethomepage.dev/icon: bluesky.svg
+    gethomepage.dev/name: Bluesky PDS
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: web
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - pds.vrtx.sh
+
+  rules:
+    - backendRefs:
+        - name: bluesky-pds
+          port: 3000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bluesky-profile
+  namespace: bluesky
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: web
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - bsky.vrtx.sh
+
+  rules:
+    - filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: redirect-to-bsky-app

@@ -7,9 +7,10 @@ labels:
 
 resources:
   - service.yaml
+  - httproute.yaml
   - deployment.yaml
   - middleware.yaml
+  - dnsendpoint.yaml
   - secret.sops.yaml
-  - ingressroute.yaml
   - serviceaccount.yaml
   - persistentvolumeclaim.yaml

@@ -1,14 +1,39 @@
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
-  name: gitea-ssh
+  name: gitea
   namespace: gitea
 spec:
   endpoints:
+    - dnsName: tig.vrtx.sh
+      recordType: CNAME
+      targets:
+        - traefik-star-theta.sophons.cloud
     - dnsName: ssh.tig.vrtx.sh
       recordType: CNAME
       targets:
         - traefik-sango-noproxy.sophons.cloud
+      providerSpecific:
+        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
+          value: "false"
+    - dnsName: pkg.tig.vrtx.sh
+      recordType: CNAME
+      targets:
+        - traefik-sango-noproxy.sophons.cloud
+      providerSpecific:
+        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
+          value: "false"
+    - dnsName: ppkg.tig.vrtx.sh
+      recordType: A
+      targets:
+        - 10.43.69.0
+      providerSpecific:
+        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
+          value: "false"
+    - dnsName: ppkg.tig.vrtx.sh
+      recordType: AAAA
+      targets:
+        - 2001:cafe:43::69
       providerSpecific:
         - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
           value: "false"

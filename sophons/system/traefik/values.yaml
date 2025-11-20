@@ -25,6 +25,11 @@ ports:
       kaos: true
       starlink: true
       theta: true
+    redirections:
+      entryPoint:
+        to: websecure
+        scheme: https
+        permanent: true
     middlewares:
       - crowdsec-crowdsec-bouncer@kubernetescrd
 
@@ -157,7 +162,12 @@ service:
   spec:
     trafficDistribution: PreferSameZone
     internalTrafficPolicy: Local
+    ipFamilies: ["IPv4", "IPv6"]
+    ipFamilyPolicy: RequireDualStack
     clusterIP: 10.43.69.0
+    clusterIPs:
+      - 10.43.69.0
+      - 2001:cafe:43::69
 
   additionalServices:
     internal:
@@ -216,6 +226,7 @@ providers:
     enabled: true
     nativeLBByDefault: true
     allowCrossNamespace: true
+    experimentalChannel: true
 
 gateway:
   listeners:
@@ -224,6 +235,16 @@ gateway:
       protocol: HTTP
       namespacePolicy:
         from: All
+    websecure: # HTTPS listener that matches entryPoint `websecure`
+      port: 443
+      mode: Terminate
+      protocol: HTTPS
+      namespacePolicy:
+        from: All
+      certificateRefs:
+        - kind: Secret
+          group: ""
+          name: traefik-gateway-tls
 
 deployment:
   kind: DaemonSet

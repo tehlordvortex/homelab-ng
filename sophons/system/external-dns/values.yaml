@@ -21,6 +21,7 @@ sources:
   - service
   - ingress
   - traefik-proxy
+  - gateway-httproute
 
 resources:
   requests:

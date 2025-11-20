@@ -1,0 +1,11 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: karakeep
+  namespace: karakeep
+spec:
+  endpoints:
+    - dnsName: holding.sophons.cloud
+      recordType: CNAME
+      targets:
+        - traefik-star-theta.sophons.cloud

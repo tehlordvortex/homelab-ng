@@ -1,0 +1,79 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gitea
+  namespace: gitea
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: Gitea
+    gethomepage.dev/icon: gitea.svg
+    gethomepage.dev/group: Code & Packages
+    gethomepage.dev/description: My own gitty git
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: web
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - tig.vrtx.sh
+
+  rules:
+    - backendRefs:
+        - name: gitea-http
+          port: 3000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gitea-pkg
+  namespace: gitea
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: web
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - pkg.tig.vrtx.sh
+
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2
+      backendRefs:
+        - name: gitea-http
+          port: 3000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gitea-pkg-cluster
+  namespace: gitea
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: web
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - ppkg.tig.vrtx.sh
+
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2
+      backendRefs:
+        - name: gitea-http
+          port: 3000

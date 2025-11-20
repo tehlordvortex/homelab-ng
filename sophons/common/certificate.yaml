@@ -1,46 +1,35 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: wildcard-sophons-cloud
+  name: traefik-gateway
 spec:
-  secretName: wildcard-sophons-cloud-tls
+  secretName: traefik-gateway-tls
 
   secretTemplate:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
       reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: >
-        ntfy,
-        authelia,
-        karakeep,
-        homepage
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: traefik
 
   dnsNames:
-    - "*.sophons.cloud"
-    - "sophons.cloud"
-
-  issuerRef:
-    name: letsencrypt-prod
-    kind: ClusterIssuer
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: wildcard-vrtx-sh
-spec:
-  secretName: wildcard-vrtx-sh-tls
-
-  secretTemplate:
-    annotations:
-      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
-      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: >
-        gitea,
-        bluesky
-
-  dnsNames:
-    - "*.vrtx.sh"
     - "vrtx.sh"
+    - "*.vrtx.sh"
+    - "*.tig.vrtx.sh"
+
+    - "vrtx.run"
+    - "*.vrtx.run"
+
+    - "sphns.run"
+    - "*.sphns.run"
+
+    - "kaos.nexus"
+    - "*.kaos.nexus"
+
+    - "sophons.cloud"
+    - "*.sophons.cloud"
+
+    - "victorakinyemi.com"
+    - "*.victorakinyemi.com"
 
   issuerRef:
     name: letsencrypt-prod
