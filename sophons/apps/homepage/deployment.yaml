@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,6 +20,9 @@ spec:
       labels:
         app.kubernetes.io/name: homepage
     spec:
+      imagePullSecrets:
+        - name: harbor-pull-cred
+
       serviceAccountName: homepage
       automountServiceAccountToken: true
       dnsPolicy: ClusterFirst
@@ -26,7 +30,7 @@ spec:
 
       containers:
         - name: homepage
-          image: "ghcr.io/gethomepage/homepage:v1.7.0"
+          image: "poci.sphns.run/proxy-ghcr.io/gethomepage/homepage:v1.7.0"
           imagePullPolicy: Always
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS

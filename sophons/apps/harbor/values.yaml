@@ -75,7 +75,7 @@ portal:
             labelSelector:
               matchLabels:
                 cnpg.io/instanceRole: primary
-            topologyKey: topology.kubernetes.io/region
+            topologyKey: topology.kubernetes.io/zone
 
 core:
   image:
@@ -90,7 +90,7 @@ core:
             labelSelector:
               matchLabels:
                 cnpg.io/instanceRole: primary
-            topologyKey: topology.kubernetes.io/region
+            topologyKey: topology.kubernetes.io/zone
 
 jobservice:
   image:
@@ -108,7 +108,7 @@ jobservice:
             labelSelector:
               matchLabels:
                 cnpg.io/instanceRole: primary
-            topologyKey: topology.kubernetes.io/region
+            topologyKey: topology.kubernetes.io/zone
 
 registry:
   registry:
@@ -128,7 +128,7 @@ registry:
             labelSelector:
               matchLabels:
                 cnpg.io/instanceRole: primary
-            topologyKey: topology.kubernetes.io/region
+            topologyKey: topology.kubernetes.io/zone
 
 trivy:
   enabled: false

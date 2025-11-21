@@ -1,0 +1,47 @@
+server_url: https://hs.vrtx.sh
+listen_addr: 0.0.0.0:8080
+metrics_listen_addr: 0.0.0.0:8081
+grpc_listen_addr: 0.0.0.0:50051
+grpc_allow_insecure: true
+
+log:
+  level: info
+
+noise:
+  private_key_path: /etc/headscale/noise_private.key
+
+policy:
+  mode: database
+
+database:
+  type: sqlite
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+    write_ahead_log: true
+
+prefixes:
+  v6: fd7a:115c:a1e0::/48
+  v4: 100.64.0.0/10
+  allocation: random
+
+derp:
+  server:
+    enabled: false
+
+  urls:
+    - https://controlplane.tailscale.com/derpmap/default
+
+dns:
+  magic_dns: true
+  base_domain: ts.vrtx.sh
+  nameservers:
+    global:
+      - 100.108.44.71
+  search_domains: []
+
+oidc:
+  issuer: https://auth.sophons.cloud
+  client_id: sphns_NOVzB7ZaA_wjYbmD_GnTrX2SiUKFZmTL7zSEASd~tG
+  client_secret_path: /etc/headscale/oidc_client.secret
+  pkce:
+    enabled: true

@@ -1,0 +1,280 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: headscale
+  namespace: headscale
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: headscale
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: headscale
+    spec:
+      imagePullSecrets:
+        - name: harbor-pull-cred
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: lightstream-replicate
+          image: poci.sphns.run/proxy-docker.io/litestream/litestream:0.5.2
+          args: ["replicate", "-config=/etc/litestream/litestream.yaml"]
+          envFrom:
+            - secretRef:
+                name: litestream-access-key
+          env:
+            - name: GOMEMLIMIT
+              value: 120MiB
+
+          ports:
+            - name: ls-metrics
+              containerPort: 9090
+
+          volumeMounts:
+            - name: headscale
+              mountPath: "/var/lib/headscale"
+              subPath: data
+            - name: headplane
+              mountPath: "/var/lib/headplane"
+            - name: litestream
+              mountPath: "/etc/litestream"
+              readOnly: true
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        - name: headscale
+          image: poci.sphns.run/proxy-ghcr.io/juanfont/headscale:v0.27.1
+          args: ["serve"]
+
+          env:
+            - name: GOMEMLIMIT
+              value: 240MiB
+
+          ports:
+            - containerPort: 8080
+              name: hs-http
+            - containerPort: 8081
+              name: hs-metrics
+            - containerPort: 50051
+              name: hs-grpc
+
+          volumeMounts:
+            - name: headscale
+              mountPath: /var/lib/headscale
+              subPath: data
+            - name: headscale
+              mountPath: /var/run/headscale
+              subPath: run
+            - name: config
+              mountPath: "/etc/headscale/config.yaml"
+              subPath: headscale.yaml
+              readOnly: true
+            - name: secret
+              mountPath: "/etc/headscale/noise_private.key"
+              subPath: noise_private.key
+              readOnly: true
+            - name: secret
+              mountPath: /etc/headscale/oidc_client.secret
+              subPath: oidc_client.secret
+
+          livenessProbe:
+            exec:
+              command: ["headscale", "health"]
+
+          readinessProbe:
+            exec:
+              command: ["headscale", "health"]
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+        - name: headplane
+          image: poci.sphns.run/proxy-ghcr.io/tale/headplane:0.6.1-shell
+
+          ports:
+            - containerPort: 3000
+              name: hp-http
+
+          env:
+            - name: HEADPLANE_LOAD_ENV_OVERRIDES
+              value: "true"
+            - name: HEADPLANE_SERVER__COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: headscale
+                  key: cookie.secret
+            - name: HEADPLANE_INTEGRATION__AGENT__PRE_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: headscale
+                  key: agent_preauth.key
+            - name: HEADPLANE_OIDC__HEADSCALE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: headscale
+                  key: headscale_api.key
+
+          volumeMounts:
+            - name: headplane
+              mountPath: /var/lib/headplane
+            - name: config
+              mountPath: "/etc/headplane/config.yaml"
+              subPath: headplane.yaml
+              readOnly: true
+            - name: config
+              mountPath: "/etc/headscale/config.yaml"
+              subPath: headscale.yaml
+              readOnly: true
+            - name: secret
+              mountPath: /etc/headscale/oidc_client.secret
+              subPath: oidc_client.secret
+
+          livenessProbe:
+            httpGet:
+              path: /admin/healthz
+              port: hp-http
+          readinessProbe:
+            httpGet:
+              path: /admin/healthz
+              port: hp-http
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+
+      initContainers:
+        - name: lightstream-restore-headscale
+          image: poci.sphns.run/proxy-docker.io/litestream/litestream:0.5.2
+          args:
+            [
+              "restore",
+              "-config=/etc/litestream/litestream.yaml",
+              "-if-db-not-exists",
+              "-if-replica-exists",
+              "/var/lib/headscale/db.sqlite",
+            ]
+
+          envFrom:
+            - secretRef:
+                name: litestream-access-key
+          env:
+            - name: GOMEMLIMIT
+              value: 120MiB
+
+          volumeMounts:
+            - name: headscale
+              mountPath: "/var/lib/headscale"
+              subPath: data
+            - name: litestream
+              mountPath: "/etc/litestream"
+              readOnly: true
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        - name: lightstream-restore-headplane
+          image: poci.sphns.run/proxy-docker.io/litestream/litestream:0.5.2
+          args:
+            [
+              "restore",
+              "-config=/etc/litestream/litestream.yaml",
+              "-if-db-not-exists",
+              "-if-replica-exists",
+              "/var/lib/headplane/hp_persist.db",
+            ]
+
+          envFrom:
+            - secretRef:
+                name: litestream-access-key
+          env:
+            - name: GOMEMLIMIT
+              value: 120MiB
+
+          volumeMounts:
+            - name: headplane
+              mountPath: "/var/lib/headplane"
+            - name: litestream
+              mountPath: "/etc/litestream"
+              readOnly: true
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+      volumes:
+        - name: config
+          configMap:
+            name: headscale
+        - name: secret
+          secret:
+            secretName: headscale
+        - name: litestream
+          configMap:
+            name: litestream
+        - name: headscale
+          emptyDir: {}
+        - name: headplane
+          emptyDir: {}

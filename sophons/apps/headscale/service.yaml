@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: headscale
+  namespace: headscale
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: hs-http
+      protocol: TCP
+      name: http
+    - port: 8081
+      targetPort: hs-metrics
+      protocol: TCP
+      name: metrics
+    - port: 50051
+      targetPort: hs-grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app.kubernetes.io/name: headscale
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: headplane
+  namespace: headscale
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: hp-http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: headscale

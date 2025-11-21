@@ -1,0 +1,26 @@
+# prometheus
+addr: ":9090"
+
+dbs:
+  - path: /var/lib/headscale/db.sqlite
+    replica:
+      type: s3
+      path: headscale/db.sqlite
+      force-path-style: true
+      bucket: ${LITESTREAM_BUCKET}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+      retention: ${LITESTREAM_RETENTION}
+      validation-interval: ${LITESTREAM_VALIDATION_INTERVAL}
+      snapshot-interval: ${LITESTREAM_SNAPSHOT_INTERVAL}
+  - path: /var/lib/headplane/hp_persist.db
+    replica:
+      type: s3
+      path: headplane/hp_persist.db
+      force-path-style: true
+      bucket: ${LITESTREAM_BUCKET}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+      retention: ${LITESTREAM_RETENTION}
+      validation-interval: ${LITESTREAM_VALIDATION_INTERVAL}
+      snapshot-interval: ${LITESTREAM_SNAPSHOT_INTERVAL}

@@ -1,0 +1,33 @@
+server:
+  host: "0.0.0.0"
+  port: 3000
+
+  # Ensure that this is exactly 32 characters long
+  # env override
+  cookie_secret: "<change_me_to_something_secure!>"
+  cookie_secure: false
+  cookie_max_age: 86400 # 1 day in seconds
+  data_path: "/var/lib/headplane"
+
+headscale:
+  url: "http://localhost:8080"
+  public_url: "https://hs.vrtx.sh"
+  config_path: "/etc/headscale/config.yaml"
+  config_strict: true
+
+integration:
+  agent:
+    enabled: true
+    # env override
+    pre_authkey: "<your-preauth-key>"
+
+oidc:
+  issuer: "https://auth.sophons.cloud"
+  client_id: sphns_NOVzB7ZaA_wjYbmD_GnTrX2SiUKFZmTL7zSEASd~tG
+  client_secret_path: /etc/headscale/oidc_client.secret
+  scope: "openid email profile groups"
+  # env override
+  headscale_api_key: "<your-headscale-api-key>"
+  disable_api_key_login: false
+  token_endpoint_auth_method: "client_secret_basic"
+  # redirect_uri: "http://localhost:3000/admin/oidc/callback"

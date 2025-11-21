@@ -191,6 +191,7 @@ configMap:
           claims_policy: headscale
           redirect_uris:
             - https://hs.vrtx.sh/oidc/callback
+            - https://hs.vrtx.sh/admin/oidc/callback
           scopes:
             - openid
             - profile
@@ -210,3 +211,4 @@ secret:
         - key: oidc.client.karakeep.digest
         - key: oidc.client.gitea.digest
         - key: oidc.client.harbor.digest
+        - key: oidc.client.headscale.digest

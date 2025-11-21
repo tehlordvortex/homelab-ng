@@ -16,4 +16,4 @@ affinity:
           labelSelector:
             matchLabels:
               cnpg.io/instanceRole: primary
-          topologyKey: topology.kubernetes.io/region
+          topologyKey: topology.kubernetes.io/zone

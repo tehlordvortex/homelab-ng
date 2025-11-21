@@ -1,0 +1,35 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: headscale
+  namespace: headscale
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Self-hosted Tailscale control plane
+    gethomepage.dev/href: "https://hs.vrtx.sh/admin"
+    gethomepage.dev/group: Admin
+    gethomepage.dev/icon: headscale.svg
+    gethomepage.dev/name: Headscale
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: web
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - hs.vrtx.sh
+
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /admin
+      backendRefs:
+        - name: headplane
+          port: 3000
+    - backendRefs:
+        - name: headscale
+          port: 8080

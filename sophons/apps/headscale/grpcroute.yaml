@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GRPCRoute
+metadata:
+  name: headscale
+  namespace: headscale
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - gghs.vrtx.sh
+
+  rules:
+    - backendRefs:
+        - name: headscale
+          port: 50051

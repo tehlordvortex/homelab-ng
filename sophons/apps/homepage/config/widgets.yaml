@@ -9,14 +9,10 @@
       show: false
 
 - longhorn:
-  # Show the expanded view
-  expanded: true
-  # Shows a node representing the aggregate values
-  total: true
-  # Shows the node names as labels
-  labels: true
-  # Show the nodes
-  nodes: true
+    expanded: true
+    total: true
+    labels: true
+    nodes: false
 
 - search:
     provider: custom

@@ -1,0 +1,25 @@
+namespace: headscale
+labels:
+  - pairs:
+      app.kubernetes.io/name: headscale
+      app.kubernetes.io/version: 0.27.1
+resources:
+  - service.yaml
+  - grpcroute.yaml
+  - httproute.yaml
+  - deployment.yaml
+  - dnsendpoint.yaml
+  - secret.sops.yaml
+
+configMapGenerator:
+  - name: headscale
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/headscale.yaml
+      - config/headplane.yaml
+  - name: litestream
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/litestream.yaml
