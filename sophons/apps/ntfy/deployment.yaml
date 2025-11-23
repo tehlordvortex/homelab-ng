@@ -20,18 +20,29 @@ spec:
         app.kubernetes.io/name: ntfy
     spec:
       tolerations:
+        - key: prime.sophons.cloud
+          operator: Exists
         - key: "orunmila.sophons.cloud/ase-orun"
           operator: Exists
+
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 1
+            - weight: 10
               preference:
                 matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - sophons-oduduwa
+                  - key: topology.kubernetes.io/zone
+                    operator: NotIn
+                    # avoid running inside me house if possible
+                    values: [ng-east-1, ng-east-2, ng-middle-east]
+
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
 
       containers:
         - name: ntfy
@@ -55,6 +66,11 @@ spec:
               memory: 30Mi
             limits:
               memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
 
         - name: lightstream-replicate
           image: docker.io/litestream/litestream:0.5.2
@@ -74,6 +90,11 @@ spec:
             - name: litestream
               mountPath: "/etc/litestream"
               readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
 
       initContainers:
         - name: lightstream-restore-cache
@@ -95,6 +116,11 @@ spec:
             - name: litestream
               mountPath: "/etc/litestream"
               readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
 
         - name: lightstream-restore-webpush
           image: docker.io/litestream/litestream:0.5.2
@@ -115,6 +141,11 @@ spec:
             - name: litestream
               mountPath: "/etc/litestream"
               readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
 
       volumes:
         - name: config
