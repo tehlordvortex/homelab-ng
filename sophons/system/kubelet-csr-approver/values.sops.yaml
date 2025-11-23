@@ -1,36 +1,37 @@
 # Required configuration item
 providerRegex: ^sophons-.+$
+bypassDnsResolution: true
 # providerIpPrefixes:
 #   - 10.69.0.0/16
 #   - 10.42.0.0/16
 #   # enc!
-#ENC[AES256_GCM,data:K2fteaxBf8QgzDMzT9WsgbNOQRPzVZMjFA5+DA==,iv:f02t7peD2C+XdNgT7/hewcoxttlow/jjVGb3/UrieFA=,tag:YYaLXWls9cxxcnd1/dYBLg==,type:comment]
-#ENC[AES256_GCM,data:TUQPblgWu1Eg,iv:r038dqW4QTQgPuKtvB8eyWtqqdu7ykkCm4NvAfPoAcI=,tag:KiZyPUb78quO/swRiSyoBw==,type:comment]
-#ENC[AES256_GCM,data:FsmPulGTL6CictEjYFexDxR6EA==,iv:xnIx6fH79Q9/g2vJQxXTu7glOFQUIh/4FYTFXVl/0kc=,tag:eIKfAqYZwrHSEyXklspxNA==,type:comment]
-#ENC[AES256_GCM,data:4VTEcP0MrgcH,iv:wLC3ZOLR8ecgoDkzVQ4obEA11fRvqgF16YzAo7LmW3g=,tag:AvlChTLyljI48wiffbs4Rg==,type:comment]
-#ENC[AES256_GCM,data:TGIufyDR9xqwWTvcOPswexaryvhDynnyP2T0,iv:Gr5KY0Lbwnx4MVR//2MhY0Ztwyd2PHAknyrc6tDZE5I=,tag:6Oe1R2ELhSNewbWEvHRnXw==,type:comment]
+#ENC[AES256_GCM,data:jBfv48hEtlHO4O9v/sjcM5QeI5mBTPtN+npyOA==,iv:j/FxCtVnmtyET8eznr/KupPyYIFwayInXEvi3aVZurY=,tag:zMTGqHIeDrxZ5MPi90ddAQ==,type:comment]
+#ENC[AES256_GCM,data:teczcA7squFE,iv:vheSmcBN57awoXr+3uV7dPPsoSn9/Pm21h8Mjn9yYIY=,tag:8CTffFYjLuZV5VSN2yUnTw==,type:comment]
+#ENC[AES256_GCM,data:d4Q8l0en6Ksq90tdjPQ5VRpAIg==,iv:6xkhvlH1bZRwyKYJlMZ+1uMVqUhYv93Mzuu5vzNBXOo=,tag:fuGXZSYaFBECB/QQ/rEVHg==,type:comment]
+#ENC[AES256_GCM,data:PzU19+Q1g74m,iv:wQB3ZEkLZYjl88vo0i3doUuE7pu1KaiHYsrCwYVnQx8=,tag:l9taTrvXbnpvkUbXWFlUgQ==,type:comment]
+#ENC[AES256_GCM,data:LEQR8tkbSvfYmF0iC75QWht48ITmzdc9Znqc,iv:yTmg22OVht2zwgjVQ8b3ZUkifrwtn7I6dYubbIwlZIw=,tag:IWWtRfUvDEWEwfhVjJ2ulg==,type:comment]
 sops:
   age:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBwL2lY
-        R0pvZjNlSlRGZDd3dWUxUkFVV2tRQ1JYdnJtQ3JXTlJyK1dzYW53Cm9Qbm1VZ0Yy
-        bkppWVYrdEJRNDBBdGkyR24zNkV3T25DTjZSUWZVdFl2SjAKLS0tIFl2VW5ILytw
-        K3FNeWRHeldBU0ZvSnI5aGRNZTJib1RTN3VoeWdjbTZPTkEKPSL8UtXNlBDf/Qe+
-        eALG54yt7bhTMBAj02Iueg5c9BFh6GlrkhkkM9F9GLIVXmV7PsxyCgR40b1zB1le
-        ruTWFg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyB0cW9X
+        OXV4NnAvSmovaGlKL20wbURoWk1mYXArWlVHR0I1SCtSZFB3cVRBCkdvTlJMeWRu
+        UjRBOUJwWlI1YlpmckJiZGxWUUxjS3VlTjBPN1phTWhuRWsKLS0tIDEzM2xvaGFo
+        b1RReVl2T1kvSGUwVExHWXlpRmJsOG1ndXNNTnlqcnFZQTQKKpKmdde/XLGaTiYX
+        86FwCP1skmALAvd3clT2HeYgJhTBwqRecF9JxhZN7qczGgz/F6J9b3ycmMpCZcfq
+        n7oo7w==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA1VXhjZ3FaK1hON3RRVDk2
-        enNiZ2lJRm8yNlVBMERCZGJBWEQzWEUvd2lvCjE1ckZCMDhTcU5KbVVGV1VBY0RV
-        aGRYZXZ4VG1UUjI1dGhDNWliejREbmcKLS0tIE9ITUorUTJhSFNQQVpsUlNrcy94
-        eFhsWjBOQjNtbjFaK21QdlhkVTVXUk0KHT7WuojoxewCySTLHwQdpgXAmKih8mqV
-        MpeZeYYs075xzWDoHY6kqat/m2wB0eo96DYWGvO++NMxb6+Jf803NQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBWT3VqU0p1N0Q5cFJ5VXp0
+        cTEzMVVsWjlsclNONnFwV3NQTXg5bHZiQkhZClZXUnFOcnZsTjNDZE9CN1lhYXpZ
+        OEJwZjlsL3FDU28zRjB2Uk9GTzR6c1UKLS0tIDRSUTFaRXlSRTdvWHFpMUkxN0dU
+        SXRWQnRTOW01OCtQN2FVT0V1TTZmd1kKuARa3UfpG5s1EjWR9kfh5NcD9KsaerVr
+        zm1HEMFqnN9sokG9ykHdgsND0FcIJgs1Q/NP+bRV6mRdNFWQwa02iQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-12T16:27:57Z"
-  mac: ENC[AES256_GCM,data:nnD9HvyJa3Hu/LVpljC84//Q0Yl1pQqMQEPE8k6TacPLO/t6q2Ji+dSef95kQ/EfcPMhOtcPA8VEZfHFMZbnXW89RPrvHgdZQvjho9b5vCKnNfEX2bnafZttWpFPUrVGdLPgrk02hDVMGVcbynjqZTSaNGuWY9cAT3ByNL7C9gY=,iv:ZPEILOLdL+YdZaGIsDGrs9kEAtc76J6MkwfobcdVMP4=,tag:xF43aVISRaDOiz417CKamg==,type:str]
+  lastmodified: "2025-11-23T20:22:52Z"
+  mac: ENC[AES256_GCM,data:i+2c2plV8l8m39UVlKVJ29pAFpll42ojLAtyimzpN/IX2J705F9PeELTG9grFT6xHGjjIRaKPHWu8e12iOM9Vn47E9/tZLZoOl5+6E+6uGTSOYMzeKNZ3HTASaw/nUKAxh97mnm64yjpTMtSrd1DDIUz3rup5uIJ7YSTrjIozbA=,iv:edcIcmeEXacnLWNAIwszUi4izJHzUxaPSnj1/Gk9G20=,tag:LrSLVWnzRjdLrkev9B/AUQ==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0
