@@ -1,7 +1,6 @@
 namespace: gitea
 resources:
   - httproute.yaml
-  - certificate.yaml
   - dnsendpoint.yaml
   - statefulset.yaml
   - secret.sops.yaml

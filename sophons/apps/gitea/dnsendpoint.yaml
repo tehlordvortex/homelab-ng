@@ -26,7 +26,7 @@ spec:
     - dnsName: ppkg.tig.vrtx.sh
       recordType: A
       targets:
-        - 10.43.69.0
+        - 10.43.0.69
       providerSpecific:
         - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
           value: "false"
