@@ -21,7 +21,7 @@ services:
   talos:
     restart: unless-stopped
     hostname: sophons-caeneus
-    image: ghcr.io/siderolabs/talos:v1.11.3
+    image: ghcr.io/siderolabs/talos:v1.11.5
     privileged: true
     cpus: 8
     mem_limit: 8G

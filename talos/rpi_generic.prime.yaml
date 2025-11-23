@@ -22,3 +22,4 @@ customization:
       - siderolabs/util-linux-tools
       - siderolabs/v4l-uvc-drivers
       - siderolabs/binfmt-misc
+      - siderolabs/tailscale
