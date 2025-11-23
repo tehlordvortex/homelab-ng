@@ -1,1 +1,4 @@
-{}
+speaker:
+  tolerations:
+    - key: prime.sophons.cloud
+      operator: Exists

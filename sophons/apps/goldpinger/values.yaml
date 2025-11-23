@@ -1,7 +1,12 @@
 tolerations:
+  # tolerate everything?
+  - key: ""
+    operator: Exists
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
   - key: orunmila.sophons.cloud/ase-orun
+    operator: Exists
+  - key: prime.sophons.cloud
     operator: Exists
 
 extraEnv:

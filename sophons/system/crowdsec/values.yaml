@@ -72,6 +72,8 @@ agent:
   tolerations:
     - key: orunmila.sophons.cloud/ase-orun
       operator: Exists
+    - key: prime.sophons.cloud
+      operator: Exists
 
   persistentVolume:
     config:

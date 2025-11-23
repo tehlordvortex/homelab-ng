@@ -16,3 +16,6 @@ longhornManager:
 longhornDriver:
   nodeSelector:
     hugeloads.sophons.cloud/longhorn: "true"
+  tolerations:
+    - key: prime.sophons.cloud
+      operator: Exists
