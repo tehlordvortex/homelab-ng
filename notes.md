@@ -16,3 +16,6 @@
 - sysctl: user.max_user_namespaces must be > 0 for container inception.
   - todo: is this why chrome didn't work?
 - <https://web.archive.org/web/20220805232857/https://home.robusta.dev/blog/stop-using-cpu-limits/>
+- need to migrate all litestream instances to v0.3.13, v0.5.2 doesn't actually enforce retention:
+  - <https://github.com/benbjohnson/litestream/blob/v0.5.2/replica.go#L230>
+  - so it can grow infinitely, and restore time can get insane (i think this is due to the snapshot process being different too?)
