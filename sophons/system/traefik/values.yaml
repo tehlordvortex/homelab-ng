@@ -1,3 +1,31 @@
+# yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v37.3.0/traefik/values.schema.json
+
+cfIPs: &cfIPs
+  - 10.41.4.0/24 # oduduwa
+  - 2001:cafe:41:4::/64
+  - 173.245.48.0/20 # Cloudflare
+  - 103.21.244.0/22
+  - 103.22.200.0/22
+  - 103.31.4.0/22
+  - 141.101.64.0/18
+  - 108.162.192.0/18
+  - 190.93.240.0/20
+  - 188.114.96.0/20
+  - 197.234.240.0/22
+  - 198.41.128.0/17
+  - 162.158.0.0/15
+  - 104.16.0.0/13
+  - 104.24.0.0/14
+  - 172.64.0.0/13
+  - 131.0.72.0/22
+  - 2400:cb00::/32
+  - 2606:4700::/32
+  - 2803:f800::/32
+  - 2405:b500::/32
+  - 2405:8100::/32
+  - 2a06:98c0::/29
+  - 2c0f:f248::/32
+
 logs:
   general:
     level: INFO
@@ -14,12 +42,14 @@ ingressRoute:
 
 ports:
   traefik:
+    port: 8080
     expose:
       internal: true
       kaos: true
 
   web:
     port: 80
+    hostPort: 80
     expose:
       internal: true
       kaos: true
@@ -31,64 +61,18 @@ ports:
         scheme: https
         permanent: true
     middlewares:
-      - crowdsec-crowdsec-bouncer@kubernetescrd
+      []
+      # - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
-      trustedIPs:
-        # oduduwa
-        - 10.41.4.0/24
-        # Cloudflare
-        - 173.245.48.0/20
-        - 103.21.244.0/22
-        - 103.22.200.0/22
-        - 103.31.4.0/22
-        - 141.101.64.0/18
-        - 108.162.192.0/18
-        - 190.93.240.0/20
-        - 188.114.96.0/20
-        - 197.234.240.0/22
-        - 198.41.128.0/17
-        - 162.158.0.0/15
-        - 104.16.0.0/13
-        - 104.24.0.0/14
-        - 172.64.0.0/13
-        - 131.0.72.0/22
-        - 2400:cb00::/32
-        - 2606:4700::/32
-        - 2803:f800::/32
-        - 2405:b500::/32
-        - 2405:8100::/32
-        - 2a06:98c0::/29
-        - 2c0f:f248::/32
+      trustedIPs: *cfIPs
 
     forwardedHeaders:
-      trustedIPs:
-        # Cloudflare
-        - 173.245.48.0/20
-        - 103.21.244.0/22
-        - 103.22.200.0/22
-        - 103.31.4.0/22
-        - 141.101.64.0/18
-        - 108.162.192.0/18
-        - 190.93.240.0/20
-        - 188.114.96.0/20
-        - 197.234.240.0/22
-        - 198.41.128.0/17
-        - 162.158.0.0/15
-        - 104.16.0.0/13
-        - 104.24.0.0/14
-        - 172.64.0.0/13
-        - 131.0.72.0/22
-        - 2400:cb00::/32
-        - 2606:4700::/32
-        - 2803:f800::/32
-        - 2405:b500::/32
-        - 2405:8100::/32
-        - 2a06:98c0::/29
-        - 2c0f:f248::/32
+      trustedIPs: *cfIPs
 
   websecure:
     port: 443
+    hostPort: 443
     expose:
       internal: true
       kaos: true
@@ -100,73 +84,36 @@ ports:
         # thanks [fuck-all]mbps upload internet.
         readTimeout: 300
     middlewares:
-      - crowdsec-crowdsec-bouncer@kubernetescrd
+      []
+      # - crowdse-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
-      trustedIPs:
-        # oduduwa
-        - 10.41.4.0/24
-        # Cloudflare
-        - 173.245.48.0/20
-        - 103.21.244.0/22
-        - 103.22.200.0/22
-        - 103.31.4.0/22
-        - 141.101.64.0/18
-        - 108.162.192.0/18
-        - 190.93.240.0/20
-        - 188.114.96.0/20
-        - 197.234.240.0/22
-        - 198.41.128.0/17
-        - 162.158.0.0/15
-        - 104.16.0.0/13
-        - 104.24.0.0/14
-        - 172.64.0.0/13
-        - 131.0.72.0/22
-        - 2400:cb00::/32
-        - 2606:4700::/32
-        - 2803:f800::/32
-        - 2405:b500::/32
-        - 2405:8100::/32
-        - 2a06:98c0::/29
-        - 2c0f:f248::/32
+      trustedIPs: *cfIPs
 
     forwardedHeaders:
-      trustedIPs:
-        # Cloudflare
-        - 173.245.48.0/20
-        - 103.21.244.0/22
-        - 103.22.200.0/22
-        - 103.31.4.0/22
-        - 141.101.64.0/18
-        - 108.162.192.0/18
-        - 190.93.240.0/20
-        - 188.114.96.0/20
-        - 197.234.240.0/22
-        - 198.41.128.0/17
-        - 162.158.0.0/15
-        - 104.16.0.0/13
-        - 104.24.0.0/14
-        - 172.64.0.0/13
-        - 131.0.72.0/22
-        - 2400:cb00::/32
-        - 2606:4700::/32
-        - 2803:f800::/32
-        - 2405:b500::/32
-        - 2405:8100::/32
-        - 2a06:98c0::/29
-        - 2c0f:f248::/32
+      trustedIPs: *cfIPs
+
+  ssh:
+    port: 22
+    hostPort: 22
+    expose:
+      default: true
+      internal: true
+      kaos: true
+      starlink: true
+      theta: true
 
 service:
   enabled: true
   type: ClusterIP
   spec:
-    trafficDistribution: PreferSameZone
+    trafficDistribution: PreferSameNode
     internalTrafficPolicy: Local
     ipFamilies: ["IPv4", "IPv6"]
     ipFamilyPolicy: RequireDualStack
-    clusterIP: 10.43.69.0
+    clusterIP: 10.43.0.69
     clusterIPs:
-      - 10.43.69.0
+      - 10.43.0.69
       - 2001:cafe:43::69
 
   additionalServices:
@@ -179,6 +126,7 @@ service:
           traefik-internal.sophons.cloud
         external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
+        trafficDistribution: PreferSameNode
         externalTrafficPolicy: Local
     kaos:
       single: true
@@ -189,6 +137,7 @@ service:
           traefik-kaos.sophons.cloud
         external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
+        trafficDistribution: PreferSameNode
         externalTrafficPolicy: Local
     starlink:
       single: true
@@ -200,6 +149,7 @@ service:
           traefik-star-theta.sophons.cloud,
           traefik-sango-star-theta.sophons.cloud
       spec:
+        trafficDistribution: PreferSameNode
         ipFamilies: ["IPv6"]
         externalTrafficPolicy: Local
     theta:
@@ -212,19 +162,20 @@ service:
           traefik-star-theta.sophons.cloud,
           traefik-sango-star-theta.sophons.cloud
       spec:
+        trafficDistribution: PreferSameNode
         ipFamilies: ["IPv6"]
         externalTrafficPolicy: Local
 
 providers:
   kubernetesCRD:
-    nativeLBByDefault: true
+    # nativeLBByDefault: true
     allowCrossNamespace: true
   kubernetesIngress:
-    nativeLBByDefault: true
+    # nativeLBByDefault: true
     allowCrossNamespace: true
   kubernetesGateway:
     enabled: true
-    nativeLBByDefault: true
+    # nativeLBByDefault: true
     allowCrossNamespace: true
     experimentalChannel: true
 
@@ -244,24 +195,57 @@ gateway:
       certificateRefs:
         - kind: Secret
           group: ""
-          name: traefik-gateway-tls
+          name: gateway-tls
+    ssh: # TCP listener that matches entryPoint `ssh`
+      port: 22
+      protocol: TCP
+      namespacePolicy:
+        from: All
 
 deployment:
   kind: DaemonSet
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 0
+priorityClassName: system-node-critical
 
+env:
+  - name: GOMEMLIMIT
+    value: "120MiB"
 resources:
   requests:
-    cpu: "50m"
+    cpu: "100m"
     memory: "64Mi"
   limits:
-    memory: "256Mi"
+    memory: "128Mi"
 
 tolerations:
+  - operator: Exists
   - key: orunmila.sophons.cloud/ase-orun
+    operator: Exists
+  - key: prime.sophons.cloud
     operator: Exists
 
 experimental:
+  # Fun fact, using plugins essentially introduce a hard dependency
+  # on Traefik's plugin servers.
+  # Loved figuring this one out
   plugins:
     crowdsec-bouncer-traefik-plugin:
       moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
       version: "v1.4.6"
+
+securityContext:
+  capabilities:
+    add: ["NET_BIND_SERVICE"]
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: '{{ template "traefik.name" . }}'
+            app.kubernetes.io/instance: '{{ .Release.Name }}-{{ include "traefik.namespace" . }}'
+        topologyKey: kubernetes.io/hostname

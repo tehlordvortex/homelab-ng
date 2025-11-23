@@ -10,6 +10,12 @@ run = "./gen.sh"
 [tasks.'talos:all']
 run = ["talosctl --nodes=$SOPHONS_NODES"]
 
+[tasks.'talos:controlplane']
+run = ["talosctl --nodes=$SOPHONS_CONTROLPLANE_NODES"]
+
+[tasks.'talos:worker']
+run = ["talosctl --nodes=$SOPHONS_WORKER_NODES"]
+
 [tasks.'talos:beta']
 run = ["talosctl --nodes=$SOPHONS_BETA"]
 
@@ -75,4 +81,22 @@ run = [
   { task = "apply:beta" },
   { task = "apply:theta" },
   { task = "apply:kaos" },
+]
+
+[tasks.'apply:controlplane']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = [
+  { task = "apply:beta" },
+  { task = "apply:theta" },
+  { task = "apply:kaos" },
+]
+
+[tasks.'apply:worker']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = [
+  { task = "apply:prime" },
+  { task = "apply:oduduwa" },
+  { task = "apply:caeneus" },
 ]

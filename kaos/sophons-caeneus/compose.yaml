@@ -19,8 +19,7 @@
 
 services:
   talos:
-    restart: unless-stopped
-    hostname: sophons-caeneus
+    restart: always
     image: ghcr.io/siderolabs/talos:v1.11.5
     privileged: true
     cpus: 8
@@ -44,13 +43,38 @@ services:
       - TALOSSKU=8CPU-8192RAM
     devices:
       - /dev/dri
-      - /dev/net
+    network_mode: service:tailscale
+
+  tailscale:
+    hostname: sophons-caeneus
+    image: tailscale/tailscale:v1.88.2
+    restart: always
+    sysctls:
+      net.ipv4.ip_forward: 1
+      net.ipv6.conf.all.disable_ipv6: 0
+      net.ipv6.conf.all.forwarding: 1
+    cap_add:
+      - net_admin
+      - sys_module
+    environment:
+      - TS_HOSTNAME=sophons-caeneus
+      - TS_AUTHKEY=$TS_AUTHKEY
+      - TS_EXTRA_ARGS=--login-server=https://hs.vrtx.sh --accept-routes --ssh
+      - TS_AUTH_ONCE=true
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      - TS_ROUTES=${TS_ROUTES}
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+    devices:
+      - /dev/net/tun
     networks:
       lab:
         ipv4_address: 10.42.42.5
         ipv6_address: ${IPV6_ADDRESS}
 
 volumes:
+  tailscale-state:
   system-state:
   var:
   etc-cni:

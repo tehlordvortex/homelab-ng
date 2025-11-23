@@ -8,7 +8,6 @@ resources:
   - grpcroute.yaml
   - httproute.yaml
   - deployment.yaml
-  - dnsendpoint.yaml
   - secret.sops.yaml
 
 configMapGenerator:
@@ -18,8 +17,9 @@ configMapGenerator:
     files:
       - config/headscale.yaml
       - config/headplane.yaml
+      - config/traefik.provider.yaml
   - name: litestream
     options:
       disableNameSuffixHash: true
     files:
-      - config/litestream.yaml
+      - config/litestream-legacy.yaml

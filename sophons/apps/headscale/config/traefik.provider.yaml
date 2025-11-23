@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://github.com/SchemaStore/schemastore/raw/refs/heads/master/src/schemas/json/traefik-v3-file-provider.json
+http:
+  routers:
+    grpc:
+      entryPoints: [websecure]
+      rule: Host(`gghs.vrtx.sh`)
+      service: grpc
+    headplane:
+      entryPoints: [web, websecure]
+      rule: PathPrefix(`/admin`)
+      service: headplane
+    headscale:
+      entryPoints: [web, websecure]
+      rule: PathPrefix(`/`)
+      service: headscale
+
+  services:
+    grpc:
+      loadBalancer:
+        servers:
+          - url: h2c://localhost:50051
+        passHostHeader: true
+    headscale:
+      loadBalancer:
+        servers:
+          - url: http://localhost:8080
+        passHostHeader: true
+    headplane:
+      loadBalancer:
+        servers:
+          - url: http://localhost:3000
+        passHostHeader: true
+
+tls:
+  certificates:
+    - certFile: /etc/traefik/cert/tls.crt
+      keyFile: /etc/traefik/cert/tls.key

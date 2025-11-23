@@ -155,6 +155,9 @@ gitea:
     passwordMode: initialOnlyRequireReset
 
   config:
+    log:
+      LEVEL: trace
+
     server:
       DOMAIN: tig.vrtx.sh
       SSH_DOMAIN: ssh.tig.vrtx.sh

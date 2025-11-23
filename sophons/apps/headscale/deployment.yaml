@@ -20,6 +20,17 @@ spec:
       imagePullSecrets:
         - name: harbor-pull-cred
 
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: NotIn
+                    # avoid running inside me house if possible
+                    values: [ng-east-1, ng-east-2, ng-middle-east]
+              weight: 10
+
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -30,15 +41,64 @@ spec:
           type: RuntimeDefault
 
       containers:
+        - name: proxy
+          image: docker.io/library/traefik:v3.6.0
+          args:
+            - --log.level=INFO
+            - --accesslog=true
+            - --entrypoints.web.address=:80
+            - --entryPoints.web.proxyProtocol.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
+            - --entryPoints.web.forwardedHeaders.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
+            - --entryPoints.web.http.redirections.entryPoint.to=websecure
+            - --entryPoints.web.http.redirections.entryPoint.scheme=https
+            - --entryPoints.web.http.redirections.entryPoint.permanent=true
+            - --entrypoints.websecure.address=:443
+            - --entrypoints.websecure.http.tls=true
+            - --entryPoints.websecure.proxyProtocol.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
+            - --entryPoints.websecure.forwardedHeaders.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
+            - --providers.file.directory=/etc/traefik
+          env:
+            - name: GOMEMLIMIT
+              value: 60MiB
+
+          ports:
+            - containerPort: 80
+              name: http
+            - containerPort: 443
+              name: https
+
+          volumeMounts:
+            - mountPath: /etc/traefik/provider.yaml
+              name: config
+              subPath: traefik.provider.yaml
+              readOnly: true
+            - mountPath: /etc/traefik/cert
+              name: tls
+              readOnly: true
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 64Mi
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+              add: [NET_BIND_SERVICE]
+
         - name: lightstream-replicate
-          image: poci.sphns.run/proxy-docker.io/litestream/litestream:0.5.2
-          args: ["replicate", "-config=/etc/litestream/litestream.yaml"]
+          image: docker.io/litestream/litestream:0.3.13
+          args: ["replicate", "-config=/etc/litestream/litestream-legacy.yaml"]
           envFrom:
             - secretRef:
                 name: litestream-access-key
           env:
             - name: GOMEMLIMIT
-              value: 120MiB
+              value: 60MiB
 
           ports:
             - name: ls-metrics
@@ -65,10 +125,10 @@ spec:
               cpu: 25m
               memory: 64Mi
             limits:
-              memory: 128Mi
+              memory: 64Mi
 
         - name: headscale
-          image: poci.sphns.run/proxy-ghcr.io/juanfont/headscale:v0.27.1
+          image: ghcr.io/juanfont/headscale:v0.27.1
           args: ["serve"]
 
           env:
@@ -105,15 +165,21 @@ spec:
           livenessProbe:
             exec:
               command: ["headscale", "health"]
+            timeoutSeconds: 5
+            failureThreshold: 5
+            initialDelaySeconds: 15
 
           readinessProbe:
             exec:
               command: ["headscale", "health"]
+            timeoutSeconds: 5
+            failureThreshold: 5
+            initialDelaySeconds: 15
 
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               memory: 256Mi
 
@@ -124,13 +190,15 @@ spec:
               drop: [ALL]
 
         - name: headplane
-          image: poci.sphns.run/proxy-ghcr.io/tale/headplane:0.6.1-shell
+          image: ghcr.io/tale/headplane:0.6.1
 
           ports:
             - containerPort: 3000
               name: hp-http
 
           env:
+            - name: GOMEMLIMIT
+              value: 120MiB
             - name: HEADPLANE_LOAD_ENV_OVERRIDES
               value: "true"
             - name: HEADPLANE_SERVER__COOKIE_SECRET
@@ -168,10 +236,16 @@ spec:
             httpGet:
               path: /admin/healthz
               port: hp-http
+            timeoutSeconds: 5
+            failureThreshold: 5
+            initialDelaySeconds: 15
           readinessProbe:
             httpGet:
               path: /admin/healthz
               port: hp-http
+            timeoutSeconds: 5
+            failureThreshold: 5
+            initialDelaySeconds: 15
 
           securityContext:
             readOnlyRootFilesystem: true
@@ -182,21 +256,18 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               memory: 256Mi
 
       initContainers:
         - name: lightstream-restore-headscale
-          image: poci.sphns.run/proxy-docker.io/litestream/litestream:0.5.2
+          image: docker.io/litestream/litestream:0.3.13
           args:
-            [
-              "restore",
-              "-config=/etc/litestream/litestream.yaml",
-              "-if-db-not-exists",
-              "-if-replica-exists",
-              "/var/lib/headscale/db.sqlite",
-            ]
+            - restore
+            - -config=/etc/litestream/litestream-legacy.yaml
+            - -parallelism=16
+            - /var/lib/headscale/db.sqlite
 
           envFrom:
             - secretRef:
@@ -204,6 +275,8 @@ spec:
           env:
             - name: GOMEMLIMIT
               value: 120MiB
+            - name: LITESTREAM_LOGGING_LEVEL
+              value: debug
 
           volumeMounts:
             - name: headscale
@@ -222,20 +295,17 @@ spec:
           resources:
             requests:
               cpu: 25m
-              memory: 64Mi
+              memory: 128Mi
             limits:
               memory: 128Mi
 
         - name: lightstream-restore-headplane
-          image: poci.sphns.run/proxy-docker.io/litestream/litestream:0.5.2
+          image: docker.io/litestream/litestream:0.3.13
           args:
-            [
-              "restore",
-              "-config=/etc/litestream/litestream.yaml",
-              "-if-db-not-exists",
-              "-if-replica-exists",
-              "/var/lib/headplane/hp_persist.db",
-            ]
+            - restore
+            - -config=/etc/litestream/litestream-legacy.yaml
+            - -parallelism=16
+            - /var/lib/headplane/hp_persist.db
 
           envFrom:
             - secretRef:
@@ -243,6 +313,8 @@ spec:
           env:
             - name: GOMEMLIMIT
               value: 120MiB
+            - name: LITESTREAM_LOGGING_LEVEL
+              value: debug
 
           volumeMounts:
             - name: headplane
@@ -260,11 +332,14 @@ spec:
           resources:
             requests:
               cpu: 25m
-              memory: 64Mi
+              memory: 128Mi
             limits:
               memory: 128Mi
 
       volumes:
+        - name: tls
+          secret:
+            secretName: gateway-tls
         - name: config
           configMap:
             name: headscale

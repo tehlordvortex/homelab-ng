@@ -5,7 +5,7 @@ server:
   # Ensure that this is exactly 32 characters long
   # env override
   cookie_secret: "<change_me_to_something_secure!>"
-  cookie_secure: false
+  cookie_secure: true
   cookie_max_age: 86400 # 1 day in seconds
   data_path: "/var/lib/headplane"
 
@@ -23,6 +23,10 @@ integration:
 
 oidc:
   issuer: "https://auth.sophons.cloud"
+  authorization_endpoint: "https://auth.sophons.cloud/api/oidc/authorization"
+  token_endpoint: "https://auth.sophons.cloud/api/oidc/token"
+  userinfo_endpoint: "https://auth.sophons.cloud/api/oidc/userinfo"
+
   client_id: sphns_NOVzB7ZaA_wjYbmD_GnTrX2SiUKFZmTL7zSEASd~tG
   client_secret_path: /etc/headscale/oidc_client.secret
   scope: "openid email profile groups"
