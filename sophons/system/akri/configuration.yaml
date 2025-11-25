@@ -11,6 +11,10 @@ spec:
       - KERNEL=="video[0-9]*", ATTRS{idVendor}=="045e", ATTRS{idProduct}=="0810", ATTR{index}=="0"
   brokerSpec:
     brokerPodSpec:
+      tolerations:
+        - key: prime.sophons.cloud
+          operator: Exists
+
       containers:
         - name: akri-udev-broker
           image: ghcr.io/project-akri/akri/udev-video-broker:v0.13.16-dev
