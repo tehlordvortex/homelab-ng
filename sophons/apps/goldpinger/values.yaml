@@ -1,5 +1,4 @@
 tolerations:
-  # tolerate everything?
   - key: ""
     operator: Exists
   - key: node-role.kubernetes.io/control-plane
@@ -12,3 +11,5 @@ tolerations:
 extraEnv:
   - name: PING_TIMEOUT
     value: 500ms
+
+priorityClassName: system-node-critical
