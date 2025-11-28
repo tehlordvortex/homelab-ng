@@ -11,5 +11,16 @@ tolerations:
 extraEnv:
   - name: PING_TIMEOUT
     value: 500ms
+  - name: GOMEMLIMIT
+    value: 30MiB
+  - name: GOGC
+    value: "50"
 
 priorityClassName: system-node-critical
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    memory: 32Mi
