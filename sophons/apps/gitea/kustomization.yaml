@@ -1,5 +1,6 @@
 namespace: gitea
 resources:
+  - tcproute.yaml
   - httproute.yaml
   - dnsendpoint.yaml
   - statefulset.yaml
@@ -11,6 +12,7 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - config/litestream.yaml
+      - config/litestream-legacy.yaml
   - name: gitea-runner
     options:
       disableNameSuffixHash: true
