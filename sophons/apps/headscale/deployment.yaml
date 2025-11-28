@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment.json
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,13 +9,8 @@ spec:
     type: Recreate
   replicas: 1
 
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: headscale
+  selector: {}
   template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: headscale
     spec:
       imagePullSecrets:
         - name: harbor-pull-cred

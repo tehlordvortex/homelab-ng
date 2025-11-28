@@ -1,0 +1,19 @@
+namespace: pihole
+labels:
+  - pairs:
+      app.kubernetes.io/name: pihole
+      app.kubernetes.io/instance: necronomicon
+    includeSelectors: true
+    includeTemplates: true
+
+resources:
+  - role.yaml
+  - service.yaml
+  - rolebinding.yaml
+  - statefulset.yaml
+  - serviceaccount.yaml
+
+configMapGenerator:
+  - name: pihole
+    files:
+      - config/adlists.list

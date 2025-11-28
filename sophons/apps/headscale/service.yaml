@@ -19,8 +19,6 @@ spec:
       targetPort: hs-grpc
       protocol: TCP
       name: grpc
-  selector:
-    app.kubernetes.io/name: headscale
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
 apiVersion: v1
@@ -35,8 +33,6 @@ spec:
       targetPort: hp-http
       protocol: TCP
       name: http
-  selector:
-    app.kubernetes.io/name: headscale
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
 apiVersion: v1
@@ -60,8 +56,6 @@ spec:
       targetPort: https
       protocol: TCP
       name: https
-  selector:
-    app.kubernetes.io/name: headscale
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
 apiVersion: v1
@@ -110,5 +104,3 @@ spec:
       targetPort: https
       protocol: TCP
       name: https
-  selector:
-    app.kubernetes.io/name: headscale

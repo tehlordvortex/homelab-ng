@@ -3,6 +3,9 @@ labels:
   - pairs:
       app.kubernetes.io/name: headscale
       app.kubernetes.io/version: 0.27.1
+    includeSelectors: true
+    includeTemplates: true
+
 resources:
   - service.yaml
   - grpcroute.yaml
@@ -12,14 +15,10 @@ resources:
 
 configMapGenerator:
   - name: headscale
-    options:
-      disableNameSuffixHash: true
     files:
       - config/headscale.yaml
       - config/headplane.yaml
       - config/traefik.provider.yaml
   - name: litestream
-    options:
-      disableNameSuffixHash: true
     files:
       - config/litestream-legacy.yaml

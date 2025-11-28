@@ -1,0 +1,185 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/statefulset-apps-v1.json
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: necronomicon
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {} # handled by kustomize
+  template:
+    spec:
+      hostUsers: false
+      serviceAccountName: pihole
+      imagePullSecrets:
+        - name: harbor-pull-cred
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels: {} # handled by kustomize
+              topologyKey: kubernetes.io/hostname
+
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
+      # hostAliases:
+      #   - ip: 10.43.0.42
+      #     hostnames:
+      #       - hs.vrtx.sh
+      #   - ip: 2001:cafe:43::42
+      #     hostnames:
+      #       - hs.vrtx.sh
+
+      containers:
+        - name: pihole
+          image: poci.sphns.run/proxy-ghcr.io/pi-hole/pihole:2025.11.0
+
+          ports:
+            - containerPort: 53
+              protocol: TCP
+              name: dns-tcp
+            - containerPort: 53
+              protocol: UDP
+              name: dns-udp
+            - containerPort: 80
+              protocol: TCP
+              name: http
+
+          env:
+            - name: TZ
+              value: Africa/Lagos
+            - name: PIHOLE_UID
+              value: "1000"
+            - name: PIHOLE_GID
+              value: "1000"
+            - name: FTLCONF_webserver_api_password
+              value: ""
+            - name: FTLCONF_dns_listeningMode
+              value: "ALL"
+            - name: FTLCONF_dns_upstreams
+              value: "1.1.1.1;1.0.0.1;9.9.9.9;149.112.112.112"
+
+          volumeMounts:
+            - mountPath: /etc/pihole
+              name: pihole
+            - mountPath: /etc/pihole/adlists.list
+              name: pihole-config
+              subPath: adlists.list
+              readOnly: true
+
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+            timeoutSeconds: 5
+            failureThreshold: 5
+            initialDelaySeconds: 60 # might download adlists on boot
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+            timeoutSeconds: 5
+            failureThreshold: 5
+            initialDelaySeconds: 60
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 256Mi
+
+        - name: tailscale
+          image: poci.sphns.run/proxy-ghcr.io/tailscale/tailscale:v1.90.8
+
+          ports:
+            - containerPort: 9002
+              name: ts-metrics
+
+          envFrom:
+            - secretRef:
+                name: tailscale-base-config
+            - secretRef:
+                name: tailscale-auth
+
+          env:
+            - name: GOMEMLIMIT
+              value: 100MiB
+            - name: TS_EXTRA_ARGS
+              value: $(TS_BASE_ARGS)
+            - name: TS_TAILSCALED_EXTRA_ARGS
+              value: $(TSD_BASE_ARGS)
+            - name: TS_KUBE_SECRET
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: TS_AUTH_ONCE
+              value: "true"
+            - name: TS_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+              subPath: ts
+
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: ts-metrics
+            failureThreshold: 5
+            initialDelaySeconds: 60
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: ts-metrics
+            failureThreshold: 5
+            initialDelaySeconds: 60
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+      volumes:
+        - name: pihole
+          emptyDir:
+            sizeLimit: 512Mi
+        - name: pihole-config
+          configMap:
+            name: pihole
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-dns-internal
+  namespace: pihole
+  annotations:
+    metallb.io/address-pool: internal
+spec:
+  type: LoadBalancer
+  ports:
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: dns-tcp
+    - name: dns-udp
+      port: 53
+      protocol: UDP
+      targetPort: dns-udp
