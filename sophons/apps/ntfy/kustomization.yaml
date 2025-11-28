@@ -8,12 +8,11 @@ resources:
 
 configMapGenerator:
   - name: litestream
-    options:
-      disableNameSuffixHash: true
     files:
       - config/litestream.yaml
-  - name: ntfy
-    options:
-      disableNameSuffixHash: true
+      - config/litestream-legacy.yaml
+
+secretGenerator:
+  - name: ntfy-config
     files:
       - server.yaml=config/server.sops.yaml

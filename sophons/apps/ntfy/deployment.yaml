@@ -48,93 +48,126 @@ spec:
         - name: ntfy
           image: binwiederhier/ntfy
           args: ["serve", "--config=/etc/ntfy/server.yaml"]
+
           ports:
             - containerPort: 80
               name: http
+
           volumeMounts:
             - name: config
               mountPath: "/etc/ntfy"
               readOnly: true
             - name: ntfy
               mountPath: "/var/lib/ntfy"
+
+          env:
+            - name: GOMEMLIMIT
+              value: 120MiB
+
           envFrom:
             - secretRef:
                 name: ntfy
+
           resources:
             requests:
               cpu: 50m
-              memory: 30Mi
-            limits:
               memory: 64Mi
+            limits:
+              memory: 128Mi
+
           securityContext:
-            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
 
-        - name: lightstream-replicate
-          image: docker.io/litestream/litestream:0.5.2
-          args: ["replicate", "-config=/etc/litestream/litestream.yaml"]
+        - name: litestream-legacy-replicate
+          image: docker.io/litestream/litestream:0.3.13
+          args: ["replicate", "-config=/etc/litestream/litestream-legacy.yaml"]
           envFrom:
             - secretRef:
                 name: litestream-access-key
           env:
-            - name: LITESTREAM_SYNC_INTERVAL
-              value: "1s"
+            - name: GOMEMLIMIT
+              value: 120MiB
+
           ports:
-            - name: metrics
+            - name: ls-metrics
               containerPort: 9090
+
           volumeMounts:
             - name: ntfy
               mountPath: "/var/lib/ntfy"
             - name: litestream
               mountPath: "/etc/litestream"
               readOnly: true
+
           securityContext:
-            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
 
       initContainers:
-        - name: lightstream-restore-cache
-          image: docker.io/litestream/litestream:0.5.2
+        - name: litestream-legacy-restore-cache
+          image: docker.io/litestream/litestream:0.3.13
           args:
-            [
-              "restore",
-              "-config=/etc/litestream/litestream.yaml",
-              "-if-db-not-exists",
-              "-if-replica-exists",
-              "/var/lib/ntfy/cache.db",
-            ]
+            - restore
+            - -config=/etc/litestream/litestream-legacy.yaml
+            - /var/lib/ntfy/cache.db
+
           envFrom:
             - secretRef:
                 name: litestream-access-key
+          env:
+            - name: GOMEMLIMIT
+              value: 120MiB
+            - name: LITESTREAM_LOGGING_LEVEL
+              value: debug
+
           volumeMounts:
             - name: ntfy
               mountPath: "/var/lib/ntfy"
             - name: litestream
               mountPath: "/etc/litestream"
               readOnly: true
+
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
 
-        - name: lightstream-restore-webpush
-          image: docker.io/litestream/litestream:0.5.2
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              memory: 128Mi
+
+        - name: litestream-legacy-restore-webpush
+          image: docker.io/litestream/litestream:0.3.13
           args:
-            [
-              "restore",
-              "-config=/etc/litestream/litestream.yaml",
-              "-if-db-not-exists",
-              "-if-replica-exists",
-              "/var/lib/ntfy/webpush.db",
-            ]
+            - restore
+            - -config=/etc/litestream/litestream-legacy.yaml
+            - /var/lib/ntfy/webpush.db
+
           envFrom:
             - secretRef:
                 name: litestream-access-key
+          env:
+            - name: GOMEMLIMIT
+              value: 120MiB
+            - name: LITESTREAM_LOGGING_LEVEL
+              value: debug
+
           volumeMounts:
             - name: ntfy
               mountPath: "/var/lib/ntfy"
@@ -148,11 +181,12 @@ spec:
               drop: [ALL]
 
       volumes:
-        - name: config
-          configMap:
-            name: ntfy
         - name: ntfy
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: 512Mi
+        - name: config
+          secret:
+            secretName: ntfy-config
         - name: litestream
           configMap:
             name: litestream
