@@ -59,7 +59,7 @@ services:
     environment:
       - TS_HOSTNAME=sophons-caeneus
       - TS_AUTHKEY=$TS_AUTHKEY
-      - TS_EXTRA_ARGS=--login-server=https://hs.vrtx.sh --accept-routes --ssh
+      - TS_EXTRA_ARGS=--login-server=https://hs.vrtx.sh --ssh --accept-routes=true --snat-subnet-routes=false
       - TS_AUTH_ONCE=true
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false
