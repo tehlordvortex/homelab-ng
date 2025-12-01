@@ -1,0 +1,2 @@
+http-intake.logs.ap1.datadoghq.com
+http-intake.logs.us3.datadoghq.com

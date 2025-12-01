@@ -7,9 +7,9 @@
 applicationProtocol: https
 applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:fY/OzWkxBPp0VU/Lz47V+U04LAKoj0UrRnd7I/KLhEe8jjddF/4m8wPlrQkiuT2e,iv:c++SSFv5rEfgKMnIFqpoAHUm9iMRXhV4yJGGkkZGAEY=,tag:CIINI0r6qsT+oHYvOr8NgQ==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:joDXkoXIa7+k9yjGYQrZWxeGRk/3YkSXYtXtopXLLWLBK9BuDzm/innb8qno7RSP,iv:Kb5FEJJkaHNVFU/9xKVzrS1bVCuwIYlQfGSAHc3h6EQ=,tag:l4cWY0AYYEjT61lDw5fHoA==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:D7KgM7tFWXDOB2HY+mDrE7xpc/pB1Kirdt690y6j,iv:Xj6IgPFB+bD8Ln7M8hoXqPVSCIEEcLKJB4cVrXyUIXw=,tag:KsoW44I915eEB0Ao8diEZA==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:hyjF728Msh+yodzPTFonwWEU1bZ0GQ3/pAVE479/,iv:sZnsY2czpyAD+MJSYG0ni91ez/U89ewJySn4x+CTkYc=,tag:eXGFHg5ZF90848jzMnhgHg==,type:str]
 ingress:
   karakeep:
     enabled: false
@@ -86,6 +86,8 @@ controllers:
           repository: ghcr.io/tailscale/tailscale
           tag: v1.90.6
         envFrom:
+          - secretRef:
+              name: tailscale-base-config
           - secretRef:
               name: tailscale-ephemeral-auth
         env:
@@ -245,23 +247,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBQbi9n
-        WW1reXpVT0dkeVlPZlkxdjFteXlpeElEbmxtY2ZXNFdHSHdTdjFzCjkyM2xzY3l1
-        RG5XbVF1b0w2ZkpJOXBMb1NJYWowUEVkWk5jbXV0OE5KM1kKLS0tIHFLQi9CZEZ6
-        Z1ppNmVYc2xvdUViTlFPRlh3TDhRSjBwMURReDlsTkV4TU0K8ggMlKD6km/E7L6J
-        tDPYkMnX7uhdju0cByBJdxZRAQ7OBMghCCqS/R4ZcS2tE/pk9QwyJbLn4S4i6ZLm
-        /qvaDw==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBEL1VP
+        ZENsbU1HSFNPQ2s3YXdKV0dTY25NNUYwMExNaHh6WnFuVlQ1WWdrClkzbTdDMlJE
+        SDNsM3JMMllkRDVwWmhHdnkrRlFVWVJDSDV1QlhHbVdVTVUKLS0tIGRVYityVy90
+        dlNKclo2VzJ1bnBBaVBQd2QzRlRKTjFuN3VrS1pQcXNRbzQKbbIA1JmN/vAa0ZFv
+        WzpfR/wtR4FnVEtrAfqrMf6oAn7svUxD7Flth87kL52jduxHfWxM+x/xb1WyGhGb
+        rn/Abg==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB5K0U2cmRXb28xZmJlY0M0
-        WXZBWS9UMlBWSE45SXZ5dGMxLzJuRTYybmx3CithS0FvSTNqSGxRSnZ0dzVPbE1x
-        MmVCQTE0WG5Ld0RWNnpXUGxQU29va28KLS0tIEpCejVvbXVxbjhONTJrTUs2c3hZ
-        TGlrQ0dxUVk1YzVuMUZNR3JoNlc3azQK3pC18KAp9H7PrLiZxd4+ldx2UqN8idik
-        pB7g69BnSFVbQQNIy/A9xXpkmW68IRWjf8URaBQU8dSic8L/ay0xGg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAzdUpiUUVQOGI5UXh4TjQx
+        dDFNZEVNV2lqbk9acDF1NGw3VVk4MGdMcWg4CnI2RlRKK1F3endTNXlJQm53K0RZ
+        cUZQZTRYTVZNSS9yeGoyeitHZCtYV3cKLS0tIGJwWnZ1VStJUFZ0WE0xMXJJalUr
+        THVONkx0S0tTR253ZkRINGZyd01jWUEKszJcuwVOVASdoeXF2kDm9CzhWpRdJyw3
+        pPo58MtiveoZsWc5g/HaNVbFjGFz+ongJaTgZMujvWEa4RV/QovJbQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-20T00:40:56Z"
-  mac: ENC[AES256_GCM,data:yuvBGKc2q1z15NeGd/L0BIN840Ugqi9K25YCKnH9HVv4qau97Kfw30bVOoE8gOutC0oa+F46FXaFziJITzg5rrspAH7G+fcRlO7HGBAGjiDOqN4jL/pk2cfLqjZXhG3uKI/Er6tspIUjYj0zqeRJRXqYs8F2SZnKwJVyAtJXHt4=,iv:i2LI+AKGD8LfvSPg+l10Nex1kEUtaVZvjZV3UwXtU7I=,tag:SDlUo+c7GT2J6Gf2akg28w==,type:str]
+  lastmodified: "2025-12-01T19:49:12Z"
+  mac: ENC[AES256_GCM,data:dsTZvYIT89YwfA1Ef51uOqyPd/px/DxE5+9rWqRxFY5StaudIit6Ds4LdZE4st4M2fxd+b2HTI21s6Yyxm9n8qou+HVjV91BZ1TVKae1k2Caw7SCmNWYNtJnbvXKs0d6fqUXbOElH0fWlrGLFXf1clmzC9btpGsxSy/crjxaGbM=,iv:Z4o79dCIrUydmsaW20lxYksfipEG08rcRxOf8loUrco=,tag:nuHBgb90jnXd3T08b43DJQ==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

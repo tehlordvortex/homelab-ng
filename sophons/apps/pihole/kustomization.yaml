@@ -2,7 +2,6 @@ namespace: pihole
 labels:
   - pairs:
       app.kubernetes.io/name: pihole
-      app.kubernetes.io/instance: necronomicon
     includeSelectors: true
     includeTemplates: true
 
@@ -17,3 +16,4 @@ configMapGenerator:
   - name: pihole
     files:
       - config/adlists.list
+      - config/blacklist.txt

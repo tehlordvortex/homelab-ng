@@ -15,6 +15,12 @@ spec:
       imagePullSecrets:
         - name: harbor-pull-cred
 
+      tolerations:
+        - key: orunmila.sophons.cloud/ase-orun
+          operator: Exists
+        - key: prime.sophons.cloud
+          operator: Exists
+
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -25,6 +31,13 @@ spec:
                     # avoid running inside me house if possible
                     values: [ng-east-1, ng-east-2, ng-middle-east]
               weight: 10
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: In
+                    # try to run within ng if possible
+                    values: [ng]
+              weight: 5
 
       securityContext:
         runAsNonRoot: true
@@ -93,7 +106,7 @@ spec:
                 name: litestream-access-key
           env:
             - name: GOMEMLIMIT
-              value: 60MiB
+              value: 120MiB
 
           ports:
             - name: ls-metrics
@@ -120,7 +133,7 @@ spec:
               cpu: 25m
               memory: 64Mi
             limits:
-              memory: 64Mi
+              memory: 128Mi
 
         - name: headscale
           image: ghcr.io/juanfont/headscale:v0.27.1

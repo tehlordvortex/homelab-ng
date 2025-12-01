@@ -3,11 +3,17 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: necronomicon
+  labels:
+    app.kubernetes.io/instance: necronomicon
 spec:
   replicas: 2
   selector:
-    matchLabels: {} # handled by kustomize
+    matchLabels:
+      app.kubernetes.io/instance: necronomicon
   template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: necronomicon
     spec:
       hostUsers: false
       serviceAccountName: pihole
@@ -18,20 +24,13 @@ spec:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
-                matchLabels: {} # handled by kustomize
+                matchLabels:
+                  app.kubernetes.io/instance: necronomicon
               topologyKey: kubernetes.io/hostname
 
       securityContext:
         seccompProfile:
           type: RuntimeDefault
-
-      # hostAliases:
-      #   - ip: 10.43.0.42
-      #     hostnames:
-      #       - hs.vrtx.sh
-      #   - ip: 2001:cafe:43::42
-      #     hostnames:
-      #       - hs.vrtx.sh
 
       containers:
         - name: pihole
@@ -68,6 +67,10 @@ spec:
             - mountPath: /etc/pihole/adlists.list
               name: pihole-config
               subPath: adlists.list
+              readOnly: true
+            - mountPath: /etc/pihole/blacklist.txt
+              name: pihole-config
+              subPath: blacklist.txt
               readOnly: true
 
           livenessProbe:
@@ -129,6 +132,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: TS_USERSPACE
+              value: "false"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -144,13 +149,8 @@ spec:
               subPath: ts
 
           securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            runAsNonRoot: true
+            privileged: true
             readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
 
           livenessProbe:
             httpGet:
@@ -183,3 +183,118 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 128Mi
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/statefulset-apps-v1.json
+# TODO: For some reason, i can't LB to the necronomicon pods so these act as a proxy in my home network
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: darkhold
+  labels:
+    app.kubernetes.io/instance: darkhold
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: darkhold
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: darkhold
+    spec:
+      hostUsers: false
+      serviceAccountName: pihole
+      imagePullSecrets:
+        - name: harbor-pull-cred
+
+      tolerations:
+        - key: orunmila.sophons.cloud/ase-orun
+          operator: Exists
+        - key: prime.sophons.cloud
+          operator: Exists
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: In
+                    values: [ng]
+
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: darkhold
+                topologyKey: kubernetes.io/hostname
+              weight: 10
+
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: pihole-proxy
+          image: poci.sphns.run/proxy-docker.io/library/alpine:3.22.2
+          command:
+            - ash
+            - -c
+            - |
+              set -xeuo pipefail
+              cleanup() {
+                echo "stopping..."
+                kill -TERM $udp_pid
+                kill -TERM $tcp_pid
+              }
+              trap "cleanup" SIGTERM
+
+              dns_name=necronomicon-cluster-dns.pihole.svc
+              apk add --no-cache sed socat bind-tools
+
+              socat_config=fork,reuseaddr
+              socat "udp-recvfrom:53,$socat_config" "udp-sendto:$dns_name:53" &
+              udp_pid=$!
+
+              socat "tcp-listen:53,$socat_config,max-children=32,backlog=128" "tcp:$dns_name:53" &
+              tcp_pid=$!
+
+              wait
+
+          ports:
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+              hostPort: 53
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+              hostPort: 53
+
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  (ps aux | grep socat) || exit 1
+            initialDelaySeconds: 30
+            failureThreshold: 5
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  dig +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+            initialDelaySeconds: 30
+            failureThreshold: 5
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
