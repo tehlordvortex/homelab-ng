@@ -61,8 +61,8 @@ ports:
         scheme: https
         permanent: true
     middlewares:
-      []
-      # - crowdsec-crowdsec-bouncer@kubernetescrd
+      # []
+      - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -84,8 +84,8 @@ ports:
         # thanks [fuck-all]mbps upload internet.
         readTimeout: 300
     middlewares:
-      []
-      # - crowdse-crowdsec-bouncer@kubernetescrd
+      # []
+      - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -102,13 +102,15 @@ ports:
       kaos: true
       starlink: true
       theta: true
+    middlewares:
+      # []
+      - crowdsec-crowdsec-bouncer@kubernetescrd
 
 service:
   enabled: true
   type: ClusterIP
   spec:
     trafficDistribution: PreferSameNode
-    internalTrafficPolicy: Local
     ipFamilies: ["IPv4", "IPv6"]
     ipFamilyPolicy: RequireDualStack
     clusterIP: 10.43.0.69
@@ -168,14 +170,14 @@ service:
 
 providers:
   kubernetesCRD:
-    # nativeLBByDefault: true
+    nativeLBByDefault: true
     allowCrossNamespace: true
   kubernetesIngress:
-    # nativeLBByDefault: true
+    nativeLBByDefault: true
     allowCrossNamespace: true
   kubernetesGateway:
     enabled: true
-    # nativeLBByDefault: true
+    nativeLBByDefault: true
     allowCrossNamespace: true
     experimentalChannel: true
 

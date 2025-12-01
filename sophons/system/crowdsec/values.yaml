@@ -4,6 +4,8 @@ tls:
   enabled: true
   agent:
     tlsClientAuth: true
+    reflector:
+      namespaces: [logging-system]
 
 config:
   config.yaml.local: |
@@ -62,6 +64,18 @@ lapi:
       value: "k8s linux"
 
 agent:
+  hostVarLog: false
+  # isDeployment: true
+  # replicas: 1
+  # strategy:
+  #   type: RollingUpdate
+
+  env:
+    - name: GOMEMLIMIT
+      value: 128MiB
+    - name: COLLECTIONS
+      value: "crowdsecurity/traefik crowdsecurity/linux"
+
   resources:
     requests:
       cpu: 50m
@@ -70,8 +84,6 @@ agent:
       cpu: null
       memory: 128Mi
   tolerations:
-    - key: orunmila.sophons.cloud/ase-orun
-      operator: Exists
     - key: prime.sophons.cloud
       operator: Exists
 
@@ -79,10 +91,41 @@ agent:
     config:
       enabled: false
 
-  acquisition:
-    - namespace: traefik
-      podName: traefik-*
-      program: traefik
-    - namespace: traefik
-      podName: haproxy-*
-      program: haproxy
+  # this is ignored for daemonset, but cant use deployment
+  # cuz that's broken too :)
+  ports:
+    - name: syslog-udp
+      containerPort: 4242
+      protocol: UDP
+    - name: http
+      containerPort: 6969
+      protocol: TCP
+
+  service:
+    ports:
+      - name: syslog-udp
+        protocol: UDP
+        port: 4242
+        targetPort: 4242
+      - name: http
+        protocol: TCP
+        port: 6969
+        targetPort: 6969
+
+  additionalAcquisition:
+    - source: syslog
+      listen_addr: 0.0.0.0
+      listen_port: 4242
+      labels:
+        type: syslog
+    - source: http
+      listen_addr: 0.0.0.0:6969
+      path: /v1/logs/traefik
+      timeout: 30s
+      auth_type: mtls
+      tls:
+        ca_cert: /etc/ssl/crowdsec-agent/ca.crt
+        server_key: /etc/ssl/crowdsec-agent/tls.key
+        server_cert: /etc/ssl/crowdsec-agent/tls.crt
+      labels:
+        type: traefik

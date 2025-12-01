@@ -1,0 +1,79 @@
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+logging:
+  enabled: true
+
+  fluentbit:
+    tolerations:
+      - operator: Exists
+    podPriorityClassName: system-node-critical
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 32Mi
+      limits:
+        cpu: null
+        memory: 100Mi
+
+  fluentd:
+    # logLevel: debug
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: null
+        memory: 256Mi
+
+  clusterFlows:
+    - name: traefik
+      spec:
+        match:
+          - select:
+              labels:
+                app.kubernetes.io/name: traefik
+              namespaces: [traefik]
+        globalOutputRefs: ["crowdsec-http-traefik"]
+
+  clusterOutputs:
+    - name: crowdsec-http-traefik
+      spec:
+        http:
+          endpoint: https://crowdsec-agent-service.crowdsec.svc.cluster.local:6969/v1/logs/traefik
+          compress: gzip
+          reuse_connections: true
+          tls_verify_mode: none # TODO: sigh
+          tls_ca_cert_path:
+            mountFrom:
+              secretKeyRef:
+                name: crowdsec-agent-tls
+                key: ca.crt
+          tls_client_cert_path:
+            mountFrom:
+              secretKeyRef:
+                name: crowdsec-agent-tls
+                key: tls.crt
+          tls_private_key_path:
+            mountFrom:
+              secretKeyRef:
+                name: crowdsec-agent-tls
+                key: tls.key
