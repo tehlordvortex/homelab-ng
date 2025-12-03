@@ -15,12 +15,6 @@ headscale:
   config_path: "/etc/headscale/config.yaml"
   config_strict: true
 
-integration:
-  agent:
-    enabled: true
-    # env override
-    pre_authkey: "<your-preauth-key>"
-
 oidc:
   issuer: "https://auth.sophons.cloud"
   authorization_endpoint: "https://auth.sophons.cloud/api/oidc/authorization"

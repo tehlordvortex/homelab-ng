@@ -118,6 +118,7 @@ spec:
               subPath: data
             - name: headplane
               mountPath: "/var/lib/headplane"
+              subPath: data
             - name: litestream
               mountPath: "/etc/litestream"
               readOnly: true
@@ -214,11 +215,15 @@ spec:
                 secretKeyRef:
                   name: headscale
                   key: cookie.secret
+            - name: HEADPLANE_INTEGRATION__AGENT__ENABLED
+              value: "true"
             - name: HEADPLANE_INTEGRATION__AGENT__PRE_AUTHKEY
               valueFrom:
                 secretKeyRef:
                   name: headscale
                   key: agent_preauth.key
+            - name: HEADPLANE_INTEGRATION__AGENT__CACHE_PATH
+              value: /var/lib/headplane/agent/agent_cache.json
             - name: HEADPLANE_OIDC__HEADSCALE_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -228,6 +233,10 @@ spec:
           volumeMounts:
             - name: headplane
               mountPath: /var/lib/headplane
+              subPath: data
+            - name: headplane
+              mountPath: /var/lib/headplane/agent
+              subPath: agent
             - name: config
               mountPath: "/etc/headplane/config.yaml"
               subPath: headplane.yaml
@@ -327,6 +336,7 @@ spec:
           volumeMounts:
             - name: headplane
               mountPath: "/var/lib/headplane"
+              subPath: data
             - name: litestream
               mountPath: "/etc/litestream"
               readOnly: true
