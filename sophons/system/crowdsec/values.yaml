@@ -8,6 +8,41 @@ tls:
       namespaces: [logging-system]
 
 config:
+  parsers:
+    s01-parse:
+      traefik-tcpudp.yaml: |
+        onsuccess: next_stage
+        debug: true
+        # original: aidalinfo/tcpudp-flood-traefik
+        name: vrtx/tcpudp-flood-traefik
+        description: "Parse TCP/UDP traefik logs"
+        filter: "evt.Parsed.program == 'tcpudp-traefik'"
+        nodes:
+        ## TCP GROK
+          - grok:
+          ## Grok pattern for extract IP SOURCE and other informations on this message structure
+              pattern: 'Handling TCP connection address=%{IP:destination_ip}:%{NUMBER:destination_port} remoteAddr=%{IP:source_ip}:%{NUMBER:source_port}'
+              ## Apply pattern on for all message in logs
+              apply_on: message
+              statics:
+              ## Add meta value, this type is used by scenario
+                - meta: log_type
+                  value: traefik_tcpudp
+        ## UDP GROK pattern for extract IP SOURCE and other informations on this message structure
+          - grok:
+              pattern: 'Handling UDP stream from %{IP:source_ip}:%{NUMBER:source_port} to %{IP:destination_ip}:%{NUMBER:destination_port}'
+            ## Apply pattern on for all message in logs
+              apply_on: message
+              statics:
+              ## Add meta value, this type is used by scenario
+                - meta: log_type
+                  value: traefik_tcpudp
+        statics:
+        ## Pass Time and Source IP to other stages and scenarios.
+            - meta: source_ip
+              expression: "evt.Parsed.source_ip"
+            # - target: evt.StrTime
+            #   expression: evt.Parsed.time
   config.yaml.local: |
     db_config:
       flush:
@@ -75,6 +110,10 @@ agent:
       value: 128MiB
     - name: COLLECTIONS
       value: "crowdsecurity/traefik crowdsecurity/linux"
+    # - name: PARSERS
+    #   value: "aidalinfo/tcpudp-flood-traefik"
+    - name: LEVEL_DEBUG
+      value: "true"
 
   resources:
     requests:
@@ -83,9 +122,6 @@ agent:
     limits:
       cpu: null
       memory: 128Mi
-  tolerations:
-    - key: prime.sophons.cloud
-      operator: Exists
 
   persistentVolume:
     config:
@@ -94,30 +130,39 @@ agent:
   # this is ignored for daemonset, but cant use deployment
   # cuz that's broken too :)
   ports:
-    - name: syslog-udp
-      containerPort: 4242
+    - name: syslog
+      containerPort: 6900
       protocol: UDP
-    - name: http
+    - name: http-traefik
       containerPort: 6969
+      protocol: TCP
+    - name: http-tu-traefik
+      containerPort: 6970
       protocol: TCP
 
   service:
     ports:
-      - name: syslog-udp
+      - name: syslog
         protocol: UDP
-        port: 4242
-        targetPort: 4242
-      - name: http
+        port: 6900
+      - name: http-traefik
         protocol: TCP
         port: 6969
-        targetPort: 6969
+      - name: http-tu-traefik
+        protocol: TCP
+        port: 6970
 
   additionalAcquisition:
     - source: syslog
       listen_addr: 0.0.0.0
-      listen_port: 4242
+      listen_port: 6900
+      # undocumented but exists
+      # https://github.com/crowdsecurity/crowdsec/pull/3435
+      # disable_rfc_parser: true
       labels:
         type: syslog
+        program: traefik
+
     - source: http
       listen_addr: 0.0.0.0:6969
       path: /v1/logs/traefik
@@ -129,3 +174,15 @@ agent:
         server_cert: /etc/ssl/crowdsec-agent/tls.crt
       labels:
         type: traefik
+
+    - source: http
+      listen_addr: 0.0.0.0:6970
+      path: /v1/logs/tcpudp-traefik
+      timeout: 30s
+      auth_type: mtls
+      tls:
+        ca_cert: /etc/ssl/crowdsec-agent/ca.crt
+        server_key: /etc/ssl/crowdsec-agent/tls.key
+        server_cert: /etc/ssl/crowdsec-agent/tls.crt
+      labels:
+        type: tcpudp-traefik

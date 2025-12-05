@@ -1,0 +1,71 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: SyslogNGClusterOutput
+metadata:
+  name: crowdsec-syslog
+  namespace: logging-system
+spec:
+  syslog:
+    host: crowdsec-agent-service.crowdsec.svc.cluster.local
+    port: 6900
+    transport: udp
+    template: "${echo json#message}"
+    # disk_buffer:
+    #   dir: /buffers
+    #   disk_buf_size: 128000000 # 128 MB
+    #   reliable: true
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: SyslogNGClusterOutput
+metadata:
+  name: crowdsec-http-traefik
+  namespace: logging-system
+spec:
+  http:
+    url: https://crowdsec-agent-service.crowdsec.svc.cluster.local:6969/v1/logs/traefik
+    method: POST
+    body: "${echo json#message}"
+    tls:
+      peer_verify: false # FIXME: sigh
+      ca_file:
+        mountFrom:
+          secretKeyRef:
+            name: crowdsec-agent-tls
+            key: ca.crt
+      cert_file:
+        mountFrom:
+          secretKeyRef:
+            name: crowdsec-agent-tls
+            key: tls.crt
+      key_file:
+        mountFrom:
+          secretKeyRef:
+            name: crowdsec-agent-tls
+            key: tls.key
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: SyslogNGClusterOutput
+metadata:
+  name: crowdsec-http-tcpudp-traefik
+  namespace: logging-system
+spec:
+  http:
+    url: https://crowdsec-agent-service.crowdsec.svc.cluster.local:6970/v1/logs/tcpudp-traefik
+    method: POST
+    body: "${echo json#message}"
+    tls:
+      peer_verify: false # FIXME: sigh
+      ca_file:
+        mountFrom:
+          secretKeyRef:
+            name: crowdsec-agent-tls
+            key: ca.crt
+      cert_file:
+        mountFrom:
+          secretKeyRef:
+            name: crowdsec-agent-tls
+            key: tls.crt
+      key_file:
+        mountFrom:
+          secretKeyRef:
+            name: crowdsec-agent-tls
+            key: tls.key

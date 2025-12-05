@@ -1,0 +1,16 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: SyslogNGFlow
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  match:
+    and:
+      - regexp:
+          value: "json#kubernetes#labels#app.kubernetes.io/name"
+          pattern: traefik
+          type: string
+  globalOutputRefs:
+    # - crowdsec-syslog
+    - crowdsec-http-traefik
+    - crowdsec-http-tcpudp-traefik

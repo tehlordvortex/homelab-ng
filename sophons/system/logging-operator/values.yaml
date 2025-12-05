@@ -34,46 +34,138 @@ logging:
         cpu: null
         memory: 100Mi
 
+  fluentdDisabled: true
   fluentd:
+    {}
     # logLevel: debug
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: null
-        memory: 256Mi
+    # resources:
+    #   requests:
+    #     cpu: 100m
+    #     memory: 128Mi
+    #   limits:
+    #     cpu: null
+    #     memory: 256Mi
+
+  syslogNG:
+    jsonKeyDelim: "#"
+    enabledIPv6: true
+    globalOptions:
+      log_level: verbose
+    statefulSet:
+      spec:
+        template:
+          spec:
+            containers:
+              - name: syslog-ng
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 64Mi
+                  limits:
+                    memory: 256Mi
 
   clusterFlows:
-    - name: traefik
-      spec:
-        match:
-          - select:
-              labels:
-                app.kubernetes.io/name: traefik
-              namespaces: [traefik]
-        globalOutputRefs: ["crowdsec-http-traefik"]
+    {}
+    # - name: traefik-accesslog
+    #   spec:
+    #     format:
+    #       type: single_value
+    #     match:
+    #       - select:
+    #           labels:
+    #             app.kubernetes.io/name: traefik
+    #           namespaces: [traefik]
+    #     filters:
+    #       - grep:
+    #           regexp:
+    #             - key: message
+    #               pattern: /^\S+ \S+ \S+ \[.+?\] ".*?"/
+    #       # - stdout: {}
+    #     globalOutputRefs:
+    #       - crowdsec-syslog
+    #       # - crowdsec-http-traefik
+
+    # - name: traefik-tcpudp
+    #   spec:
+    #     match:
+    #       - select:
+    #           labels:
+    #             app.kubernetes.io/name: traefik
+    #           namespaces: [traefik]
+    #     filters:
+    #       - grep:
+    #           regexp:
+    #             - key: message
+    #               pattern: /Handling (TCP connection|UDP stream)/
+    #       # - stdout: {}
+    #     globalOutputRefs:
+    #       - crowdsec-syslog
+    #       # - crowdsec-http-tcpudp-traefik
 
   clusterOutputs:
-    - name: crowdsec-http-traefik
-      spec:
-        http:
-          endpoint: https://crowdsec-agent-service.crowdsec.svc.cluster.local:6969/v1/logs/traefik
-          compress: gzip
-          reuse_connections: true
-          tls_verify_mode: none # TODO: sigh
-          tls_ca_cert_path:
-            mountFrom:
-              secretKeyRef:
-                name: crowdsec-agent-tls
-                key: ca.crt
-          tls_client_cert_path:
-            mountFrom:
-              secretKeyRef:
-                name: crowdsec-agent-tls
-                key: tls.crt
-          tls_private_key_path:
-            mountFrom:
-              secretKeyRef:
-                name: crowdsec-agent-tls
-                key: tls.key
+    {}
+    # - name: crowdsec-syslog
+    #   spec:
+    #     syslog:
+    #       host: crowdsec-agent-service.crowdsec.svc.cluster.local
+    #       port: 6900
+    #       transport: udp
+    #       format:
+    #         rfc6587_message_size: false
+    #       buffer:
+    #         flush_mode: immediate # FIXME: remove this
+    #         # flush_interval: 10s
+
+    # - name: crowdsec-http-traefik
+    #   spec:
+    #     http:
+    #       format:
+    #         type: single_value
+    #       buffer:
+    #         flush_interval: 15s
+    #       endpoint: https://crowdsec-agent-service.crowdsec.svc.cluster.local:6969/v1/logs/traefik
+    #       compress: gzip
+    #       reuse_connections: true
+    #       tls_verify_mode: none # TODO: sigh
+    #       tls_ca_cert_path:
+    #         mountFrom:
+    #           secretKeyRef:
+    #             name: crowdsec-agent-tls
+    #             key: ca.crt
+    #       tls_client_cert_path:
+    #         mountFrom:
+    #           secretKeyRef:
+    #             name: crowdsec-agent-tls
+    #             key: tls.crt
+    #       tls_private_key_path:
+    #         mountFrom:
+    #           secretKeyRef:
+    #             name: crowdsec-agent-tls
+    #             key: tls.key
+
+    # - name: crowdsec-http-tcpudp-traefik
+    #   spec:
+    #     http:
+    #       format:
+    #         type: single_value
+    #       buffer:
+    #         flush_interval: 15s
+    #       endpoint: https://crowdsec-agent-service.crowdsec.svc.cluster.local:6970/v1/logs/tcpudp-traefik
+    #       compress: gzip
+    #       reuse_connections: true
+    #       tls_verify_mode: none # TODO: sigh
+    #       tls_ca_cert_path:
+    #         mountFrom:
+    #           secretKeyRef:
+    #             name: crowdsec-agent-tls
+    #             key: ca.crt
+    #       tls_client_cert_path:
+    #         mountFrom:
+    #           secretKeyRef:
+    #             name: crowdsec-agent-tls
+    #             key: tls.crt
+    #       tls_private_key_path:
+    #         mountFrom:
+    #           secretKeyRef:
+    #             name: crowdsec-agent-tls
+    #             key: tls.key

@@ -28,7 +28,9 @@ cfIPs: &cfIPs
 
 logs:
   general:
-    level: INFO
+    # TCP/UDP connection logs only happen at the debug level
+    level: DEBUG
+    noColor: true
   access:
     enabled: true
 

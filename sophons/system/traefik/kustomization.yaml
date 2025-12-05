@@ -1,3 +1,4 @@
 namespace: traefik
 resources:
+  - syslogngflow.yaml
   - dnsendpoint.sops.yaml
