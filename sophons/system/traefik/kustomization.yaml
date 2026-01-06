@@ -1,4 +1,13 @@
 namespace: traefik
 resources:
   - syslogngflow.yaml
+  - secrets.sops.yaml
   - dnsendpoint.sops.yaml
+
+secretGenerator:
+  - name: cloudflared
+    options:
+      disableNameSuffixHash: true
+    files:
+      - 163f32fb-e910-4a18-9ef0-9c5bfe635f33.json=config/163f32fb-e910-4a18-9ef0-9c5bfe635f33.sops.json
+      - config/config.yaml

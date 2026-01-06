@@ -8,4 +8,4 @@ spec:
     - dnsName: ntfy.sophons.cloud
       recordType: CNAME
       targets:
-        - traefik-sango-star-theta.sophons.cloud
+        - 163f32fb-e910-4a18-9ef0-9c5bfe635f33.cfargotunnel.com

@@ -1,8 +1,10 @@
 # yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v37.3.0/traefik/values.schema.json
 
 cfIPs: &cfIPs
-  - 10.41.4.0/24 # oduduwa
-  - 2001:cafe:41:4::/64
+  - 127.0.0.0/8 # lokalhost
+  - ::1/128
+  - 10.41.0.0/16 # kluster
+  - 2001:cafe:41::/56
   - 173.245.48.0/20 # Cloudflare
   - 103.21.244.0/22
   - 103.22.200.0/22
@@ -63,8 +65,8 @@ ports:
         scheme: https
         permanent: true
     middlewares:
-      # []
-      - crowdsec-crowdsec-bouncer@kubernetescrd
+      []
+      # - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -86,8 +88,8 @@ ports:
         # thanks [fuck-all]mbps upload internet.
         readTimeout: 300
     middlewares:
-      # []
-      - crowdsec-crowdsec-bouncer@kubernetescrd
+      []
+      # - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -105,8 +107,8 @@ ports:
       starlink: true
       theta: true
     middlewares:
-      # []
-      - crowdsec-crowdsec-bouncer@kubernetescrd
+      []
+      # - crowdsec-crowdsec-bouncer@kubernetescrd
 
 service:
   enabled: true
@@ -176,12 +178,50 @@ providers:
     allowCrossNamespace: true
   kubernetesIngress:
     nativeLBByDefault: true
-    allowCrossNamespace: true
+    # allowCrossNamespace: true
   kubernetesGateway:
     enabled: true
     nativeLBByDefault: true
-    allowCrossNamespace: true
+    # allowCrossNamespace: true
     experimentalChannel: true
+  file:
+    enabled: true
+    content: |
+      http:
+        middlewares:
+          redirect-to-https:
+            redirectScheme:
+              scheme: https
+              permanent: true
+
+        routers:
+          headscale:
+            entryPoints: [web, websecure]
+            service: headscale
+            rule: Host(`hs.vrtx.sh`)
+
+        services:
+          headscale:
+            loadBalancer:
+              servers:
+                - url: https://10.43.0.42
+              passHostHeader: true
+              serversTransport: headscale@file
+        
+        serversTransports:
+          headscale:
+            serverName: hs.vrtx.sh
+
+      tls:
+        stores:
+          default:
+            defaultCertificate:
+              certFile: /etc/traefik/gateway-tls/tls.crt
+              keyFile: /etc/traefik/gateway-tls/tls.key
+
+        certificates:
+          - certFile: /etc/traefik/gateway-tls/tls.crt
+            keyFile: /etc/traefik/gateway-tls/tls.key
 
 gateway:
   listeners:
@@ -206,14 +246,61 @@ gateway:
       namespacePolicy:
         from: All
 
-deployment:
-  kind: DaemonSet
+priorityClassName: system-node-critical
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
     maxUnavailable: 1
     maxSurge: 0
-priorityClassName: system-node-critical
+deployment:
+  kind: DaemonSet
+  # https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/deployment-guides/kubernetes/
+  additionalContainers:
+    - image: cloudflare/cloudflared:2025.11.1
+      name: cloudflared
+      # envFrom:
+      #   - secretRef:
+      #       name: cloudflare-tunnel-token
+      env:
+        - name: GOMEMLIMIT
+          value: "60MiB"
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "32Mi"
+        limits:
+          memory: "72Mi"
+      command:
+        - cloudflared
+        - tunnel
+        - --no-autoupdate
+        - --loglevel
+        - debug
+        - --metrics
+        - 0.0.0.0:2000
+        # https://github.com/cilium/cilium/issues/37529
+        - --protocol
+        - http2
+        - --config
+        - /.cloudflared/config.yaml
+        - run
+      volumeMounts:
+        - name: cloudflared
+          mountPath: /.cloudflared
+          readOnly: true
+      livenessProbe:
+        httpGet:
+          # Cloudflared has a /ready endpoint which returns 200 if and only if
+          # it has an active connection to Cloudflare's network.
+          path: /ready
+          port: 2000
+        failureThreshold: 1
+        initialDelaySeconds: 10
+        periodSeconds: 10
+  additionalVolumes:
+    - name: cloudflared
+      secret:
+        secretName: cloudflared
 
 env:
   - name: GOMEMLIMIT
@@ -224,6 +311,11 @@ resources:
     memory: "64Mi"
   limits:
     memory: "128Mi"
+
+volumes:
+  - type: secret
+    name: gateway-tls
+    mountPath: /etc/traefik/gateway-tls
 
 tolerations:
   - operator: Exists
@@ -244,6 +336,12 @@ experimental:
 securityContext:
   capabilities:
     add: ["NET_BIND_SERVICE"]
+
+podSecurityContext:
+  sysctls:
+    # Allows ICMP traffic (ping, traceroute) to resources behind cloudflared.
+    - name: net.ipv4.ping_group_range
+      value: "65532 65532"
 
 affinity:
   podAntiAffinity:
