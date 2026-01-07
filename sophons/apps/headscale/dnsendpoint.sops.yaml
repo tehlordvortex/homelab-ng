@@ -1,0 +1,36 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: headscale
+  namespace: headscale
+spec:
+  endpoints:
+    - dnsName: gghs.vrtx.sh
+      recordType: CNAME
+      targets:
+        - 163f32fb-e910-4a18-9ef0-9c5bfe635f33.cfargotunnel.com
+sops:
+  age:
+    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBBKzBG
+        U2w3cStrYi9NT2daSWc4NE9EQS9oZk5MVWZoOFZSbUJqOWdSZkRjCkd0a1gyUjNM
+        M0VvOWNpc2ZUdllDdVpuVzdnMUEzbzV0cXR4OWcrTXhYc0kKLS0tIGhDcUFpVjF2
+        MFpIWDFYTWxLdm1ZWFpGWFB0QUxiZkJXV2NRMGpMUE1LVjgKhkUzvSylGZTQP2K1
+        JG1rh4teupJmaampBffG2exwvcuJKsNY6FYrr23wrkHAqOhVPsuSBBrekoqkIqik
+        tfCa2A==
+        -----END AGE ENCRYPTED FILE-----
+    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBOTmRyc1dKRzExMndISTh4
+        Vy9odUNyY1RIdUFEeSs0STYxcUh4RFR3Q213CjB0b0ZFTmVxNjN2ckkvQXRXVHJ6
+        U0UyY3c0aVZKQjI3VDMrMUpyc2xGSTAKLS0tIHo1N2U4UFY0NDZ5U2U2c0tvVzZz
+        WTl5dmRONWpnZnJYb3pkUGZSQzl4M2cK6Tm0w09z/7aOKmQ0NUhZiBVr32F0rsU4
+        a8FkMfeVv8jp+DB/EY+xSFjXb5hxc7HGtmHTG3gcDrbC5Mf7sRVq/A==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2026-01-07T19:09:02Z"
+  mac: ENC[AES256_GCM,data:RA3iQKrfC+4acv8q7lrRjmY1Q1xq2deOPfff950V7LR4kSZXAWlPUetEjN0qI+qkBMBoLVK9q1s1LrLqMiNFuXs22IHLsJyxi98z4xWuSFUBXmt8CXdoKV/1ejzzduqR++YMNyJMOeqV0YT8klUUQZTBSedpdcrQSaJBHJuuCnw=,iv:UCwmKQCHriW3yv1dJdwq2JmVacDcmXricDs963Z9fos=,tag:RuT6jXtGfjVvOqzmSVHvRg==,type:str]
+  encrypted_comment_regex: enc!
+  version: 3.11.0

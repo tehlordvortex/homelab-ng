@@ -199,6 +199,10 @@ providers:
             entryPoints: [web, websecure]
             service: headscale
             rule: Host(`hs.vrtx.sh`)
+          headscale-grpc:
+            entryPoints: [websecure]
+            service: headscale-grpc
+            rule: Host(`gghs.vrtx.sh`)
 
         services:
           headscale:
@@ -207,10 +211,18 @@ providers:
                 - url: https://10.43.0.42
               passHostHeader: true
               serversTransport: headscale@file
+          headscale-grpc:
+            loadBalancer:
+              servers:
+                - url: https://10.43.0.42
+              passHostHeader: true
+              serversTransport: headscale-grpc@file
         
         serversTransports:
           headscale:
             serverName: hs.vrtx.sh
+          headscale-grpc:
+            serverName: gghs.vrtx.sh
 
       tls:
         stores:

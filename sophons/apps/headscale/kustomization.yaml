@@ -8,10 +8,13 @@ labels:
 
 resources:
   - service.yaml
-  - grpcroute.yaml
-  - httproute.yaml
+  # These are now managed with the file provider so Traefik
+  # retains routing config even if it can't reach the kube api-server
+  # - grpcroute.yaml
+  # - httproute.yaml
   - deployment.yaml
   - secret.sops.yaml
+  - dnsendpoint.sops.yaml
 
 configMapGenerator:
   - name: headscale
