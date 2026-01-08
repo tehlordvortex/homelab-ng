@@ -4,7 +4,7 @@
 # git-sops: Integrate the sops secrets manager with Git smudge/clean filters
 # Enables automatic encryption/decryption of tracked secrets via .gitattributes
 
-set -eo pipefail
+set -euo pipefail
 
 self_path=$(readlink -f "$0")
 self_dir=$(dirname $self_path)
@@ -14,6 +14,12 @@ encryption_marker="ENC\["
 repo_root=$(git rev-parse --show-toplevel)
 default_sops_config="$repo_root/.sops.yaml"
 sops_config=${SOPS_CONFIG:-$default_sops_config}
+
+tmpdir="$(mktemp -d)"
+cleanup() {
+  rm -rf $tmpdir
+}
+trap cleanup EXIT
 
 usage() {
   cat <<-EOF
@@ -65,7 +71,7 @@ is_changed() {
   file_type=$(get_file_type "$file")
 
   # Compare the decrypted HEAD contents to the working file via streaming
-  ! cmp -s "$file" <(git cat-file -p "HEAD:$file" | secrets decrypt "$file" "$file_type")
+  ! cmp -s "$file" <(git cat-file -p "HEAD:$file" | secrets decrypt /dev/stdin "$file" "$file_type")
 }
 
 # Determine the type of file for use with sops
@@ -83,30 +89,43 @@ get_file_type() {
 # Encrypt/decrypt file with sops
 secrets() {
   local action=$1
-  local file=$2
-  local file_type=$3
+  local stdin=$2
+  local file=$3
+  local file_type=$4
 
   if [[ "$action" != @(encrypt|decrypt) ]]; then
     echo "Error: Invalid action. Use 'encrypt' or 'decrypt'" >&2
     exit 1
   fi
 
-  sops --config "$sops_config" \
+  mise -C $repo_root exec sops -- sops --config "$sops_config" \
     --input-type "$file_type" \
     --output-type "$file_type" \
     --filename-override "$file" \
-    --"$action" /dev/stdin
+    --"$action" "$stdin"
+}
+
+write_stdin_to_tmpfile() {
+  tmpfile=$(mktemp $tmpdir/git-sops.XXXX)
+  cat /dev/stdin >$tmpfile
+  echo -n $tmpfile
 }
 
 # Decrypt the contents of encrypted files in a repository
 decrypt_repo() {
   git ls-files | while read -r file; do
-    if is_encrypted "$file"; then
-      # Explicitly ignore the clean filter here
-      git -c filter.${git_filter_name}.clean=cat rm --cached "$file" &>/dev/null
-      git -c filter.${git_filter_name}.clean=cat checkout HEAD -- "$file"
-    fi
+    decrypt_file $file
   done
+}
+
+decrypt_file() {
+  local file=$1
+
+  if is_encrypted "$file"; then
+    # Explicitly ignore the clean filter here
+    git -c filter.${git_filter_name}.clean=cat rm --cached "$file" &>/dev/null
+    git -c filter.${git_filter_name}.clean=cat checkout HEAD -- "$file"
+  fi
 }
 
 # Initialize repository with the smudge and clean filter
@@ -137,10 +156,14 @@ smudge() {
     exit 2
   fi
 
+  tmpfile=$(write_stdin_to_tmpfile)
   file_type=$(get_file_type "$file")
-  secrets decrypt "$file" "$file_type"
-
-  echo "Decrypted as $file_type: $file" >&2
+  if secrets decrypt "$tmpfile" "$file" "$file_type"; then
+    echo "Decrypted as $file_type: $file" >&2
+  else
+    echo "Failed to decrypt as $file_type, may include conflicts: $file" >&2
+    cat $tmpfile
+  fi
 }
 
 # Encrypt the file content before staging (clean filter)
@@ -155,12 +178,20 @@ clean() {
 
   # If the file has not changed, reuse the existing encrypted content from HEAD
   if ! is_changed "$file"; then
+    echo "Re-using unchanged file: $file" >&2
     git cat-file -p "HEAD:$file"
     return
   fi
 
+  tmpfile=$(write_stdin_to_tmpfile)
+  if is_encrypted "$tmpfile"; then
+    echo "Already encrypted: $file" >&2
+    cat $tmpfile
+    return
+  fi
+
   file_type=$(get_file_type "$file")
-  secrets encrypt "$file" "$file_type"
+  secrets encrypt "$tmpfile" "$file" "$file_type"
 
   echo "Encrypted as $file_type: $file" >&2
 }
@@ -169,10 +200,10 @@ if command -v mise &>/dev/null; then
   eval $(mise -C $repo_root env -s bash)
 fi
 
-if ! command -v sops &>/dev/null; then
-  echo "Missing: sops"
-  exit 5
-fi
+# if ! command -v sops &>/dev/null; then
+#   echo "Missing: sops"
+#   exit 5
+# fi
 
 if [[ ! -f "$sops_config" ]]; then
   echo "Missing config: $sops_config"
@@ -186,6 +217,8 @@ fi
 
 case $1 in
 init) shift && init ;;
+decrypt-repo) shift && decrypt_repo ;;
+decrypt-file) shift && decrypt_repo "$1" ;;
 smudge) shift && smudge "$1" ;;
 clean) shift && clean "$1" ;;
 *) usage ;;
