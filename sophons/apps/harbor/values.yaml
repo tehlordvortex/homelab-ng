@@ -63,11 +63,18 @@ nginx:
     tag: v2.14.0
 
 portal:
+  replicas: 2
   image:
     repository: ppkg.tig.vrtx.sh/sophons/harbor-portal
     tag: v2.14.0
 
   affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: portal
+          topologyKey: kubernetes.io/hostname
     podAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 1
@@ -78,11 +85,18 @@ portal:
             topologyKey: topology.kubernetes.io/zone
 
 core:
+  replicas: 2
   image:
     repository: ppkg.tig.vrtx.sh/sophons/harbor-core
     tag: v2.14.0
 
   affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: core
+          topologyKey: kubernetes.io/hostname
     podAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 1
@@ -93,6 +107,7 @@ core:
             topologyKey: topology.kubernetes.io/zone
 
 jobservice:
+  replicas: 2
   image:
     repository: ppkg.tig.vrtx.sh/sophons/harbor-jobservice
     tag: v2.14.0
@@ -101,6 +116,12 @@ jobservice:
     - database
 
   affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: jobservice
+          topologyKey: kubernetes.io/hostname
     podAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 1
@@ -111,6 +132,7 @@ jobservice:
             topologyKey: topology.kubernetes.io/zone
 
 registry:
+  replicas: 2
   registry:
     image:
       repository: ppkg.tig.vrtx.sh/sophons/registry-photon
@@ -121,6 +143,12 @@ registry:
       tag: v2.14.0
 
   affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: registry
+          topologyKey: kubernetes.io/hostname
     podAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 1

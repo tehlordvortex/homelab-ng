@@ -4,25 +4,35 @@ metadata:
   name: postgres
   namespace: harbor
 spec:
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.5
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1-minimal-trixie
 
-  instances: 3
+  # TODO: Eventually the cluster breaks because of one problem or the other,
+  # and the WAL streaming may also backup the problem :)
+  instances: 2
+  failoverDelay: 60
+
   affinity:
     nodeSelector:
       hugeloads.sophons.cloud/postgres: "true"
+      topology.kubernetes.io/region: ng
     enablePodAntiAffinity: true # Default value
-    topologyKey: topology.kubernetes.io/zone
+    topologyKey: kubernetes.io/hostname
     podAntiAffinityType: required
 
   postgresql:
+    synchronous:
+      method: any
+      number: 1
+      failoverQuorum: true
+      dataDurability: preferred
     parameters:
       shared_buffers: "64MB"
       max_wal_size: "256MB"
       min_wal_size: "64MB"
-      wal_keep_size: "128MB"
-      max_slot_wal_keep_size: "128MB"
-      wal_receiver_timeout: 60s
-      wal_sender_timeout: 60s
+      wal_keep_size: "512MB"
+      max_slot_wal_keep_size: "512MB"
+      wal_receiver_timeout: 120s
+      wal_sender_timeout: 120s
 
   resources:
     requests:
@@ -33,10 +43,11 @@ spec:
 
   storage:
     storageClass: longhorn-local
-    size: 1Gi
+    size: 5Gi
 
   plugins:
     - name: barman-cloud.cloudnative-pg.io
       isWALArchiver: true
       parameters:
         barmanObjectName: pgbooze
+        serverName: v2
