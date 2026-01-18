@@ -19,9 +19,8 @@ spec:
       labels:
         app.kubernetes.io/name: ntfy
     spec:
+      priorityClassName: system-cluster-critical
       tolerations:
-        - key: prime.sophons.cloud
-          operator: Exists
         - key: "orunmila.sophons.cloud/ase-orun"
           operator: Exists
 
