@@ -68,6 +68,11 @@ portal:
     repository: ppkg.tig.vrtx.sh/sophons/harbor-portal
     tag: v2.14.0
 
+  nodeSelector:
+    topology.kubernetes.io/region: ng
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -90,6 +95,11 @@ core:
     repository: ppkg.tig.vrtx.sh/sophons/harbor-core
     tag: v2.14.0
 
+  nodeSelector:
+    topology.kubernetes.io/region: ng
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -115,6 +125,11 @@ jobservice:
   jobLoggers:
     - database
 
+  nodeSelector:
+    topology.kubernetes.io/region: ng
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -142,6 +157,11 @@ registry:
       repository: ppkg.tig.vrtx.sh/sophons/harbor-registryctl
       tag: v2.14.0
 
+  nodeSelector:
+    topology.kubernetes.io/region: ng
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
