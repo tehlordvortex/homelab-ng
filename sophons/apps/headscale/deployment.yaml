@@ -12,32 +12,38 @@ spec:
   selector: {}
   template:
     spec:
+      priorityClassName: system-cluster-critical
       imagePullSecrets:
         - name: harbor-pull-cred
 
       tolerations:
         - key: orunmila.sophons.cloud/ase-orun
           operator: Exists
-        - key: prime.sophons.cloud
+        - key: node.cilium.io/agent-not-ready
           operator: Exists
 
       affinity:
         nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    # only nodes with some kind of publicly routable ip
+                    values:
+                      - sophons-oduduwa
+                      - sophons-theta
+                      - sophons-beta
+                      - sophons-kaos
+
           preferredDuringSchedulingIgnoredDuringExecution:
             - preference:
                 matchExpressions:
-                  - key: topology.kubernetes.io/zone
-                    operator: NotIn
-                    # avoid running inside me house if possible
-                    values: [ng-east-1, ng-east-2, ng-middle-east]
-              weight: 10
-            - preference:
-                matchExpressions:
-                  - key: topology.kubernetes.io/region
-                    operator: In
-                    # try to run within ng if possible
-                    values: [ng]
-              weight: 5
+                  # control plane nodes do not need to be able to reach an external
+                  # api-server/scheduler
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+              weight: 100
 
       securityContext:
         runAsNonRoot: true
@@ -47,6 +53,21 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
+
+      # do not depend on cluster DNS
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
+          - 1.0.0.1
+          - 9.9.9.9
+      dnsPolicy: None
+      hostAliases:
+        - ip: 10.43.0.69
+          hostnames:
+            - auth.sophons.cloud
+        - ip: 2001:cafe:43::69
+          hostnames:
+            - auth.sophons.cloud
 
       containers:
         - name: proxy
@@ -277,6 +298,46 @@ spec:
             limits:
               memory: 256Mi
 
+        - name: update-cf-dns
+          image: docker.io/library/alpine:3.22
+          command:
+            - ash
+            - -euc
+            - |
+              while :; do
+                wget -qS -O /dev/null --post-data "" \
+                  --header "authorization: bearer $CLOUDFLARE_API_TOKEN" \
+                  https://neckhook.sphns.workers.dev/trigger
+                sleep 90 & # 1.5 minutes
+                wait $!
+              done
+
+          env:
+            - name: CLOUDFLARE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: headscale
+                  key: neckhook_cf.token
+
+          volumeMounts:
+            - name: cache
+              mountPath: "/var/cache/apk"
+              subPath: apk-cache
+
+          securityContext:
+            runAsNonRoot: false
+            runAsGroup: 0
+            runAsUser: 0
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 48Mi
+
       initContainers:
         - name: lightstream-restore-headscale
           image: docker.io/litestream/litestream:0.3.13
@@ -370,4 +431,6 @@ spec:
         - name: headscale
           emptyDir: {}
         - name: headplane
+          emptyDir: {}
+        - name: cache
           emptyDir: {}
