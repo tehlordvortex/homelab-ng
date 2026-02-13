@@ -1,10 +1,12 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/cronjob-batch-v1.json
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: talos-backup
   namespace: kube-system
 spec:
-  schedule: "0 * * * *"
+  schedule: "0 * * * *" # hourly
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
@@ -61,6 +63,104 @@ spec:
               secret:
                 secretName: talos-backup-secrets
 ---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: talos-backup-retention
+  namespace: kube-system
+spec:
+  schedule: "0 3 * * *" # daily at 03:00 UTC
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+
+          containers:
+            - name: retention
+              image: docker.io/alpine:3.23.3
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  #!/usr/bin/env sh
+                  # Partially written by Claude Opus 4.6
+                  set -euo pipefail
+
+                  apk add --no-cache aws-cli dateutils jq
+
+                  : "${B2_BUCKET:?B2_BUCKET must be set}"
+                  : "${B2_PREFIX:?B2_PREFIX must be set (folder path within bucket)}"
+                  : "${RETENTION_DAYS:=14}"
+                  : "${DRY_RUN:=true}"
+                  # max objects per delete-objects call is 1000, but we risk running
+                  # into "argument list too long" with the VersionIds included.
+                  : "${BATCH_SIZE:=750}"
+
+                  cutoff=$(dadd now "-${RETENTION_DAYS}d" -f '%Y-%m-%dT%H:%M:%SZ')
+
+                  echo "Bucket:         ${B2_BUCKET}"
+                  echo "Prefix:         ${B2_PREFIX}"
+                  echo "Retention days: ${RETENTION_DAYS}"
+                  echo "Cutoff date:    ${cutoff}"
+                  echo "Dry run:        ${DRY_RUN}"
+                  echo "Batch size:     ${BATCH_SIZE}"
+                  echo "---"
+
+                  files=$(aws s3api list-object-versions \
+                    --bucket "${B2_BUCKET}" \
+                    --prefix "${B2_PREFIX}" |
+                    jq -rc '.Versions[] | {Key:.Key,VersionId:.VersionId}')
+
+                  to_delete=$(echo "${files}" | dgrep -i '%Y-%m-%dT%H:%M:%SZ' "<${cutoff}" || true)
+
+                  if [ -z "${to_delete}" ]; then
+                    echo "No files older than ${RETENTION_DAYS} days found."
+                    exit 0
+                  fi
+
+                  count=$(echo "${to_delete}" | wc -l)
+                  echo "Files to delete (${count}):"
+                  echo "${to_delete}" | sed 's/^/  /'
+
+                  if [ "${DRY_RUN}" = "true" ]; then
+                    echo "---"
+                    echo "DRY_RUN is enabled, skipping deletion."
+                    exit 0
+                  fi
+
+                  echo "---"
+                  echo "Deleting in batches of ${BATCH_SIZE}..."
+
+                  deleted=0
+                  echo "${to_delete}" | jq -src "range(0; length; ${BATCH_SIZE}) as \$i | .[\$i:\$i+${BATCH_SIZE}]" | while IFS= read -r batch; do
+                    batch_json=$(echo "${batch}" | jq -rc '{Objects:.}')
+                    aws s3api delete-objects \
+                      --bucket "${B2_BUCKET}" \
+                      --delete "${batch_json}"
+                    batch_count=$(echo "${batch}" | jq 'length')
+                    deleted=$((deleted + batch_count))
+                    echo "  deleted ${deleted}/${count}"
+                  done
+
+                  echo "Done."
+              envFrom:
+                - secretRef:
+                    name: etcdeez-access-key
+              env:
+                - name: B2_BUCKET
+                  value: "sophons-etcd"
+                - name: B2_PREFIX
+                  value: "sophons/"
+                - name: RETENTION_DAYS
+                  value: "30"
+                - name: DRY_RUN
+                  value: "false"
+                - name: AWS_ENDPOINT_URL
+                  value: https://s3.eu-central-003.backblazeb2.com
+---
 apiVersion: talos.dev/v1alpha1
 kind: ServiceAccount
 metadata:
@@ -78,4 +178,3 @@ metadata:
   annotations:
     kubernetes.io/service-account.name: talos-backup-secrets
 ---
-
