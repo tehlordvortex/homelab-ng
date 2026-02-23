@@ -7,9 +7,9 @@
 applicationProtocol: https
 applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:5yhnMQBcMCcJclejc6m2FTmKRb0lpB6brgzb44O+YoqkRgq62u8c840W8RQRjwc/,iv:RK7ezU2oHGEcqjYA/btAlsr+FRLRJfkef1m/tludwE0=,tag:xMaRxYHHj+Kar9frQiopEQ==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:k40lFcvWvepWlohkL5IMU36UbZAokOexw1wRn1hQSGOFzU7o6lLQus0fp7i7pnMp,iv:UANIpZwxw9q1xhPkwOl837vUrBeGpjhJ796qws+CSSY=,tag:toReYNYSVMAoUysreOveuA==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:gGH9oAPgbEYzz7lvmiukStsFPW8vIj1xIFdjL41T,iv:g8Z5yq92AehwmTlcoJnvoxSYTzrlImU2tDirNPVINyA=,tag:TIL9jC9ISPRkILTe0RgaNw==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:0r7IDYzG+mXAnWKJ4TK99wZ1PSQTaFuIO5z7Dodg,iv:yQA2w4vN3euGd7pzQo/TgAMBvpvuFTI88zlQdANILH4=,tag:Ns87NBiCMWaM4cFfhrrV+w==,type:str]
 ingress:
   karakeep:
     enabled: false
@@ -22,7 +22,7 @@ controllers:
     containers:
       karakeep:
         image:
-          tag: 0.29.1
+          tag: 0.31.0
         # Next.js is a plague :(
         resources:
           requests:
@@ -42,9 +42,9 @@ controllers:
         env:
           DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
-          ASSET_STORE_S3_ENDPOINT: s3.eu-central-003.backblazeb2.com
-          ASSET_STORE_S3_REGION: eu-central-003
-          ASSET_STORE_S3_BUCKET: sophons-karakeep
+          ASSET_STORE_S3_ENDPOINT: https://ps3-global.sphns.run
+          ASSET_STORE_S3_REGION: global
+          ASSET_STORE_S3_BUCKET: karakeep
           ASSET_STORE_S3_FORCE_PATH_STYLE: "true"
           OAUTH_WELLKNOWN_URL: https://auth.sophons.cloud/.well-known/openid-configuration
           OAUTH_CLIENT_ID: sphns_q1F-KFdfxuwpzFejpdac311zzc65t0eiT.X1Vu3mE5
@@ -68,23 +68,103 @@ controllers:
           # 3 minutes
           CRAWLER_JOB_TIMEOUT_SEC: "300"
           CRAWLER_SCREENSHOT_TIMEOUT_SEC: "60"
-      litestream-replicate:
+    initContainers:
+      00-litestream-legacy-restore-db:
         image:
           repository: docker.io/litestream/litestream
-          tag: 0.5.2
+          tag: 0.3.13
         args:
-          - replicate
-          - -config=/etc/litestream/litestream.yaml
+          - restore
+          - -config=/etc/litestream/litestream-legacy.yaml
+          - /data/db.db
         envFrom:
           - secretRef:
-              name: litestream-access-key
+              name: litestream-ps3-global-access-key
+        env:
+          - name: GOMEMLIMIT
+            value: 120MiB
+          - name: LITESTREAM_LOGGING_LEVEL
+            value: debug
+        resources:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            memory: 128Mi
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      01-litestream-legacy-restore-queue:
+        image:
+          repository: docker.io/litestream/litestream
+          tag: 0.3.13
+        args:
+          - restore
+          - -config=/etc/litestream/litestream-legacy.yaml
+          - /data/queue.db
+        envFrom:
+          - secretRef:
+              name: litestream-ps3-global-access-key
+        env:
+          - name: GOMEMLIMIT
+            value: 120MiB
+          - name: LITESTREAM_LOGGING_LEVEL
+            value: debug
+        resources:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            memory: 128Mi
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      02-litestream-legacy-replicate:
+        image:
+          repository: docker.io/litestream/litestream
+          tag: 0.3.13
+        restartPolicy: Always
+        args:
+          - replicate
+          - -config=/etc/litestream/litestream-legacy.yaml
         ports:
           - name: metrics
             containerPort: 9090
-      tailscale:
+        envFrom:
+          - secretRef:
+              name: litestream-ps3-global-access-key
+        env:
+          - name: GOMEMLIMIT
+            value: 120MiB
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            memory: 128Mi
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      03-tailscale:
         image:
           repository: ghcr.io/tailscale/tailscale
-          tag: v1.90.6
+          tag: v1.94.2
+        restartPolicy: Always
         envFrom:
           - secretRef:
               name: tailscale-base-config
@@ -123,33 +203,6 @@ controllers:
             httpGet:
               path: /healthz
               port: 9002
-    initContainers:
-      litestream-restore-db:
-        image:
-          repository: docker.io/litestream/litestream
-          tag: 0.5.2
-        args:
-          - restore
-          - -config=/etc/litestream/litestream.yaml
-          - -if-db-not-exists
-          - -if-replica-exists
-          - /data/db.db
-        envFrom:
-          - secretRef:
-              name: litestream-access-key
-      litestream-restore-queue:
-        image:
-          repository: docker.io/litestream/litestream
-          tag: 0.5.2
-        args:
-          - restore
-          - -config=/etc/litestream/litestream.yaml
-          - -if-db-not-exists
-          - -if-replica-exists
-          - /data/queue.db
-        envFrom:
-          - secretRef:
-              name: litestream-access-key
   chrome:
     pod:
       nodeSelector:
@@ -166,7 +219,6 @@ controllers:
           - --disable-gpu
           - --disable-dev-shm-usage
         securityContext:
-          runAsNonRootUser: true
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
@@ -190,19 +242,12 @@ persistence:
       karakeep:
         karakeep:
           - path: /data
-        litestream-replicate:
+        00-litestream-legacy-restore-db:
           - path: /data
-        litestream-restore-db:
+        01-litestream-legacy-restore-queue:
           - path: /data
-        litestream-restore-queue:
+        02-litestream-legacy-replicate:
           - path: /data
-  # tailscale-state:
-  #   type: emptyDir
-  #   medium: Memory
-  #   advancedMounts:
-  #     karakeep:
-  #       tailscale:
-  #         - path: /var/lib/tailscale
   chrome-tmp:
     type: emptyDir
     advancedMounts:
@@ -215,22 +260,16 @@ persistence:
       chrome:
         chrome:
           - path: /home/chrome
-  # chrome-cache:
-  #   type: emptyDir
-  #   advancedMounts:
-  #     chrome:
-  #       chrome:
-  #         - path: /var/cache
   litestream:
     type: configMap
     name: litestream
     advancedMounts:
       karakeep:
-        litestream-replicate:
+        00-litestream-legacy-restore-db:
           - path: /etc/litestream
-        litestream-restore-db:
+        01-litestream-legacy-restore-queue:
           - path: /etc/litestream
-        litestream-restore-queue:
+        02-litestream-legacy-replicate:
           - path: /etc/litestream
 meilisearch:
   resources:
@@ -247,23 +286,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBxZDhT
-        R2cyT1NLdnVhQk9wc1JUVTUvcTdlVEJtUjM0OXhlaGI0OU5Zb2hFCkVmYmg5dVJQ
-        NzRvVmhQU25ZaEVicUZTOWoyRm11K3pqb1NFckFVYkdiTGMKLS0tIDN4N2tSUTBa
-        ZGUxREJYNGE4NllUeER6Um1iUlF6N2lVTTBUZHl4bitjSUUKVZ/z/OZ1PXpAr9a0
-        SSkDpSbg7DZ/frr00pmj2FUjUvT6PH+zkcYQmTwYOIbSXZJtd2t+Yzn11h81lWDB
-        4H9Ueg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBiYk1V
+        YUZGTVNNL2NVdENKb09xM2hFclBnQkdLYUdLWGIyZHNJWVlKZlVNCjZtK3Q4WUY3
+        Sk5mUXZVdWtNU2tDNU55S3BPamExdmRPU0pRWGFwb3FqS1UKLS0tIFVtSlppNFZZ
+        bk5BVzd0eDVaRXZsNE91cmFtUnZ0QlZ1ZGtMSGhWbmlQS3MKdDbqKDNLH24yuAoY
+        2ADj2UQTFS6UfYspvEcpf9bPCy9amq0TgwLvh6CdfftITfw2QxN2SsZxCe0blFMM
+        ROy/jg==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBBdGpxOU9kL2NpYmJZNHN4
-        ay9OM3lYcFdTL1dCWnhEV2VDd1JvakRNR0dJClZOL2hyV05IRldkTVE1RUFleExN
-        cnY4eHA2andKUkxqT0R6Y2JMelVMcEUKLS0tIFhtd2oxc0hUQ2pnNTR2NmdwK0dX
-        d1pnVFArZjZ0U0QzZzQ4a1FsUUpGTmsKioCbipWg3Q2NIYiwdi3VW8nLTz78vc2Z
-        xkQUHgT7gGBb+lamWc+8f1y0PEY6Nu6jv04XS/HKXwMU8WSI12U5Sw==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjb0ZRakdNRysvemJOc2pj
+        aGpuWkpTYzVac2gvMXprSzMra0RnTjk4azBFCmJVM1BNNW0wKzNqN2xES0NjNGpP
+        R2FHalMxU2JzeTlYVnY3Y0hXalVHSFUKLS0tICt1VjJtQ1JnN2R1OVg5dTl4dzRX
+        djY2K1FQTElYSTZtRjkzOUVtVkY0cW8KaRljsnDjvu3FnWDmqvUVn04A/5SE5PrK
+        unhRwIEs8Y530nqAngqbuKysK+5K2Tw75nopJrhRswavXSA63k3hOQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-12-05T11:17:56Z"
-  mac: ENC[AES256_GCM,data:uzMduAF5OgjM1ZXy1hQzGAF8crJSe/MFyDcHmwRAJY5ZIvjHuvwLAPL0Ld2wo5/c8njVTyZqDvNIjoHmIPkDQuGmk76Vc4070BEzu8WvlrgDrZ64u3631a/OKUvtU+E2yq74+0sJIGP43ZHqWnqmDUjfBwdGlj87ZiuOwiF/aOA=,iv:d5OT820VY+Em07i0xiT+At7mFBblfQX7a4BilQNANAY=,tag:FMmYwNQLtiiiX3XV5eW2dA==,type:str]
+  lastmodified: "2026-02-23T02:02:52Z"
+  mac: ENC[AES256_GCM,data:Rh7fHz9gblkWOm+N8uH2L2KeyrMl8F6CEDb0hW+ey4EdHbRova/SvHoYh40Diyt9s3OspVKNWpCWikKf0Yyv/t6hPvprfFoF5se7H3TIHQZv05EGOlhoZOLNkKLTEeb4PBOPgM3jEUWkr6Z9QvMcoBSWHHuwvJD+28C+uOUR3wQ=,iv:KJ/+WVsezE/UO+cBFbzKOWAMFBt/UN1eikeEXwrurR4=,tag:JblG84QixXt5DkfbmFppUg==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0
