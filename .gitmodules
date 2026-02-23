@@ -1,0 +1,3 @@
+[submodule "sophons/apps/garage/vendor/garage"]
+	path = sophons/apps/garage/vendor/garage
+	url = https://git.deuxfleurs.fr/Deuxfleurs/garage.git

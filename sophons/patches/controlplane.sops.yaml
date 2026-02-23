@@ -3,19 +3,22 @@ cluster:
   apiServer:
     # enc!
     certSANs:
-      - ENC[AES256_GCM,data:1K4fDh6f1vV6lA==,iv:pJttjtnjpd+hQqIVo3/zEy8/tzyy/ArHQYqmQmERamE=,tag:e+beLGz4Mj0H9YfJr0VAtQ==,type:str]
-      - ENC[AES256_GCM,data:F59/Zh3nJ12xog==,iv:BeAV6uCqkuk+bZLY5pwKl0f3mgFW4dYF0kyYvlrh1BI=,tag:Ib9AHxrwmcfntn0kh0xJ0A==,type:str]
-      - ENC[AES256_GCM,data:W+JfukQu3W4B6HDeDA==,iv:KFv63cH7CTZBvWHWRn1xgtRkO/lCuPmzxF1etZLPu4Q=,tag:MUGeO3QZ7DvMogOUFPg3oA==,type:str]
-      - ENC[AES256_GCM,data:AkiJtvekd+N2bq0YL4LQixjsMu4=,iv:QlzgueLQg2N9UjFwkxAegA+hvfU/erMdZRc3YjX2TyQ=,tag:E2qcoTF8x5wSI2r7JJ54Ng==,type:str]
-      - ENC[AES256_GCM,data:+3tSd98AZiQeL5TD5NjRLMd5YtKEWshf,iv:gsu7DzHSumKO4agHjizeXLYAe+HEPY+lj0bWJECU9ZY=,tag:/PhTxKfiCFCD8wIP/05AHA==,type:str]
-      - ENC[AES256_GCM,data:FerNaIhKZwV2NML8tpqBGmcmdUUh6Cic,iv:2PqrxpKmZEmrSwIBwK/i1O1DDwMS9sWs24rKaWfFZCQ=,tag:t+kC+HO1PKfr1uHa7ZSIuw==,type:str]
-      - ENC[AES256_GCM,data:VvQt7WvWrY88GEnNO8osMx9kXIr1xw9VmvE=,iv:saZ+7D+cW4DRTMSMWugtacDzNW6Oj0Oe0jdoHJBcL4g=,tag:D63E6uk1TNeUVEQu9JfEww==,type:str]
+      - ENC[AES256_GCM,data:ix8LvgANjnhZtw==,iv:VwGD8rDHT65YdgNzdFM2Sz0rCZR6tXUvenQHjqqOvNk=,tag:+PAjAkZAnKFb1yr63wK5sA==,type:str]
+      - ENC[AES256_GCM,data:GWL+1wRGQL8Djg==,iv:wPFaJlS2baXE3uTi7njkKFEJPpIKwfayFMjRA3KyeV4=,tag:Fi+YNUII6ga9BjZjckIipA==,type:str]
+      - ENC[AES256_GCM,data:rINOS+E6JYCkB063fw==,iv:ivpPFp9eEGxpqcQSwQbgRjWenUK6qlwkSS8b/5ngakM=,tag:DxQUb462z95b7BzJWVUbqw==,type:str]
+      - ENC[AES256_GCM,data:NLvOvYAuUc49NG1TtapT8IH0YoE=,iv:HMRmkMq1dSYBhZu+V74CZ8QZ0ypqVUJDIsFuJZPcy1Q=,tag:UIYHvhW3J9J5wguRSRljXg==,type:str]
+      - ENC[AES256_GCM,data:EoxeG8eCcwPR/8+46xiKW5g1StEkyjCs,iv:adQnUFfjvaZIMFU7JeMxlN7lxHD/eHFW0zd3a1alGb8=,tag:dz+9Bflrd0aTc4+1e95tbQ==,type:str]
+      - ENC[AES256_GCM,data:cBMZ8QcBZ6TMnkvADoJbFRPI2Btk1k3+,iv:gcPXq+67LDokaEJzB6GPh84GwxmHa4hG6rauWsvz5Yo=,tag:npTIrKVuKDSAWqxhgKw3Ww==,type:str]
+      - ENC[AES256_GCM,data:onlBbWTe4H6KMaFirC0nFfokzGGDadaSVE0=,iv:uuJSnOFOA8bsxZ3vmByOPkIDYRglP/16WZldErfesdw=,tag:JhjGd4GMgKNU/oYTAOaSnw==,type:str]
   etcd:
+    # listenSubnets defaults to advertisedSubnets if not set explicitly
     # enc!
-    #ENC[AES256_GCM,data:Kk04K33QJbNmR7V/lYfR/4oKb6Ot4znUJIiEcJjvkXlX1d+pGISStUDYHsVx7WwrNNXrMn1UtTiU+4QQtnOMmo/L,iv:FmN5UzuF3FX01RmJQZg/KfbyJb0RYfPbPkr5k+3wzXU=,tag:QH1HOxFV1tFdWHmLlXQydA==,type:comment]
     advertisedSubnets:
-      - ENC[AES256_GCM,data:2sVMjgzkyYLGs9AQ1wE8cehppsizjQ==,iv:D3E0vOqd9St4/cnEUsRUcW7OheJsXFD6+vuoEjCYoZo=,tag:0YSBFXqAZlrkdzMnft4ueA==,type:str]
-      - ENC[AES256_GCM,data:16Uii5qIkZyMjzO3ATZ9iZ9SDcW/AvA=,iv:Q/45hR//0jcEqqRtbj9DbUYnA+JhrcNxN3ApvchGz2g=,tag:lDAyGKmQiGns8sVBOnu52A==,type:str]
+      - ENC[AES256_GCM,data:q4i+8ooxVtcoAvkrTn9s+l8iYc+dsg==,iv:PA1giNfDbf2ywI2rW8xnBQSxiDT0ajuUKRKCsXIhDAY=,tag:6p9b540jkqCL3g03kbqa7w==,type:str]
+      - ENC[AES256_GCM,data:g5GMztX983G+UCV9x3M9kKtCakcunDWauVs5/p4HZVbbToMniT79+z5dATr1kN29W8o=,iv:gUBEy1wdwz/3iX4cbo0KwZeMshG3OHeGGCA3v26OHXc=,tag:fSchdZe6EJUpg2oSVXE/Rw==,type:comment]
+      - ENC[AES256_GCM,data:AX6vXKgwo02GCPK5HTA=,iv:ZmVVPosqiFTUF/KELIuMbE3glX0rf8OvY2b/XkqqiD4=,tag:rKN9yQOwMiTxX6B+TZdFmQ==,type:comment]
+      - ENC[AES256_GCM,data:bb4kbYjK9nx5Jt3omxN8CXi1xnqHaw==,iv:R7LlO7dg7U9YKJGM2eidteVxKN0E6UIEUtAkUrSqp3k=,tag:Rm4FQdC11jPibf68XuglYQ==,type:str]
+      - ENC[AES256_GCM,data:Uo/S7GyVjv3VEdUzcBZShQQ5Swro,iv:RbkhjJsy69v+VcwvYBjjPiN4kmGzE8Fso639HIUMcIE=,tag:jYy2OJtB4q96hkAWj4xjjQ==,type:str]
     extraArgs:
       heartbeat-interval: 5000
       election-timeout: 50000
@@ -32,23 +35,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyAvR3N4
-        UTNnbEFnM0x4ZXA2UEhKMFY3NndMRVdSeXF5R1Y1UGZteUF0THpJCnBIa2x5VXdo
-        THdZbHd6d2g4L2VMVUFHMFk3TTRmK1lTVis3WlRINlNWcDgKLS0tIHllZkduTm1j
-        bkJuZ1N6SzAzVThzd1N4bDZ0ZWxwbGV5VE5zN3IzMTQ3bGMKnl/r8effFAMPT+tO
-        hvJ+qYkCbedUo9HXcnPJaGR5W33DjOySxQMDoVTfaaE2BvUUtvmg8cFwuQp7bryy
-        Ce5e/g==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBCVGd4
+        aXhUSUFUbWFhNE1sNEZTTjE1TVFLQ2hUVVN0dDFFeDRXSkdybUY4CjdFLzNTdVQy
+        U0RyM1YyeWhJZ21WdjNQSnhneEpHZ0o4b216YXh5ZXZyN1EKLS0tIHdLcTlhSlJx
+        YUFQcDErNFBSNExMNFhPU1Q5WW0vWERMZmVVd3JLaytlVmMKlEOM6SYdaT6Qrl6+
+        UNdcZDdQ4nOl9yDga9Oc28hi6nkSyaX8WVdXYIv0Ot35HZZvOyx0pHnIS3ydAEyh
+        rMnCWQ==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBPU1lDSDgrcHg3NHRWVnlT
-        dUZBZmx4SHQ4VU5UU3dFdTRVUjZPcVBOQ0VFClBVZmdlZWZ3d05LTENNNklFa1pn
-        aGhYY2dxL2NFMm1IMW5zS0ZzOEJqN28KLS0tIDNpNFJQQS82ak9sTWlwaERMQ3hk
-        OEdJejB0UnI4QU0xclh4eGFPQlVpMUkKhNrTtVUb2x8DnYmfsJzGCykco7yh4S+G
-        hRLRvokCRJNKvpBhDmLmdjw2q53DUMet2/A9zQfoZ0hGuiDDGWR2AQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzZWR4bDlacHAvb2VWbitC
+        cFlkY0xTaGJQSzFncFpmd0NjQUMxcVhFV1NrCisvWkNTWHZhcUdsVThTckhnakJ6
+        b0JxbUd1WFY4MVJyUjNFaHVnazdwM1EKLS0tIDkrQ1FCZWpEWks1ckE5aVQrM0JF
+        N1Q5VGRUQ3BhYThIT0p3bzI4S2NnSVkKv3QwW8S2fzDNzY2BLKltI6WDbqdVuyTO
+        j9nnvUKgwr5pbQ+FtzRGY+vzVLKvcnloVgLuE34YDOjQamL+eezsYw==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-11-23T20:23:31Z"
-  mac: ENC[AES256_GCM,data:tjCPw+yN4v4Zdb4jMAU5rGCybU1LkmDlyCxm/JzxfKAi2vFKoW4wzaLAox8QoGJSmJw2Z1bgwoWRvHwtkGQk94EdJ+sqiztMEfCZFWsnCstqj0umyYbb3E+chbQPwl4MnkxOTDKO4X0rO69Kc7046zS39nqAT/ar+0BV2WBsDXs=,iv:3prIkhB3O1gGvS22RUNSZZ/Y/Kig7DNQf5tzOdBXYzQ=,tag:7e9xWlUIY70rN73KEw8y1Q==,type:str]
+  lastmodified: "2026-02-23T01:11:41Z"
+  mac: ENC[AES256_GCM,data:wKrfGvWtZE6MfXdvORsXRJa9T18HH9YfEHTw/EKT86rlRE8OmT6xOmXXHXiv19a8oKA+26zsIxpG3qdwGo+VMa+qZajXR8FekWEiMzi+L1HymH8ToG8H9zWLMVic84ug7KyR9FJHNUFYHdX1po/TABZ9Wkra+WO9Z6btwdIlPTA=,iv:kOzOAwmJ6k07CvnLE64sUKmUXXnwLdi3Z2HZ3TP/Yn0=,tag:/YE4eVoD6iePPKUzU1cFWg==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

@@ -16,6 +16,9 @@ spec:
       hugeloads.sophons.cloud/postgres: "true"
       topology.kubernetes.io/region: ng
     enablePodAntiAffinity: true # Default value
+    tolerations:
+      - key: orunmila.sophons.cloud/ase-orun
+        operator: Exists
     topologyKey: kubernetes.io/hostname
     podAntiAffinityType: required
 

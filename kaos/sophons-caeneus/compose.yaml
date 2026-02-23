@@ -20,7 +20,7 @@
 services:
   talos:
     restart: always
-    image: ghcr.io/siderolabs/talos:v1.11.5
+    image: ghcr.io/siderolabs/talos:v1.12.1
     privileged: true
     cpus: 8
     mem_limit: 8G
@@ -69,9 +69,9 @@ services:
     devices:
       - /dev/net/tun
     networks:
+      default:
       lab:
         ipv4_address: 10.42.42.5
-        ipv6_address: ${IPV6_ADDRESS}
 
 volumes:
   tailscale-state:
@@ -87,9 +87,7 @@ networks:
     driver: ipvlan
     driver_opts:
       parent: lab1
-    enable_ipv6: true
     ipam:
       config:
         - subnet: 10.42.0.0/16
           gateway: 10.42.0.1
-        - subnet: ${IPV6_SUBNET}

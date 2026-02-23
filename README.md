@@ -17,14 +17,13 @@ My [previous setup](https://github.com/tehlordvortex/homelab) (repo horribly out
 my setup is uhh, a bit jank:
 
 - unifi for networking (1g), starlink primary isp, mtn ng fallback isp (ipv4 only :()
-- 1.5 RPi4's, in my house - `beta` and `prime`
-- 1 vm and 1 container, on my desktop (surprise, also in my house) - `kaos` and `caeneus`
+- 2.5 RPi4's, in my house - `alpha`, `beta` and `prime`
+- 1 container, on my desktop (surprise, also in my house) - `caeneus`
   - container shares gpu with host
 - a tiny vps in NG - `oduduwa`
 - a less tiny vps in NL - `theta`
+- a less tiny vps in DE - `voltzahl`
 
 ### TODO
 
-- Migrate vps in DE to Talos
-- Migrate second RPi4 to Talos
 - Setup ArgoCD

@@ -17,6 +17,33 @@ parameters:
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
+  name: longhorn-local-encrypted
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  encrypted: "true"
+  backupTargetName: "default"
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fsType: "ext4"
+  dataLocality: "strict-local"
+  disableRevisionCounter: "true"
+  nodeSelector: "storage"
+  diskSelector: "fast"
+  csi.storage.k8s.io/provisioner-secret-name: "volume-key"
+  csi.storage.k8s.io/provisioner-secret-namespace: "longhorn-system"
+  csi.storage.k8s.io/node-publish-secret-name: "volume-key"
+  csi.storage.k8s.io/node-publish-secret-namespace: "longhorn-system"
+  csi.storage.k8s.io/node-stage-secret-name: "volume-key"
+  csi.storage.k8s.io/node-stage-secret-namespace: "longhorn-system"
+  csi.storage.k8s.io/node-expand-secret-name: "volume-key"
+  csi.storage.k8s.io/node-expand-secret-namespace: "longhorn-system"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
   name: longhorn-global
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"

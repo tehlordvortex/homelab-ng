@@ -22,6 +22,12 @@ run = ["talosctl --nodes=$SOPHONS_BETA"]
 [tasks.'talos:theta']
 run = ["talosctl --nodes=$SOPHONS_THETA"]
 
+[tasks.'talos:voltzahl']
+run = ["talosctl --nodes=$SOPHONS_VOLTZAHL"]
+
+[tasks.'talos:alpha']
+run = ["talosctl --nodes=$SOPHONS_ALPHA"]
+
 [tasks.'talos:kaos']
 run = ["talosctl --nodes=$SOPHONS_KAOS"]
 
@@ -44,6 +50,13 @@ depends = ["gen"]
 dir = "{{config_root}}"
 run = ["mise talos:theta apply-config -f generated/controlplane.theta.yaml"]
 
+[tasks.'apply:voltzahl']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = [
+  "mise talos:voltzahl apply-config -f generated/controlplane.voltzahl.yaml",
+]
+
 [tasks.'apply:kaos']
 depends = ["gen"]
 dir = "{{config_root}}"
@@ -64,6 +77,11 @@ depends = ["gen"]
 dir = "{{config_root}}"
 run = ["mise talos:caeneus apply-config -f generated/worker.caeneus.yaml"]
 
+[tasks.'apply:alpha']
+depends = ["gen"]
+dir = "{{config_root}}"
+run = ["mise talos:alpha apply-config -f generated/worker.alpha.yaml"]
+
 [tasks.'upgrade']
 # IMPORTANT: https://longhorn.io/docs/1.9.0/advanced-resources/os-distro-specific/talos-linux-support/#talos-linux-upgrades
 run = "talosctl upgrade --preserve"
@@ -75,12 +93,13 @@ run = "talosctl reset --system-labels-to-wipe STATE --system-labels-to-wipe EPHE
 depends = ["gen"]
 dir = "{{config_root}}"
 run = [
+  { task = "apply:alpha" },
   { task = "apply:prime" },
   { task = "apply:oduduwa" },
   { task = "apply:caeneus" },
   { task = "apply:beta" },
   { task = "apply:theta" },
-  { task = "apply:kaos" },
+  { task = "apply:voltzahl" },
 ]
 
 [tasks.'apply:controlplane']
@@ -89,13 +108,14 @@ dir = "{{config_root}}"
 run = [
   { task = "apply:beta" },
   { task = "apply:theta" },
-  { task = "apply:kaos" },
+  { task = "apply:voltzahl" },
 ]
 
 [tasks.'apply:worker']
 depends = ["gen"]
 dir = "{{config_root}}"
 run = [
+  { task = "apply:alpha" },
   { task = "apply:prime" },
   { task = "apply:oduduwa" },
   { task = "apply:caeneus" },

@@ -19,3 +19,5 @@ longhornDriver:
   tolerations:
     - key: prime.sophons.cloud
       operator: Exists
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists

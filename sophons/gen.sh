@@ -8,7 +8,7 @@ patch_dir=$self_dir/patches
 
 cluster=sophons
 endpoint=$SOPHONS_ENDPOINT_URL
-talos_version=v1.11.5
+talos_version=v1.12.1
 kubernetes_version=v1.34.1
 # pi_image=008ccc3eef3828058d2b4030ce83c192f2abe193dde422349b3621c44228d659
 # vm_image=ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515
@@ -70,8 +70,9 @@ rm -r $self_dir/generated/*.yaml
 
 gen_controlplane beta factory.talos.dev/installer/$pi_image:$talos_version
 gen_controlplane theta factory.talos.dev/installer/$vm_image:$talos_version
-gen_controlplane kaos factory.talos.dev/installer/$vm_image:$talos_version
+gen_controlplane voltzahl factory.talos.dev/installer/$vm_image:$talos_version
 
+gen_worker alpha factory.talos.dev/installer/$pi_image:$talos_version
 gen_worker prime factory.talos.dev/installer/$prime_image:$talos_version
 gen_worker oduduwa factory.talos.dev/installer/$vm_image:$talos_version
-gen_worker caeneus ghcr.io/siderolabs/talos:v1.11.3
+gen_worker caeneus ghcr.io/siderolabs/talos:$talos_version

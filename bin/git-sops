@@ -130,7 +130,12 @@ decrypt_file() {
 
 # Initialize repository with the smudge and clean filter
 init() {
-  if is_initialized; then
+  local force=false
+  if [[ "${1:-}" == "-f" ]]; then
+    force=true
+  fi
+
+  if is_initialized && ! $force; then
     echo "Repository already initialized; skipping"
     return
   fi
@@ -216,7 +221,7 @@ if ! git rev-parse --is-inside-work-tree &>/dev/null; then
 fi
 
 case $1 in
-init) shift && init ;;
+init) shift && init $1 ;;
 decrypt-repo) shift && decrypt_repo ;;
 decrypt-file) shift && decrypt_repo "$1" ;;
 smudge) shift && smudge "$1" ;;
