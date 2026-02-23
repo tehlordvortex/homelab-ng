@@ -14,7 +14,7 @@ spec:
       protocol: TCP
       port: 3900
       targetPort: 3900
-    - name: s3-web
+    - name: web-api
       protocol: TCP
       port: 3902
       targetPort: 3902
@@ -25,11 +25,11 @@ spec:
   selector:
     app.kubernetes.io/instance: global-gateway
     app.kubernetes.io/name: garage
-  trafficDistribution: PreferSameNode
+  # trafficDistribution: PreferSameNode
   ipFamilies:
     - IPv4
     - IPv6
-  ipFamilyPolicy: PreferDualStack
+  ipFamilyPolicy: RequireDualStack
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
 apiVersion: v1
@@ -47,7 +47,7 @@ spec:
       protocol: TCP
       port: 3900
       targetPort: 3900
-    - name: s3-web
+    - name: web-api
       protocol: TCP
       port: 3902
       targetPort: 3902
@@ -61,4 +61,4 @@ spec:
   ipFamilies:
     - IPv4
     - IPv6
-  ipFamilyPolicy: PreferDualStack
+  ipFamilyPolicy: RequireDualStack

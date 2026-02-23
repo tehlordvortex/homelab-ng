@@ -1,0 +1,25 @@
+apiVersion: cilium.io/v2
+kind: CiliumLocalRedirectPolicy
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  redirectFrontend:
+    serviceMatcher:
+      serviceName: traefik
+      namespace: traefik
+  redirectBackend:
+    localEndpointSelector:
+      matchLabels:
+        app.kubernetes.io/name: traefik
+        app.kubernetes.io/instance: traefik-traefik
+    toPorts:
+      - name: ssh
+        port: "22"
+        protocol: TCP
+      - name: web
+        port: "80"
+        protocol: TCP
+      - name: websecure
+        port: "443"
+        protocol: TCP

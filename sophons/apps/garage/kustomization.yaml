@@ -5,3 +5,4 @@ resources:
   - secret.sops.yaml
   - dnsendpoint.yaml
   - persistentvolumeclaim.yaml
+  - ciliumlocalredirectpolicy.yaml

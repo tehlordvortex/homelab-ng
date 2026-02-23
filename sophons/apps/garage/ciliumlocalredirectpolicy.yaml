@@ -1,0 +1,25 @@
+apiVersion: cilium.io/v2
+kind: CiliumLocalRedirectPolicy
+metadata:
+  name: s3-global
+  namespace: garage
+spec:
+  redirectFrontend:
+    serviceMatcher:
+      serviceName: s3-global
+      namespace: garage
+  redirectBackend:
+    localEndpointSelector:
+      matchLabels:
+        app.kubernetes.io/name: garage
+        app.kubernetes.io/instance: global-gateway
+    toPorts:
+      - name: s3-api
+        port: "3900"
+        protocol: TCP
+      - name: web-api
+        port: "3902"
+        protocol: TCP
+      - name: admin
+        port: "3903"
+        protocol: TCP

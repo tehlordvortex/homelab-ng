@@ -11,7 +11,7 @@ resources:
     cpu: 250m
     memory: 128Mi
   limits:
-    memory: 512Mi
+    memory: 420Mi
 
 cni:
   customConf: false
@@ -42,6 +42,8 @@ ipv6NativeRoutingCIDR: 2001:cafe:41::/56
 #   hostLegacyRouting: true
 #   lbModeAnnotation: true
 kubeProxyReplacement: true
+localRedirectPolicies:
+  enabled: true
 # socketLB:
 #   hostNamespaceOnly: true
 # loadBalancer:

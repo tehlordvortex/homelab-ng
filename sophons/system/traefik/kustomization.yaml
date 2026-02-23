@@ -4,6 +4,7 @@ resources:
   - syslogngflow.yaml
   - secrets.sops.yaml
   - dnsendpoint.sops.yaml
+  - ciliumlocalredirectpolicy.yaml
 
 secretGenerator:
   - name: cloudflared

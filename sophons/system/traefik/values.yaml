@@ -110,7 +110,8 @@ service:
   enabled: true
   type: ClusterIP
   spec:
-    trafficDistribution: PreferSameNode
+    # TODO: https://github.com/cilium/cilium/issues/44060
+    # trafficDistribution: PreferSameNode # not supported by cilium
     ipFamilies: ["IPv4", "IPv6"]
     ipFamilyPolicy: RequireDualStack
     clusterIP: 10.43.0.69
@@ -128,7 +129,7 @@ service:
           traefik-internal.sophons.cloud
         external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
-        trafficDistribution: PreferSameNode
+        # trafficDistribution: PreferSameNode
         externalTrafficPolicy: Local
     kaos:
       single: true
@@ -139,7 +140,7 @@ service:
           traefik-kaos.sophons.cloud
         external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
       spec:
-        trafficDistribution: PreferSameNode
+        # trafficDistribution: PreferSameNode
         externalTrafficPolicy: Local
     starlink:
       single: true
@@ -151,7 +152,7 @@ service:
           traefik-star-theta.sophons.cloud,
           traefik-sango-star-theta.sophons.cloud
       spec:
-        trafficDistribution: PreferSameNode
+        # trafficDistribution: PreferSameNode
         ipFamilies: ["IPv6"]
         externalTrafficPolicy: Local
     theta:
@@ -164,7 +165,7 @@ service:
           traefik-star-theta.sophons.cloud,
           traefik-sango-star-theta.sophons.cloud
       spec:
-        trafficDistribution: PreferSameNode
+        # trafficDistribution: PreferSameNode
         ipFamilies: ["IPv6"]
         externalTrafficPolicy: Local
 
