@@ -1,0 +1,14 @@
+namespace: argocd-system
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.2.3/manifests/core-install.yaml
+  - secret.sops.yaml
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: argocd-system
+    target:
+      group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+      version: v1
