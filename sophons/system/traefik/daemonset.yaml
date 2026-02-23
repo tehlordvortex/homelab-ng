@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/daemonset-apps-v1.json
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cloudflared
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: cloudflared
+    app.kubernetes.io/instance: traefik
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudflared
+      app.kubernetes.io/instance: traefik
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cloudflared
+        app.kubernetes.io/instance: traefik
+    spec:
+      tolerations:
+        - operator: Exists
+
+      # securityContext:
+      #   sysctls:
+      #     # allows icmp traffic (ping, traceroute) to resources behind cloudflared.
+      #     # TODO: apply this at the node level?
+      #     - name: net.ipv4.ping_group_range
+      #       value: "65532 65532"
+
+      hostNetwork: true # use host network to avoid issue with mtu linked below
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        # https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/deployment-guides/kubernetes/
+        - image: cloudflare/cloudflared:2026.2.0
+          name: cloudflared
+          env:
+            - name: GOMEMLIMIT
+              value: "60MiB"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              memory: "72Mi"
+          command:
+            - cloudflared
+            - tunnel
+            - --no-autoupdate
+            - --loglevel
+            - info
+            - --metrics
+            - 0.0.0.0:2000
+            # https://github.com/cilium/cilium/issues/37529
+            # - --protocol
+            # - http2
+            - --config
+            - /.cloudflared/config.yaml
+            - run
+          volumeMounts:
+            - name: cloudflared
+              mountPath: /.cloudflared
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              # Cloudflared has a /ready endpoint which returns 200 if and only if
+              # it has an active connection to Cloudflare's network.
+              path: /ready
+              port: 2000
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: cloudflared
+          secret:
+            secretName: cloudflared

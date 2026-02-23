@@ -59,14 +59,14 @@ ports:
       kaos: true
       starlink: true
       theta: true
-    redirections:
-      entryPoint:
-        to: websecure
-        scheme: https
-        permanent: true
-    middlewares:
-      []
-      # - crowdsec-crowdsec-bouncer@kubernetescrd
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+    # middlewares: []
+    # - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -87,9 +87,8 @@ ports:
         # uploading blobs to gitea etc can take a while
         # thanks [fuck-all]mbps upload internet.
         readTimeout: 300
-    middlewares:
-      []
-      # - crowdsec-crowdsec-bouncer@kubernetescrd
+    # middlewares: []
+    # - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -106,9 +105,6 @@ ports:
       kaos: true
       starlink: true
       theta: true
-    middlewares:
-      []
-      # - crowdsec-crowdsec-bouncer@kubernetescrd
 
 service:
   enabled: true
@@ -266,57 +262,7 @@ updateStrategy:
     maxSurge: 0
 deployment:
   kind: DaemonSet
-  # https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/deployment-guides/kubernetes/
-  additionalContainers:
-    - image: cloudflare/cloudflared:2025.11.1
-      name: cloudflared
-      # envFrom:
-      #   - secretRef:
-      #       name: cloudflare-tunnel-token
-      env:
-        - name: GOMEMLIMIT
-          value: "60MiB"
-      resources:
-        requests:
-          cpu: "50m"
-          memory: "32Mi"
-        limits:
-          memory: "72Mi"
-      command:
-        - cloudflared
-        - tunnel
-        - --no-autoupdate
-        - --loglevel
-        - debug
-        - --metrics
-        - 0.0.0.0:2000
-        # https://github.com/cilium/cilium/issues/37529
-        - --protocol
-        - http2
-        - --config
-        - /.cloudflared/config.yaml
-        - run
-      volumeMounts:
-        - name: cloudflared
-          mountPath: /.cloudflared
-          readOnly: true
-      livenessProbe:
-        httpGet:
-          # Cloudflared has a /ready endpoint which returns 200 if and only if
-          # it has an active connection to Cloudflare's network.
-          path: /ready
-          port: 2000
-        failureThreshold: 1
-        initialDelaySeconds: 10
-        periodSeconds: 10
-  additionalVolumes:
-    - name: cloudflared
-      secret:
-        secretName: cloudflared
 
-env:
-  - name: GOMEMLIMIT
-    value: "120MiB"
 resources:
   requests:
     cpu: "100m"
@@ -331,10 +277,6 @@ volumes:
 
 tolerations:
   - operator: Exists
-  - key: orunmila.sophons.cloud/ase-orun
-    operator: Exists
-  - key: prime.sophons.cloud
-    operator: Exists
 
 experimental:
   # Fun fact, using plugins essentially introduce a hard dependency
@@ -351,7 +293,7 @@ securityContext:
 
 podSecurityContext:
   sysctls:
-    # Allows ICMP traffic (ping, traceroute) to resources behind cloudflared.
+    # allows icmp traffic (ping, traceroute) to resources behind cloudflared.
     - name: net.ipv4.ping_group_range
       value: "65532 65532"
 
