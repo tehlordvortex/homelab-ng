@@ -1,0 +1,52 @@
+commonLabels:
+  cluster.garage.sophons.cloud: global
+
+garage:
+  blockSize: "2097152" # 2MiB
+  compressionLevel: "3"
+  metadataAutoSnapshotInterval: "1h"
+  existingRpcSecret: garage
+  s3:
+    api:
+      region: global
+
+persistence:
+  meta:
+    storageClass: longhorn-local-encrypted
+    size: 2Gi
+  data:
+    storageClass: longhorn-local-encrypted
+    size: 128Gi
+
+image:
+  repository: dxflrs/garage
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 128Mi
+  limits:
+    memory: 768Mi
+
+nodeSelector:
+  hugeloads.sophons.cloud/longhorn: "true"
+  hugeloads.sophons.cloud/garage: "true"
+  cluster.garage.sophons.cloud/global: "true"
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: garage
+            app.kubernetes.io/instance: global
+            cluster.garage.sophons.cloud: global
+        mismatchLabelKeys: [pod-template-hash]
+        topologyKey: topology.kubernetes.io/zone
+
+priorityClassName: system-cluster-critical
+
+securityContext:
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault

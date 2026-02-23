@@ -38,6 +38,8 @@ services:
       - etc-kubernetes:/etc/kubernetes
       - usr-libexec-kubernetes:/usr/libexec/kubernetes
       - opt:/opt
+      - /run/media/vrtx/big-boi/backups/backups/garage:/var/lib/garage/backup/big-boi
+      - /run/media/vrtx/less-big-boi/backups/garage:/var/lib/garage/backup/less-big-boi
     environment:
       - PLATFORM=container
       - TALOSSKU=8CPU-8192RAM

@@ -1,0 +1,87 @@
+commonLabels:
+  cluster.garage.sophons.cloud: global
+
+garage:
+  kubernetesSkipCrd: true
+  existingRpcSecret: garage
+  garageTomlString: |
+    metadata_dir = "/mnt/meta"
+    data_dir = "/mnt/data"
+
+    db_engine = "lmdb"
+
+    block_size = "2097152"
+
+    replication_factor = 3
+    consistency_mode = "consistent"
+
+    compression_level = 3
+    metadata_auto_snapshot_interval = "1h"
+
+    rpc_bind_addr = "[::]:3901"
+    # rpc_secret will be populated by the init container from a k8s secret object
+    rpc_secret = "__RPC_SECRET_REPLACE__"
+
+
+    [kubernetes_discovery]
+    namespace = "garage"
+    service_name = "global-garage"
+    skip_crd = true
+
+    [s3_api]
+    s3_region = "global"
+    api_bind_addr = "[::]:3900"
+    root_domain = ".s3.garage.tld"
+
+    [s3_web]
+    bind_addr = "[::]:3902"
+    root_domain = ".web.garage.tld"
+    index = "index.html"
+
+    [admin]
+    api_bind_addr = "[::]:3903"
+
+persistence:
+  enabled: true
+  meta:
+    storageClass: local-path
+  data:
+    storageClass: local-path
+
+image:
+  repository: dxflrs/garage
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    memory: 256Mi
+
+priorityClassName: system-cluster-critical
+
+securityContext:
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+
+deployment:
+  kind: StatefulSet
+  replicaCount: 7
+
+tolerations:
+  - key: prime.sophons.cloud
+    operator: Exists
+  - key: caeneus.sophons.cloud
+    operator: Exists
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: garage
+            app.kubernetes.io/instance: global-gateway
+            cluster.garage.sophons.cloud: global
+        mismatchLabelKeys: [pod-template-hash]
+        topologyKey: kubernetes.io/hostname

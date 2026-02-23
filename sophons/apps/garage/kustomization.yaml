@@ -1,0 +1,7 @@
+namespace: garage
+resources:
+  - service.yaml
+  - httproute.yaml
+  - secret.sops.yaml
+  - dnsendpoint.yaml
+  - persistentvolumeclaim.yaml

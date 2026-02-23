@@ -21,6 +21,8 @@ ripsecrets = "0.1.11"
 pre-commit = "4.4.0"
 "aqua:juanfont/headscale" = "0.27.1"
 rust = "1.92.0"
+aws-cli = { version = "2.33.27", symlink_bins = "true" }
+"cargo:stu" = "0.7.6"
 
 [env]
 '_'.file = ["{{config_root}}/.env"]

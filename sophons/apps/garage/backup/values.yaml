@@ -1,0 +1,75 @@
+commonLabels:
+  cluster.garage.sophons.cloud: backup
+
+garage:
+  kubernetesSkipCrd: true
+  existingRpcSecret: garage
+  garageTomlString: |
+    metadata_dir = "/mnt/less-big-boi/meta"
+    data_dir = "/mnt/less-big-boi/data"
+
+    db_engine = "lmdb"
+
+    block_size = "10485760" # 10MiB
+
+    replication_factor = 1
+    consistency_mode = "consistent"
+
+    compression_level = 15
+    metadata_auto_snapshot_interval = "1h"
+
+    rpc_bind_addr = "[::]:3901"
+    # rpc_secret will be populated by the init container from a k8s secret object
+    rpc_secret = "__RPC_SECRET_REPLACE__"
+
+    [s3_api]
+    s3_region = "backup"
+    api_bind_addr = "[::]:3900"
+    root_domain = ".s3.garage.tld"
+
+    [s3_web]
+    bind_addr = "[::]:3902"
+    root_domain = ".web.garage.tld"
+    index = "index.html"
+
+    [admin]
+    api_bind_addr = "[::]:3903"
+
+persistence:
+  enabled: false
+
+extraVolumes:
+  - name: less-big-boi
+    persistentVolumeClaim:
+      claimName: backup-less-big-boi
+
+extraVolumeMounts:
+  - name: less-big-boi
+    mountPath: /mnt/less-big-boi
+
+image:
+  repository: dxflrs/garage
+
+deployment:
+  kind: StatefulSet
+  replicaCount: 1
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 128Mi
+  limits:
+    memory: 768Mi
+
+tolerations:
+  - key: caeneus.sophons.cloud
+    operator: Exists
+nodeSelector:
+  kubernetes.io/hostname: sophons-caeneus
+
+priorityClassName: system-cluster-critical
+
+securityContext:
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault

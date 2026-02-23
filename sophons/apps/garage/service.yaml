@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3-global
+  namespace: garage
+  labels:
+    app.kubernetes.io/instance: global
+    app.kubernetes.io/name: garage
+    cluster.garage.sophons.cloud: global
+spec:
+  ports:
+    - name: s3-api
+      protocol: TCP
+      port: 3900
+      targetPort: 3900
+    - name: s3-web
+      protocol: TCP
+      port: 3902
+      targetPort: 3902
+    - name: admin
+      protocol: TCP
+      port: 3903
+      targetPort: 3903
+  selector:
+    app.kubernetes.io/instance: global-gateway
+    app.kubernetes.io/name: garage
+  trafficDistribution: PreferSameNode
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: PreferDualStack
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3-backup
+  namespace: garage
+  labels:
+    app.kubernetes.io/instance: backup
+    app.kubernetes.io/name: garage
+    cluster.garage.sophons.cloud: backup
+spec:
+  ports:
+    - name: s3-api
+      protocol: TCP
+      port: 3900
+      targetPort: 3900
+    - name: s3-web
+      protocol: TCP
+      port: 3902
+      targetPort: 3902
+    - name: admin
+      protocol: TCP
+      port: 3903
+      targetPort: 3903
+  selector:
+    app.kubernetes.io/instance: backup
+    app.kubernetes.io/name: garage
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: PreferDualStack
