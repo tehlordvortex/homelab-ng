@@ -30,8 +30,9 @@ cfIPs: &cfIPs
 
 logs:
   general:
+    # TODO: prob just scan git logs for ssh attempts
     # TCP/UDP connection logs only happen at the debug level
-    level: DEBUG
+    level: INFO
     noColor: true
   access:
     enabled: true
