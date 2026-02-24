@@ -15,3 +15,4 @@ configMapGenerator:
       disableNameSuffixHash: true
     files:
       - config/litestream.yaml
+      - config/litestream-legacy.yaml
