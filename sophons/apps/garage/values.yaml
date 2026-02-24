@@ -12,11 +12,11 @@ garage:
 
 persistence:
   meta:
-    storageClass: longhorn-local-encrypted
-    size: 2Gi
+    storageClass: local-path
+    size: 1Ti # ignored
   data:
-    storageClass: longhorn-local-encrypted
-    size: 128Gi
+    storageClass: local-path
+    size: 1Ti # ignored
 
 image:
   repository: dxflrs/garage

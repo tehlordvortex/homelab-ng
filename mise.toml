@@ -23,6 +23,7 @@ pre-commit = "4.4.0"
 rust = "1.92.0"
 aws-cli = { version = "2.33.27", symlink_bins = "true" }
 "cargo:stu" = "0.7.6"
+"aqua:utkuozdemir/pv-migrate" = "2.2.1"
 
 [env]
 '_'.file = ["{{config_root}}/.env"]

@@ -27,10 +27,7 @@ patches:
           spec:
             priorityClassName: system-node-critical
             tolerations:
-              - key: prime.sophons.cloud
-                operator: Exists
-              - key: caeneus.sophons.cloud
-                operator: Exists
+              - operator: Exists
               - key: node.kubernetes.io/disk-pressure
                 operator: Exists
                 effect: NoSchedule
