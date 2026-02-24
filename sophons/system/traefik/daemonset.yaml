@@ -30,6 +30,13 @@ spec:
 
       hostNetwork: true # use host network to avoid issue with mtu linked below
       dnsPolicy: ClusterFirstWithHostNet
+      hostAliases:
+        - ip: 10.43.0.10
+          hostnames:
+            - traefik.traefik.svc.cluster.local
+        - ip: 2001:cafe:43::69
+          hostnames:
+            - traefik.traefik.svc.cluster.local
       containers:
         # https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/deployment-guides/kubernetes/
         - image: cloudflare/cloudflared:2026.2.0
@@ -48,7 +55,7 @@ spec:
             - tunnel
             - --no-autoupdate
             - --loglevel
-            - info
+            - debug
             - --metrics
             - 0.0.0.0:2000
             # https://github.com/cilium/cilium/issues/37529
