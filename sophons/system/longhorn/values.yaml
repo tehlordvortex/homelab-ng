@@ -12,6 +12,9 @@ defaultSettings:
 longhornManager:
   nodeSelector:
     hugeloads.sophons.cloud/longhorn: "true"
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
 
 longhornDriver:
   nodeSelector:

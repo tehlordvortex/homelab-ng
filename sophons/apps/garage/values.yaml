@@ -33,6 +33,9 @@ nodeSelector:
   hugeloads.sophons.cloud/garage: "true"
   cluster.garage.sophons.cloud/global: "true"
 
+tolerations:
+  - key: orunmila.sophons.cloud/ase-orun
+    operator: Exists
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:

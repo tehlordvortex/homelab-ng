@@ -70,10 +70,7 @@ deployment:
   replicaCount: 7
 
 tolerations:
-  - key: prime.sophons.cloud
-    operator: Exists
-  - key: caeneus.sophons.cloud
-    operator: Exists
+  - operator: Exists
 
 affinity:
   podAntiAffinity:
