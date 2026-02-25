@@ -30,7 +30,7 @@ spec:
 
       containers:
         - name: homepage
-          image: "poci.sphns.run/proxy-ghcr.io/gethomepage/homepage:v1.7.0"
+          image: "poci.sphns.run/proxy-ghcr.io/gethomepage/homepage:v1.10.1"
           imagePullPolicy: Always
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS

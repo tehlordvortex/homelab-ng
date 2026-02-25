@@ -27,6 +27,15 @@ spec:
                 matchLabels:
                   app.kubernetes.io/instance: necronomicon
               topologyKey: kubernetes.io/hostname
+              mismatchLabelKeys: [pod-template-hash]
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: In
+                    values: [ng]
+              weight: 100
 
       securityContext:
         seccompProfile:
@@ -34,7 +43,7 @@ spec:
 
       containers:
         - name: pihole
-          image: poci.sphns.run/proxy-ghcr.io/pi-hole/pihole:2025.11.0
+          image: poci.sphns.run/proxy-ghcr.io/pi-hole/pihole:2026.02.0
 
           ports:
             - containerPort: 53
@@ -102,8 +111,10 @@ spec:
             limits:
               memory: 256Mi
 
+      initContainers:
         - name: tailscale
-          image: poci.sphns.run/proxy-ghcr.io/tailscale/tailscale:v1.90.8
+          image: poci.sphns.run/proxy-ghcr.io/tailscale/tailscale:v1.94.2
+          restartPolicy: Always
 
           ports:
             - containerPort: 9002

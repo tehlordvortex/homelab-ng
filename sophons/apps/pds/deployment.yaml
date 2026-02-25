@@ -221,7 +221,11 @@ spec:
           command:
             - juicefs
             - mount
+            - -o
+            - writeback_cache
             - --check-storage
+            - --backup-meta=0 # no point, we're snapshotmaxxing with one sqlite db
+            - --fast-statfs
             - sqlite3:///fs/fs.db
             - /fs/mnt
           restartPolicy: Always
