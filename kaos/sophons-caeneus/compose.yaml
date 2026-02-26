@@ -20,7 +20,7 @@
 services:
   talos:
     restart: always
-    image: ghcr.io/siderolabs/talos:v1.12.1
+    image: ghcr.io/siderolabs/talos:${TALOS_VERSION}
     privileged: true
     cpus: 8
     mem_limit: 8G

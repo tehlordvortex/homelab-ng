@@ -24,6 +24,8 @@ rust = "1.92.0"
 aws-cli = { version = "2.33.27", symlink_bins = "true" }
 "cargo:stu" = "0.7.6"
 "aqua:utkuozdemir/pv-migrate" = "2.2.1"
+mc = "RELEASE.2025-08-13T08-35-41Z"
+argocd = "3.3.2"
 
 [env]
 '_'.file = ["{{config_root}}/.env"]
@@ -33,6 +35,7 @@ REPO_ROOT = "{{config_root}}"
 KUBECONFIG = "{{config_root}}/kubeconfig"
 TALOSCONFIG = "{{config_root}}/talosconfig"
 HEADSCALE_CLI_ADDRESS = "gghs.vrtx.sh:443"
+TALOS_VERSION = "v1.12.4"
 
 [settings]
 npm.bun = true
