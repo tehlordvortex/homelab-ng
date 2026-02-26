@@ -61,6 +61,26 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: headscale-proxy-headless
+  namespace: headscale
+spec:
+  type: ClusterIP
+  ipFamilyPolicy: PreferDualStack
+  clusterIP: None
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
+apiVersion: v1
+kind: Service
+metadata:
   name: headscale-theta
   namespace: headscale
   annotations:
