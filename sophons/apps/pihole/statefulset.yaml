@@ -29,6 +29,12 @@ spec:
               topologyKey: kubernetes.io/hostname
               mismatchLabelKeys: [pod-template-hash]
         nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values: [sophons-caeneus]
           preferredDuringSchedulingIgnoredDuringExecution:
             - preference:
                 matchExpressions:
@@ -43,7 +49,8 @@ spec:
 
       containers:
         - name: pihole
-          image: poci.sphns.run/proxy-ghcr.io/pi-hole/pihole:2026.02.0
+          # image: poci.sphns.run/proxy-ghcr.io/pi-hole/pihole:2026.02.0
+          image: ghcr.io/pi-hole/pihole:2026.02.0
 
           ports:
             - containerPort: 53
@@ -113,7 +120,8 @@ spec:
 
       initContainers:
         - name: tailscale
-          image: poci.sphns.run/proxy-ghcr.io/tailscale/tailscale:v1.94.2
+          # image: poci.sphns.run/proxy-ghcr.io/tailscale/tailscale:v1.94.2
+          image: ghcr.io/tailscale/tailscale:v1.94.2
           restartPolicy: Always
 
           ports:
@@ -246,7 +254,8 @@ spec:
 
       containers:
         - name: pihole-proxy
-          image: poci.sphns.run/proxy-docker.io/library/alpine:3.22.2
+          # image: poci.sphns.run/proxy-docker.io/library/alpine:3.22.2
+          image: docker.io/library/alpine:3.23.3
           command:
             - ash
             - -c
