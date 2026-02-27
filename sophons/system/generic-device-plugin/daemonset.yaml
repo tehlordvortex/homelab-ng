@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: generic-device-plugin
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: generic-device-plugin
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: generic-device-plugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: generic-device-plugin
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+        - operator: "Exists"
+          effect: "NoExecute"
+        - operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+        - name: generic-device-plugin
+          image: squat/generic-device-plugin@sha256:efa50af6e8919b71694909f763e06aa80f37dbc605bbbe4018aa0252a75c24a4
+          args:
+            - --log-level
+            - debug
+            - --domain
+            - devic.es
+            - --device
+            - |
+              name: vaccel
+              groups:
+                - count: 4
+                  paths:
+                    - path: /dev/dri/*
+            - --device
+            - |
+              name: fuse
+              groups:
+                - count: 16
+                  paths:
+                    - path: /dev/fuse
+          resources:
+            requests:
+              cpu: 25m
+              memory: 8Mi
+            limits:
+              memory: 32Mi
+          ports:
+            - containerPort: 8080
+              name: http
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: dev
+              mountPath: /dev
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: dev
+          hostPath:
+            path: /dev
