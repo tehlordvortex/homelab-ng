@@ -21,6 +21,24 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /admin/ui
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: cache
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: forwardauth-authelia
+      backendRefs:
+        - name: global-webui
+          port: 3909
+    - matches:
+        - path:
+            type: PathPrefix
             value: /admin
       filters:
         - type: URLRewrite
@@ -50,10 +68,29 @@ spec:
       sectionName: websecure
 
   hostnames:
+    - s3-backup.sophons.cloud
     - s3-backup.sphns.run
     - ps3-backup.sphns.run
 
   rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /admin/ui
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: cache
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: forwardauth-authelia
+      backendRefs:
+        - name: backup-webui
+          port: 3909
     - matches:
         - path:
             type: PathPrefix

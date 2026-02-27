@@ -2,6 +2,8 @@ namespace: garage
 resources:
   - service.yaml
   - httproute.yaml
+  - deployment.yaml
+  - middleware.yaml
   - secret.sops.yaml
   - dnsendpoint.yaml
   - persistentvolumeclaim.yaml

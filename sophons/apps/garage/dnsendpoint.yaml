@@ -35,6 +35,10 @@ metadata:
   namespace: garage
 spec:
   endpoints:
+    - dnsName: s3-backup.sophons.cloud
+      recordType: CNAME
+      targets:
+        - 163f32fb-e910-4a18-9ef0-9c5bfe635f33.cfargotunnel.com
     - dnsName: s3-backup.sphns.run
       recordType: CNAME
       targets:

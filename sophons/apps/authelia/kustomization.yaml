@@ -1,6 +1,7 @@
 namespace: authelia
 resources:
   - httproute.yaml
+  - middleware.yaml
   - secret.sops.yaml
   - dnsendpoint.yaml
 

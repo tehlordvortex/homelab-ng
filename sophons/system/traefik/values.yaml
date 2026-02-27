@@ -273,10 +273,10 @@ deployment:
 
 resources:
   requests:
-    cpu: "150m"
-    memory: "64Mi"
+    cpu: "250m"
+    memory: "128Mi"
   limits:
-    memory: "256Mi"
+    memory: "512Mi"
 
 volumes:
   - type: secret
