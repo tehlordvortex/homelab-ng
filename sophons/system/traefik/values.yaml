@@ -199,6 +199,11 @@ providers:
               defaultEncoding: br
 
         routers:
+          headplane:
+            entryPoints: [web, websecure]
+            service: headplane
+            rule: Host(`hs.vrtx.sh`) && PathPrefix(`/admin`)
+            middlewares: [default-compression]
           headscale:
             entryPoints: [web, websecure]
             service: headscale
@@ -209,16 +214,22 @@ providers:
             rule: Host(`gghs.vrtx.sh`)
 
         services:
+          headplane:
+            loadBalancer:
+              servers:
+                - url: http://headscale-proxy-headless.headscale.svc.cluster.local:3000
+              passHostHeader: true
+              serversTransport: headscale@file
           headscale:
             loadBalancer:
               servers:
-                - url: https://headscale-proxy-headless.headscale.svc.cluster.local
+                - url: http://headscale-proxy-headless.headscale.svc.cluster.local:8080
               passHostHeader: true
               serversTransport: headscale@file
           headscale-grpc:
             loadBalancer:
               servers:
-                - url: https://headscale-proxy-headless.headscale.svc.cluster.local
+                - url: h2c://headscale-proxy-headless.headscale.svc.cluster.local:50051
               passHostHeader: true
               serversTransport: headscale-grpc@file
         
