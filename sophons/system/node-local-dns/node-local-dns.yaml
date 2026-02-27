@@ -75,7 +75,23 @@ data:
         reload
         loop
         bind 0.0.0.0
-        rewrite name exact pauth.sphns.run traefik.traefik.svc.cluster.local answer auto
+        # Workloads in the cluster should ideally directly access their
+        # brethren, rather than going through the global internet.
+        template IN ANY vrtx.sh {
+            match "^(hs|ppkg[.]tig)[.]"
+            answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
+            fallthrough
+        }
+        template IN ANY sphns.run {
+            match "^(pauth|ps3-(global|backup)|poci)[.]"
+            answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
+            fallthrough
+        }
+        template IN ANY sophons.cloud {
+            match "^(auth)[.]"
+            answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
+            fallthrough
+        }
         forward . __PILLAR__UPSTREAM__SERVERS__
         prometheus :9253
         }
