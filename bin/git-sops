@@ -81,7 +81,7 @@ get_file_type() {
   *.json*) echo "json" ;;
   *.yaml* | *.yml* | *talosconfig* | *kubeconfig*) echo "yaml" ;;
   *.env* | *.dotenv*) echo "dotenv" ;;
-  *.ini* | *credentials*) echo "ini" ;;
+  *.conf* | *.ini* | *credentials*) echo "ini" ;;
   *) echo "binary" ;;
   esac
 }

@@ -1,5 +1,6 @@
 *.sops.yaml filter=sops
 *.sops.json filter=sops
+*.sops.conf filter=sops
 .sops.yaml -filter
 
 kubeconfig  filter=sops
