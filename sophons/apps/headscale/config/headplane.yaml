@@ -1,6 +1,7 @@
 server:
   host: "0.0.0.0"
   port: 3000
+  base_url: https://hs.vrtx.sh
 
   # Ensure that this is exactly 32 characters long
   # env override
@@ -15,7 +16,13 @@ headscale:
   config_path: "/etc/headscale/config.yaml"
   config_strict: true
 
+integration:
+  agent:
+    enabled: true
+    cache_path: /var/lib/headplane/agent/agent_cache.json
+
 oidc:
+  use_pkce: true
   issuer: "https://auth.sophons.cloud"
   authorization_endpoint: "https://auth.sophons.cloud/api/oidc/authorization"
   token_endpoint: "https://auth.sophons.cloud/api/oidc/token"

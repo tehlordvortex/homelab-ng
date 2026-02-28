@@ -121,7 +121,7 @@ spec:
         #       add: [NET_BIND_SERVICE]
 
         - name: headscale
-          image: ghcr.io/juanfont/headscale:v0.27.1
+          image: ghcr.io/juanfont/headscale:v0.28.0
           args: ["serve"]
 
           env:
@@ -157,12 +157,12 @@ spec:
               mountPath: /etc/headscale/oidc_client.secret
               subPath: oidc_client.secret
 
-          livenessProbe:
-            exec:
-              command: ["headscale", "health"]
-            timeoutSeconds: 5
-            failureThreshold: 5
-            initialDelaySeconds: 15
+          # livenessProbe:
+          #   exec:
+          #     command: ["headscale", "health"]
+          #   timeoutSeconds: 5
+          #   failureThreshold: 5
+          #   initialDelaySeconds: 15
 
           readinessProbe:
             exec:
@@ -185,7 +185,7 @@ spec:
               drop: [ALL]
 
         - name: headplane
-          image: ghcr.io/tale/headplane:0.6.1
+          image: ghcr.io/tale/headplane:0.6.2
 
           ports:
             - containerPort: 3000
@@ -201,15 +201,11 @@ spec:
                 secretKeyRef:
                   name: headscale
                   key: cookie.secret
-            - name: HEADPLANE_INTEGRATION__AGENT__ENABLED
-              value: "true"
             - name: HEADPLANE_INTEGRATION__AGENT__PRE_AUTHKEY
               valueFrom:
                 secretKeyRef:
                   name: headscale
                   key: agent_preauth.key
-            - name: HEADPLANE_INTEGRATION__AGENT__CACHE_PATH
-              value: /var/lib/headplane/agent/agent_cache.json
             - name: HEADPLANE_OIDC__HEADSCALE_API_KEY
               valueFrom:
                 secretKeyRef:
