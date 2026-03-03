@@ -1,0 +1,52 @@
+globalConfig:
+  enableNodeSelector: true
+  mountPodPatch:
+    - resources:
+        requests:
+          cpu: 50m
+          memory: 100Mi
+        limits:
+          cpu: null
+          memory: 200Mi
+
+controller:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: null
+      memory: 256Mi
+
+node:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: null
+      memory: 256Mi
+  storageClassShareMount: true
+  fsShareMount: true
+  tolerations:
+    - operator: Exists
+
+dashboard:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: null
+      memory: 256Mi
+  securityContext:
+    capabilities:
+      add: [NET_BIND_SERVICE]
+      drop: [ALL]
+  priorityClassName: burstable
+
+metrics:
+  enabled: true
+  port: 8080
+  service:
+    servicePort: 8080

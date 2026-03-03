@@ -1,0 +1,21 @@
+namespace: grafana
+resources:
+  - httproute.yaml
+  - secret.sops.yaml
+  - dnsendpoint.yaml
+
+configMapGenerator:
+  - name: grafana-datasources
+    options:
+      disableNameSuffixHash: true
+      labels:
+        sidecar.grafana.sophons.cloud/kind: datasources
+    files:
+      - config/datasources.yaml
+  - name: grafana-dashboards
+    options:
+      disableNameSuffixHash: true
+      labels:
+        sidecar.grafana.sophons.cloud/kind: dashboards
+    files:
+      - victoriametrics-operator.json=https://grafana.com/api/dashboards/17869/revisions/8/download

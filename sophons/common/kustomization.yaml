@@ -1,3 +1,15 @@
 resources:
   - secret.sops.yaml
   - certificate.yaml
+
+configMapGenerator:
+  - name: litestream-legacy-juicefs
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+        reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+        reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: |
+          juicefs-system, victoriametrics-system
+    files:
+      - litestream-legacy.yaml=config/litestream-legacy-juicefs.yaml

@@ -1,0 +1,215 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMSingle
+metadata:
+  name: klusterstalker
+  namespace: victoriametrics-system
+spec:
+  retentionPeriod: "7"
+  extraArgs:
+    enableTCP6: "true"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+    seccompProfile:
+      type: RuntimeDefault
+  volumes:
+    - name: data
+      emptyDir: {}
+    - name: litestream-juicefs
+      configMap:
+        name: litestream-legacy-juicefs
+  volumeMounts:
+    - name: data
+      mountPath: /data
+      subPath: mnt
+      mountPropagation: HostToContainer
+  storageDataPath: /data/victoriametrics
+  initContainers:
+    - name: cleanup-emptydir
+      image: docker.io/library/busybox:1.37.0
+      command:
+        - sh
+        - -c
+        - |
+          set -e
+          rm -rf /fs/{*,.*}
+      volumeMounts:
+        - name: data
+          mountPath: /fs
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+        seccompProfile:
+          type: RuntimeDefault
+
+    - name: litestream-legacy-restore-meta
+      image: docker.io/litestream/litestream:0.3.13
+      args:
+        - restore
+        - -config=/etc/litestream/litestream-legacy.yaml
+        - -parallelism=6
+        # - -if-replica-exists
+        - /fs/meta.db
+
+      envFrom:
+        - secretRef:
+            name: litestream-ps3-global-access-key
+      env:
+        - name: VOLUME_NAME
+          value: vm-klusterstalker
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+        - name: LITESTREAM_LOGGING_LEVEL
+          value: debug
+
+      volumeMounts:
+        - name: data
+          mountPath: "/fs"
+        - name: litestream-juicefs
+          mountPath: "/etc/litestream"
+          readOnly: true
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+        seccompProfile:
+          type: RuntimeDefault
+
+    - name: litestream-legacy-replicate
+      restartPolicy: Always
+      image: docker.io/litestream/litestream:0.3.13
+      args: ["replicate", "-config=/etc/litestream/litestream-legacy.yaml"]
+      envFrom:
+        - secretRef:
+            name: litestream-ps3-global-access-key
+      env:
+        - name: VOLUME_NAME
+          value: vm-klusterstalker
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+        - name: LITESTREAM_SYNC_INTERVAL
+          value: "1s"
+        - name: LITESTREAM_SNAPSHOT_INTERVAL
+          value: 5m
+        - name: LITESTREAM_RETENTION
+          value: 1h
+
+      ports:
+        - name: ls-metrics
+          containerPort: 9090
+
+      volumeMounts:
+        - name: data
+          mountPath: "/fs"
+        - name: litestream-juicefs
+          mountPath: "/etc/litestream"
+          readOnly: true
+
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+        seccompProfile:
+          type: RuntimeDefault
+
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+
+    - name: mount-fsdb
+      restartPolicy: Always
+      image: docker.io/juicedata/mount:ce-v1.3.1
+      command:
+        - juicefs
+        - mount
+        - -o
+        - writeback_cache
+        - --check-storage
+        - --backup-meta=0 # litestream does this
+        - --fast-statfs
+        - sqlite3:///fs/meta.db
+        - /fs/mnt
+      envFrom:
+        - secretRef:
+            name: steroids-ps3-global-access-key
+      volumeMounts:
+        - name: data
+          mountPath: "/fs"
+          mountPropagation: Bidirectional
+      readinessProbe:
+        exec:
+          command:
+            - mountpoint
+            - -q
+            - /fs/mnt
+      startupProbe:
+        exec:
+          command:
+            - mountpoint
+            - -q
+            - /fs/mnt
+        failureThreshold: 60
+        periodSeconds: 1
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        runAsNonRoot: false
+        privileged: true # required for Bidirectional
+        capabilities:
+          drop: [ALL]
+          add: [SYS_RESOURCE, SYS_ADMIN]
+        seccompProfile:
+          type: RuntimeDefault
+
+    - name: chown-mount
+      image: docker.io/library/busybox:1.37.0
+      command: [chown, 1000:1000, /fs/mnt]
+      volumeMounts:
+        - name: data
+          mountPath: /fs
+          mountPropagation: HostToContainer
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        runAsNonRoot: false
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+          add: [CHOWN]
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: klusterstalker
+  namespace: victoriametrics-system
+spec:
+  selectAllByDefault: true
+  extraArgs:
+    enableTCP6: "true"
+  remoteWrite:
+    - url: "http://vmsingle-klusterstalker.victoriametrics-system.svc.cluster.local:8428/api/v1/write"

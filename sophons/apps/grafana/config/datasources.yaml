@@ -1,0 +1,14 @@
+apiVersion: 1
+datasources:
+  - name: klusterstalker-prometheus
+    type: prometheus
+    access: proxy
+    url: http://vmsingle-klusterstalker.victoriametrics-system.svc.cluster.local:8428
+  - name: klusterstalker-metrics
+    type: victoriametrics-metrics-datasource
+    access: proxy
+    url: http://vmsingle-klusterstalker.victoriametrics-system.svc.cluster.local:8428
+  - name: klusterstalker-logs
+    type: victoriametrics-logs-datasource
+    access: proxy
+    url: http://vlsingle-klusterstalker.victoriametrics-system.svc.cluster.local:9428

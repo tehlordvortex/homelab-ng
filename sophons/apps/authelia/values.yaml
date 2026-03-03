@@ -14,6 +14,21 @@ pod:
   strategy:
     type: Recreate
 
+  securityContext:
+    pod:
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      fsGroup: 1000
+      fsGroupChangePolicy: OnRootMismatch
+      seccompProfile:
+        type: RuntimeDefault
+    container:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: [ALL]
+
   initContainers:
     - name: litestream-legacy-restore-db
       image: docker.io/litestream/litestream:0.3.13
@@ -105,7 +120,12 @@ pod:
 
 configMap:
   log:
-    level: debug
+    level: info
+  telemetry:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
 
   authentication_backend:
     password_reset:
@@ -166,6 +186,8 @@ configMap:
           id_token: [email]
         headscale:
           id_token: [email, groups]
+        grafana:
+          id_token: [email, name, groups, preferred_username]
       clients:
         - client_name: Karakeep
           client_id: "sphns_q1F-KFdfxuwpzFejpdac311zzc65t0eiT.X1Vu3mE5"
@@ -236,6 +258,27 @@ configMap:
             - code
           grant_types:
             - authorization_code
+        - client_name: Grafana
+          client_id: "sphns_8Y0WEhOcipKfGgjYQNF6x9imgEMZSrn1wZFPcBd-.4"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.grafana.digest"
+          require_pkce: true
+          pkce_challenge_method: "S256"
+          # https://www.authelia.com/integration/openid-connect/clients/grafana/#configuration-escape-hatch
+          claims_policy: grafana
+          redirect_uris:
+            - https://klustermntr.sophons.cloud/login/generic_oauth
+          scopes:
+            - openid
+            - offline_access
+            - profile
+            - groups
+            - email
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
+            - refresh_token
 
 secret:
   existingSecret: authelia
@@ -247,3 +290,4 @@ secret:
         - key: oidc.client.gitea.digest
         - key: oidc.client.harbor.digest
         - key: oidc.client.headscale.digest
+        - key: oidc.client.grafana.digest

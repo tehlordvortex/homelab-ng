@@ -1,0 +1,87 @@
+initChownData:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+extraSecretMounts:
+  - name: oauth-secret
+    secretName: grafana
+    mountPath: /etc/secrets/oauth-client-secret
+    subPath: oauthClientSecret
+    readOnly: true
+
+serviceMonitor:
+  enabled: true
+
+admin:
+  existingSecret: grafana
+  userKey: adminUser
+  passwordKey: adminPassword
+
+grafana.ini:
+  server:
+    domain: klustermntr.sophons.cloud
+    root_url: https://klustermntr.sophons.cloud
+  auth.generic_oauth:
+    # For variables see https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#env-provider
+    enabled: true
+    name: Authelia
+    icon: signin
+    client_id: sphns_8Y0WEhOcipKfGgjYQNF6x9imgEMZSrn1wZFPcBd-.4
+    client_secret: $__file{/etc/secrets/oauth-client-secret}
+    scopes: openid offline_access profile email groups
+    empty_scopes: false
+    auth_url: https://auth.sophons.cloud/api/oidc/authorization
+    token_url: https://auth.sophons.cloud/api/oidc/token
+    api_url: https://auth.sophons.cloud/api/oidc/userinfo
+    jwks_set_url: https://auth.sophons.cloud/.well-known/jwks.json
+    use_pkce: true
+    use_referesh_token: true
+    validate_id_token: true
+    auth_style: InHeader
+    login_attribute_path: preferred_username
+    groups_attribute_path: groups
+    name_attribute_path: name
+    role_attribute_path: contains(groups[*], 'admins') && 'Admin' || 'Viewer'
+
+sidecar:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+  dashboards:
+    enabled: true
+    label: sidecar.grafana.sophons.cloud/kind
+    labelValue: dashboards
+    # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+    restartPolicy: Always
+    startupProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      failureThreshold: 60 # 5 minutes
+  datasources:
+    enabled: true
+    label: sidecar.grafana.sophons.cloud/kind
+    labelValue: datasources
+    restartPolicy: Always
+    startupProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      failureThreshold: 60 # 5 minutes
+
+plugins:
+  - victoriametrics-metrics-datasource
+  - victoriametrics-logs-datasource

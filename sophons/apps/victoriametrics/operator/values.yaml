@@ -1,0 +1,25 @@
+nameOverride: vmop
+crds:
+  enabled: false
+
+admissionWebhooks:
+  enabled: true
+  certManager:
+    enabled: true
+
+operator:
+  prometheus_converter_add_argocd_ignore_annotations: true
+  enable_converter_ownership: true
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+securityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+serviceMonitor:
+  enabled: true

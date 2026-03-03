@@ -1,0 +1,132 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/job-batch-v1.json
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mkfs
+  labels:
+    app.kubernetes.io/name: juicefs
+    app.kubernetes.io/component: mkfs
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: juicefs
+        app.kubernetes.io/component: mkfs
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        - name: litestream-legacy-replicate
+          restartPolicy: Always
+          image: docker.io/litestream/litestream:0.3.13
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /tmp/litestream
+              echo "$LITESTREAM_CONFIG" | tee /tmp/litestream/litestream-legacy.yaml
+              exec litestream replicate -config=/tmp/litestream/litestream-legacy.yaml
+          envFrom:
+            - secretRef:
+                name: litestream-ps3-global-access-key
+          env:
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: LITESTREAM_CONFIG
+              value: |
+                # prometheus
+                addr: ${LITESTREAM_PROMETHEUS_ADDRESS}
+
+                logging:
+                  level: ${LITESTREAM_LOGGING_LEVEL}
+
+                dbs:
+                  - path: /fs/meta.db
+                    replicas:
+                      - type: s3
+                        path: legacy/juicefs/${VOLUME_NAME}.meta.db
+                        force-path-style: true
+                        bucket: ${LITESTREAM_BUCKET}
+                        region: ${LITESTREAM_BUCKET_REGION}
+                        endpoint: ${LITESTREAM_ENDPOINT}
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 9090
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9090
+          volumeMounts:
+            - mountPath: /fs
+              name: fs
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: [ALL]
+
+      containers:
+        - name: format
+          image: docker.io/juicedata/mount:ce-v1.3.1
+          command:
+            - juicefs
+            - format
+            - --storage=s3
+            - --shards=6
+            - --bucket=https://ps3-global.sphns.run/juiced-%d
+            - --trash-days=$(TRASH_DAYS)
+            - --block-size=$(BLOCK_SIZE)
+            - --compress=$(COMPRESS)
+            - --access-key=$(AWS_ACCESS_KEY_ID)
+            - --secret-key=$(AWS_SECRET_ACCESS_KEY)
+            - sqlite3:///fs/meta.db
+            - $(VOLUME_NAME)
+            # - sh
+            # - -c
+            # - |
+            #   set -xeu
+            #   mkdir -p /tmp/litestream /tmp/fs
+            #   ldd /shared/juicefs
+            #   echo "$LITESTREAM_CONFIG" | tee /tmp/litestream/litestream-legacy.yaml
+            #   litestream replicate -config=/tmp/litestream/litestream-legacy.yaml \
+            #     -exec "/shared/juicefs format --no-update --trash-days=0 \
+            #     --storage s3 --shards 6 \
+            #     --bucket 'https://ps3-global.sphns.run/juiced-%d/' \
+            #     --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY \
+            #     sqlite3:///tmp/fs/meta.db $VOLUME_NAME"
+            #   /shared/juicefs config sqlite3:///tmp/fs/meta.db
+          env:
+            - name: AWS_REGION
+              value: global
+            - name: COMPRESS
+              value: none
+            - name: BLOCK_SIZE
+              value: "2048" # 2Mi
+            - name: TRASH_DAYS
+              value: "0"
+          envFrom:
+            - secretRef:
+                name: steroids-ps3-global-access-key
+          volumeMounts:
+            - mountPath: /fs
+              name: fs
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+      volumes:
+        - name: fs
+          emptyDir: {}

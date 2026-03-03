@@ -1,0 +1,32 @@
+namespace: victoriametrics-system
+resources:
+  - ../../../../system/juicefs-csi-driver/format
+
+replacements:
+  - sourceValue: mkfs-vm-klusterstalker
+    targets:
+      - select:
+          name: mkfs
+          kind: Job
+        fieldPaths:
+          - metadata.name
+
+patches:
+  - patch: |-
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: mkfs
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: litestream-legacy-replicate
+                env:
+                  - name: VOLUME_NAME
+                    value: vm-klusterstalker
+            containers:
+              - name: format
+                env:
+                  - name: VOLUME_NAME
+                    value: vm-klusterstalker
