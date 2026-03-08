@@ -19,6 +19,11 @@ spec:
       securityContext:
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+      tolerations:
+        - key: oduduwa.sophons.cloud/ase-orun
+          operator: Exists
+        - key: caeneus.sophons.cloud
+          operator: Exists
 
       containers:
         - name: webui

@@ -9,9 +9,15 @@ cluster:
 resources:
   requests:
     cpu: 250m
-    memory: 128Mi
+    memory: 256Mi
   limits:
     memory: 768Mi
+initResources:
+  requests:
+    cpu: 50m
+    memory: 10Mi
+  limits:
+    memory: 64Mi
 
 cni:
   customConf: false

@@ -9,13 +9,13 @@ configMapGenerator:
     options:
       disableNameSuffixHash: true
       labels:
-        sidecar.grafana.sophons.cloud/kind: datasources
+        grafana_datasource: "true"
     files:
       - config/datasources.yaml
   - name: grafana-dashboards
     options:
       disableNameSuffixHash: true
       labels:
-        sidecar.grafana.sophons.cloud/kind: dashboards
+        grafana_dashboard: "true"
     files:
       - victoriametrics-operator.json=https://grafana.com/api/dashboards/17869/revisions/8/download

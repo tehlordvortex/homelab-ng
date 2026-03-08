@@ -1,11 +1,18 @@
 initChownData:
   enabled: false
 
+tolerations:
+  - key: orunmila.sophons.cloud/ase-orun
+    operator: Exists
+  - key: caeneus.sophons.cloud
+    operator: Exists
+
 resources:
   requests:
-    cpu: 250m
+    cpu: 100m
     memory: 128Mi
   limits:
+    cpu: 500m
     memory: 512Mi
 
 extraSecretMounts:
@@ -58,8 +65,7 @@ sidecar:
       memory: 128Mi
   dashboards:
     enabled: true
-    label: sidecar.grafana.sophons.cloud/kind
-    labelValue: dashboards
+    searchNamespace: ALL
     # Use native sidecar https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
     restartPolicy: Always
     startupProbe:
@@ -71,8 +77,7 @@ sidecar:
       failureThreshold: 60 # 5 minutes
   datasources:
     enabled: true
-    label: sidecar.grafana.sophons.cloud/kind
-    labelValue: datasources
+    searchNamespace: ALL
     restartPolicy: Always
     startupProbe:
       httpGet:
