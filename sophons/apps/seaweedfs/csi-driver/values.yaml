@@ -1,0 +1,57 @@
+seaweedfsFiler: weedfs-filer-local-proxy.weed-system.svc.cluster.local:8888
+storageClassName: ""
+dataLocality: write_preferlocaldc
+
+csiProvisioner:
+  image: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
+csiResizer:
+  image: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
+csiAttacher:
+  enabled: true
+  image: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
+
+controller:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+# :latest images considered harmful, consult your local oci specialist.
+seaweedfsCsiPlugin:
+  image: chrislusf/seaweedfs-csi-driver:v1.4.4
+
+mountService:
+  image: chrislusf/seaweedfs-mount:v1.4.4
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
+    - key: caeneus.sophons.cloud
+      operator: Exists
+  resources:
+    requests:
+      cpu: 250m
+      memory: 64Mi
+    limits:
+      memory: 512Mi
+
+node:
+  updateStrategy:
+    type: OnDelete # no support for seamless upgrades
+  tolerations:
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
+    - key: caeneus.sophons.cloud
+      operator: Exists
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+  injectTopologyInfoFromNodeLabel:
+    enabled: true
+    labels:
+      dataCenter: "topology.kubernetes.io/zone"

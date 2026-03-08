@@ -1,0 +1,147 @@
+global:
+  monitoring:
+    enabled: true
+  enableReplication: true
+  replicationPlacement: "200"
+
+admin:
+  enabled: true
+  port: 23646
+  grpcPort: 33646 # For worker connections
+
+master:
+  nodeSelector: |
+    weed.sophons.cloud/cluster: global
+    weed.sophons.cloud/master: "true"
+
+  volumeSizeLimitMB: 1024
+  data:
+    type: emptyDir
+  logs:
+    type: null
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      memory: 200Mi
+
+  extraEnvironmentVars:
+    GOMEMLIMIT:
+      resourceFieldRef:
+        resource: limits.memory
+
+volume:
+  enabled: false
+  replicas: 0
+  nodeSelector: |
+    weed.sophons.cloud/cluster: global
+    weed.sophons.cloud/volume: "true"
+  tolerations: |
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
+
+  readMode: redirect
+  dataDirs:
+    - name: data-uno
+      type: persistentVolumeClaim
+      storageClass: local-path
+      size: 32Gi
+      maxVolumes: 24
+
+  idx:
+    type: persistentVolumeClaim
+    storageClass: local-path
+    size: 4Gi
+
+  logs: null
+
+  resources:
+    requests:
+      cpu: 150m
+      memory: 64Mi
+    limits:
+      memory: 400Mi
+
+  extraEnvironmentVars:
+    GOMEMLIMIT:
+      resourceFieldRef:
+        resource: limits.memory
+
+volumes:
+  nl-east-1:
+    dataCenter: nl-east-1
+    replicas: 1
+    nodeSelector: |
+      weed.sophons.cloud/cluster: global
+      weed.sophons.cloud/volume: "true"
+      topology.kubernetes.io/zone: nl-east-1
+  de-east-1:
+    dataCenter: de-east-1
+    replicas: 1
+    nodeSelector: |
+      weed.sophons.cloud/cluster: global
+      weed.sophons.cloud/volume: "true"
+      topology.kubernetes.io/zone: de-east-1
+  ng-west-1:
+    dataCenter: ng-west-1
+    replicas: 1
+    nodeSelector: |
+      weed.sophons.cloud/cluster: global
+      weed.sophons.cloud/volume: "true"
+      topology.kubernetes.io/zone: ng-west-1
+
+filer:
+  loggingOverrideLevel: 0 # noisy filer generates data for logs/metrics, which generates logs in filer, which...
+  tolerations: |
+    - key: orunmila.sophons.cloud/ase-orun
+      operator: Exists
+    - key: caeneus.sophons.cloud
+      operator: Exists
+  replicas: 6
+  # encryptVolumeData: true
+  # redirectOnRead: true
+
+  data:
+    type: persistentVolumeClaim
+    storageClass: local-path
+    size: 8Gi
+
+  logs:
+    type: null
+
+  s3:
+    enabled: true
+    enableAuth: true
+    existingConfigSecret: weed-s3
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+  extraEnvironmentVars:
+    GOMEMLIMIT:
+      resourceFieldRef:
+        resource: limits.memory
+
+worker:
+  enabled: true
+  nodeSelector: |
+    weed.sophons.cloud/cluster: global
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 300Mi
+
+  extraEnvironmentVars:
+    GOMEMLIMIT:
+      resourceFieldRef:
+        resource: limits.memory

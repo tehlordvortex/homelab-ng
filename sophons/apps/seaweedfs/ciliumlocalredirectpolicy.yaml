@@ -1,0 +1,48 @@
+apiVersion: cilium.io/v2
+kind: CiliumLocalRedirectPolicy
+metadata:
+  name: weedfs-s3
+  namespace: weed-system
+spec:
+  redirectFrontend:
+    serviceMatcher:
+      serviceName: weedfs-s3
+      namespace: weed-system
+  redirectBackend:
+    localEndpointSelector:
+      matchLabels:
+        app.kubernetes.io/name: seaweedfs
+        app.kubernetes.io/instance: weedfs
+        app.kubernetes.io/component: filer
+    toPorts:
+      - name: swfs-s3
+        port: "8333"
+        protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumLocalRedirectPolicy
+metadata:
+  name: weedfs-filer-local-proxy
+  namespace: weed-system
+spec:
+  redirectFrontend:
+    serviceMatcher:
+      serviceName: weedfs-filer-local-proxy
+      namespace: weed-system
+  redirectBackend:
+    localEndpointSelector:
+      matchLabels:
+        app.kubernetes.io/name: seaweedfs
+        app.kubernetes.io/instance: weedfs
+        app.kubernetes.io/component: filer
+        # app.kubernetes.io/name: traefik
+        # app.kubernetes.io/instance: traefik-traefik
+    toPorts:
+      - name: swfs-filer
+        # port: "8080"
+        port: "8888"
+        protocol: TCP
+      - name: swfs-filer-grpc
+        # port: "8080"
+        port: "18888"
+        protocol: TCP
