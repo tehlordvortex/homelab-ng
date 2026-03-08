@@ -21,12 +21,17 @@ patches:
         template:
           spec:
             initContainers:
-              - name: litestream-legacy-replicate
+              - name: litestream-restore-meta
                 env:
                   - name: VOLUME_NAME
-                    value: vm-klusterstalker
+                    value: vm-klusterstalker-v2
+              - name: fail-if-exists
+              - name: litestream-replicate
+                env:
+                  - name: VOLUME_NAME
+                    value: vm-klusterstalker-v2
             containers:
               - name: format
                 env:
                   - name: VOLUME_NAME
-                    value: vm-klusterstalker
+                    value: vm-klusterstalker-v2

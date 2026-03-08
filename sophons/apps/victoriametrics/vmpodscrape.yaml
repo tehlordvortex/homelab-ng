@@ -1,0 +1,12 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: litestreams
+  namespace: victoriametrics-system
+spec:
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    any: true
+  podMetricsEndpoints:
+    - port: ls-metrics
+      scheme: http

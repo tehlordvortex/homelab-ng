@@ -2,3 +2,4 @@ namespace: victoriametrics-system
 resources:
   - vmsingle.yaml
   - vlsingle.yaml
+  - vmpodscrape.yaml

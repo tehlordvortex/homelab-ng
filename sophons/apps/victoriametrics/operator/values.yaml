@@ -16,7 +16,7 @@ resources:
     cpu: 50m
     memory: 64Mi
   limits:
-    memory: 128Mi
+    memory: 200Mi
 securityContext:
   seccompProfile:
     type: RuntimeDefault
