@@ -19,7 +19,8 @@ spec:
         app.kubernetes.io/instance: traefik
     spec:
       tolerations:
-        - operator: Exists
+        - key: orunmila.sophons.cloud/ase-orun
+          operator: Exists
 
       # securityContext:
       #   sysctls:
@@ -43,13 +44,16 @@ spec:
           name: cloudflared
           env:
             - name: GOMEMLIMIT
-              value: "60MiB"
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
           resources:
             requests:
               cpu: "50m"
               memory: "32Mi"
             limits:
-              memory: "72Mi"
+              cpu: "150m"
+              memory: "128Mi"
           command:
             - cloudflared
             - tunnel

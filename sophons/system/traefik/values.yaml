@@ -49,6 +49,7 @@ ports:
   traefik:
     port: 8080
     expose:
+      default: true
       internal: true
       kaos: true
 
@@ -252,6 +253,11 @@ providers:
 
 gateway:
   listeners:
+    traefik: # HTTP listener that matches entryPoint `traefik`
+      port: 8080
+      protocol: HTTP
+      namespacePolicy:
+        from: All
     web: # HTTP listener that matches entryPoint `web`
       port: 80
       protocol: HTTP
@@ -284,9 +290,10 @@ deployment:
 
 resources:
   requests:
-    cpu: "250m"
+    cpu: "100m"
     memory: "128Mi"
   limits:
+    cpu: "400m"
     memory: "512Mi"
 
 volumes:
@@ -295,7 +302,8 @@ volumes:
     mountPath: /etc/traefik/gateway-tls
 
 tolerations:
-  - operator: Exists
+  - key: orunmila.sophons.cloud/ase-orun
+    operator: Exists
 
 experimental:
   # Fun fact, using plugins essentially introduce a hard dependency

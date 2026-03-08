@@ -1,0 +1,11 @@
+resources:
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_ingressroutes.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_ingressroutetcps.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_ingressrouteudps.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_middlewares.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_middlewaretcps.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_serverstransports.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_serverstransporttcps.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_tlsoptions.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_tlsstores.yaml
+  - https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik-crds/crds-files/traefik/traefik.io_traefikservices.yaml

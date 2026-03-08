@@ -1,7 +1,7 @@
 namespace: traefik
 resources:
   - daemonset.yaml
-  - syslogngflow.yaml
+  # - syslogngflow.yaml
   - secrets.sops.yaml
   - dnsendpoint.sops.yaml
   - ciliumlocalredirectpolicy.yaml
