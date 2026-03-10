@@ -5,4 +5,3 @@ customization:
       - siderolabs/iscsi-tools
       - siderolabs/util-linux-tools
       - siderolabs/binfmt-misc
-      - siderolabs/tailscale

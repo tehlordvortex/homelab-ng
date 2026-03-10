@@ -17,10 +17,11 @@ overlay:
       arm_freq=2000
       gpu_freq=750
 customization:
+  extraKernelArgs:
+    - cma=512M
   systemExtensions:
     officialExtensions:
       - siderolabs/vc4
       - siderolabs/iscsi-tools
       - siderolabs/util-linux-tools
       - siderolabs/binfmt-misc
-      - siderolabs/tailscale

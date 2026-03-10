@@ -15,6 +15,8 @@ overlay:
       over_voltage=5
       arm_freq=1900
 customization:
+  extraKernelArgs:
+    - cma=256M
   systemExtensions:
     officialExtensions:
       - siderolabs/vc4
@@ -22,5 +24,4 @@ customization:
       - siderolabs/util-linux-tools
       - siderolabs/v4l-uvc-drivers
       - siderolabs/binfmt-misc
-      - siderolabs/tailscale
       - siderolabs/usb-audio-drivers

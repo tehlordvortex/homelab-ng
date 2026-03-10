@@ -11,9 +11,9 @@ endpoint=$SOPHONS_ENDPOINT_URL
 talos_version=$TALOS_VERSION
 kubernetes_version=v1.34.1
 
-vm_image=992627e65361721c9e2b8ee8423120d4435e6e8561bc2b03224642181c0a2bcd
-pi_image=587b98cabc477550e3ae6703e244ee20378357b698c921dbe6acf980dc9be34c
-prime_image=b5021510b89077fd40ed47244165a9aa628491d603b32a7478c251852e943565
+vm_image=af87088cf1b22437863dea5433e70768e92cd109a7b115161490f2abf15c26ab
+pi_image=c37ef14b65c7f5cb5d59ca8c4e4d724b046d26792822f121cdf06f1e237b947b
+prime_image=31f689a89d04e3f459a4e9fff089a5e9f2cf2d1ba119488c6dad9d6f9dee8a8b
 
 gen_controlplane() {
   local host_name=$1
@@ -56,7 +56,7 @@ gen_worker() {
 }
 
 mkdir -p $self_dir/generated
-rm -r $self_dir/generated/*.yaml
+rm -rf $self_dir/generated/*.yaml
 
 gen_controlplane beta factory.talos.dev/installer/$pi_image:$talos_version
 gen_controlplane theta factory.talos.dev/installer/$vm_image:$talos_version
