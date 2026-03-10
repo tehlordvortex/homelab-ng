@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/daemonset-apps-v1.json
+# Very much not at all hacky workaround to have some amount of swap so the kernel
+# stops going batshit insane and has somewhere to offload pages to WITHOUT wiping
+# and repartitioning every single machine
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: setup-swap
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: setup-swap
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: setup-swap
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: setup-swap
+    spec:
+      terminationGracePeriodSeconds: 60
+      priorityClassName: system-node-critical
+      tolerations:
+        - key: oduduwa.sophons.cloud/ase-orun
+          operator: Exists
+      containers:
+        - name: debian
+          image: docker.io/library/debian:trixie-slim
+          command:
+            - bash
+            - -c
+            - |
+              set -xeuo pipefail
+              swap=${SWAP:-/host/var/swap}
+              enabled=""
+              # /proc/swaps doesn't contain the full path
+              if cat /proc/swaps | grep -q $(basename $swap); then
+                enabled="1"
+              fi
+
+              if [[ ! -f $swap ]]; then
+                mkswap --file $swap --size $SIZE
+              elif [[ "$(du -h $swap | awk '{ print $1 }')iB" != "$SIZE" ]]; then
+                if test -n "$enabled"; then swapoff $swap; fi
+                enabled=""
+                rm $swap
+                mkswap --file $swap --size $SIZE
+              fi
+
+              if test -z "$enabled"; then swapon $swap; fi
+              enabled="1"
+              # TODO: this might be a bad idea, we'll find out!
+              cleanup() { swapoff $swap; }
+              trap cleanup EXIT
+
+              sleep infinity &
+              wait
+          env:
+            - name: SIZE
+              value: 512MiB
+          volumeMounts:
+            - mountPath: /host/var
+              name: var
+          securityContext:
+            privileged: true
+            capabilities:
+              add: [SYS_ADMIN]
+      volumes:
+        - name: var
+          hostPath:
+            path: /var
