@@ -220,11 +220,12 @@ if ! git rev-parse --is-inside-work-tree &>/dev/null; then
   exit 3
 fi
 
-case $1 in
+case ${1:-} in
 init) shift && init $1 ;;
 decrypt-repo) shift && decrypt_repo ;;
 decrypt-file) shift && decrypt_repo "$1" ;;
 smudge) shift && smudge "$1" ;;
 clean) shift && clean "$1" ;;
+file-type) shift && echo $(get_file_type "$1") ;;
 *) usage ;;
 esac
