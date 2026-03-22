@@ -21,7 +21,7 @@ spec:
       terminationGracePeriodSeconds: 60
       priorityClassName: system-node-critical
       tolerations:
-        - key: oduduwa.sophons.cloud/ase-orun
+        - key: orunmila.sophons.cloud/ase-orun
           operator: Exists
       containers:
         - name: debian
