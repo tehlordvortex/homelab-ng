@@ -279,6 +279,24 @@ configMap:
           grant_types:
             - authorization_code
             - refresh_token
+        - client_name: Zot
+          client_id: "sphns_gPmWD8eBveVFwKTcvK8R1.Q-QfoGqLBSpXSNeTVQ35"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.zot.digest"
+          redirect_uris:
+            - https://zenlesszonezot.sophons.cloud/zot/auth/callback/oidc
+            - https://z3.sphns.run/zot/auth/callback/oidc
+          scopes:
+            - openid
+            - offline_access
+            - profile
+            - groups
+            - email
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
+            - refresh_token
 
 secret:
   existingSecret: authelia
@@ -291,3 +309,4 @@ secret:
         - key: oidc.client.harbor.digest
         - key: oidc.client.headscale.digest
         - key: oidc.client.grafana.digest
+        - key: oidc.client.zot.digest

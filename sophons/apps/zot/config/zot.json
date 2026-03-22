@@ -1,0 +1,129 @@
+{
+  "log": {
+    "level": "trace"
+  },
+  "storage": {
+    "rootDirectory": "/tmp/zot",
+    "remoteCache": true,
+    "storageDriver": {
+      "name": "s3",
+      "region": "global",
+      "bucket": "zenlesszonezot",
+      "secure": false,
+      "forcepathstyle": true,
+      "regionendpoint": "s3-global.garage.svc.cluster.local:3900"
+    },
+    "cacheDriver": {
+      "name": "redis",
+      "url": "redis://dragonfly-zenlesszonezot:6379",
+      "keyprefix": "zot"
+    }
+  },
+  "http": {
+    "address": "0.0.0.0",
+    "port": "5000",
+    "compat": [
+      "docker2s2"
+    ],
+    "externalUrl": "https://zenlesszonezot.sophons.cloud",
+    "auth": {
+      "sessionKeysFile": "/secrets/z3/session.json",
+      "htpasswd": {
+        "path": "/etc/zot/htpasswd"
+      },
+      "openid": {
+        "providers": {
+          "oidc": {
+            "credentialsFile": "/secrets/z3/oidc.json",
+            "issuer": "https://auth.sophons.cloud",
+            "scopes": [
+              "openid",
+              "profile",
+              "email",
+              "groups"
+            ],
+            "claimMapping": {
+              "username": "preferred_username"
+            }
+          }
+        }
+      }
+    },
+    "accessControl": {
+      "repositories": {
+        "**": {
+          "policies": [
+            {
+              "users": [
+                "kluzter"
+              ],
+              "actions": [
+                "read"
+              ]
+            }
+          ],
+          "defaultPolicy": []
+        },
+        "library/**": {
+          "anonymousPolicy": [
+            "read"
+          ],
+          "defaultPolicy": [
+            "read"
+          ]
+        }
+      },
+      "adminPolicy": {
+        "groups": [
+          "admins"
+        ],
+        "actions": [
+          "read",
+          "create",
+          "update",
+          "delete"
+        ]
+      }
+    }
+  },
+  "extensions": {
+    "search": {
+      "enable": true
+    },
+    "ui": {
+      "enable": true
+    },
+    "sync": {
+      "enable": true,
+      "DownloadDir": "/tmp/zot/sync",
+      "registries": [
+        {
+          "urls": [
+            "https://ghcr.io"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/proxy-ghcr.io"
+            }
+          ],
+          "onDemand": true,
+          "tlsVerify": true
+        },
+        {
+          "urls": [
+            "https://index.docker.io"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/proxy-docker.io"
+            }
+          ],
+          "onDemand": true,
+          "tlsVerify": true
+        }
+      ]
+    }
+  }
+}

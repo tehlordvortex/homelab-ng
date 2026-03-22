@@ -1,0 +1,32 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: zenlesszonezot
+  namespace: zzzot
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: "OCI Registry 2: Electric Boogaloo"
+    gethomepage.dev/icon: zot.svg
+    gethomepage.dev/name: Zot
+    gethomepage.dev/app: zot
+    gethomepage.dev/href: "https://zenlesszonezot.sophons.cloud"
+    gethomepage.dev/group: Code & Packages
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: web
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - zenlesszonezot.sophons.cloud
+    - z3.sphns.run
+    - pz3.sphns.run
+
+  rules:
+    - backendRefs:
+        - group: traefik.io
+          kind: TraefikService
+          name: zenlesszonezot

@@ -1,0 +1,54 @@
+replicaCount: 3
+
+service:
+  type: ClusterIP
+
+persistence: false
+resources:
+  requests:
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+  seccompProfile:
+    type: RuntimeDefault
+
+env:
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: z3
+        key: AWS_ACCESS_KEY_ID
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: z3
+        key: AWS_SECRET_ACCESS_KEY
+externalSecrets:
+  - secretName: z3
+    mountPath: /secrets/z3
+extraVolumeMounts:
+  - name: config
+    mountPath: /etc/zot
+  - name: tmp
+    mountPath: /tmp/zot
+
+extraVolumes:
+  - name: config
+    configMap:
+      name: zenlesszonezot
+  - name: tmp
+    emptyDir: {}
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
