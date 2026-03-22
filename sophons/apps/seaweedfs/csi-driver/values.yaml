@@ -32,9 +32,9 @@ mountService:
   resources:
     requests:
       cpu: 250m
-      memory: 64Mi
+      memory: 128Mi
     limits:
-      memory: 512Mi
+      memory: 768Mi
 
 node:
   updateStrategy:
@@ -52,6 +52,6 @@ node:
       memory: 128Mi
 
   injectTopologyInfoFromNodeLabel:
-    enabled: true
-    labels:
-      dataCenter: "topology.kubernetes.io/zone"
+    enabled: false # Manually handled with k8s 1.35's automatic labels
+    # labels:
+    #   dataCenter: "topology.kubernetes.io/zone"

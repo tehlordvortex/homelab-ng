@@ -22,7 +22,7 @@ master:
 
   resources:
     requests:
-      cpu: 200m
+      cpu: 100m
       memory: 64Mi
     limits:
       memory: 200Mi
@@ -118,10 +118,10 @@ filer:
 
   resources:
     requests:
-      cpu: 250m
-      memory: 64Mi
+      cpu: 150m
+      memory: 100Mi
     limits:
-      memory: 256Mi
+      memory: 172Mi
 
   extraEnvironmentVars:
     GOMEMLIMIT:
