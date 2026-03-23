@@ -4,7 +4,7 @@ resources:
   - service.yaml
   - httproute.yaml
   - middleware.yaml
-  - dnsendpoint.yaml
+  - cfdtunnel.yaml
   # - storageclass.yaml # managed seperately
   - ciliumlocalredirectpolicy.yaml
 
