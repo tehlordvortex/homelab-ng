@@ -1,0 +1,2 @@
+resources:
+  - https://github.com/tehlordvortex/cloudflared-operator/raw/refs/heads/main/yaml/cfdtunnels.cloudflared-operator.vrtx.sh.yaml

@@ -1,0 +1,27 @@
+namespace: cfd-system
+
+images:
+  - name: ghcr.io/tehlordvortex/cloudflared-operator/operator
+    newName: pz3.sphns.run/library/cloudflared-operator/operator
+    newTag: dev
+
+resources:
+  - https://github.com/tehlordvortex/cloudflared-operator/yaml/kustomize?ref=main
+
+patches:
+  - target:
+      kind: Deployment
+      name: cloudflared-operator
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
