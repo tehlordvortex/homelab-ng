@@ -20,6 +20,8 @@ spec:
 
   hostnames:
     - auth.sophons.cloud
+    - auth.vrtx.sh
+    - auth.kaos.nexus
 
   rules:
     - backendRefs:

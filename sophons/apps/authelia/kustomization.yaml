@@ -1,9 +1,9 @@
 namespace: authelia
 resources:
+  - cfdtunnel.yaml
   - httproute.yaml
   - middleware.yaml
   - secret.sops.yaml
-  - dnsendpoint.yaml
 
 configMapGenerator:
   - name: authelia-users
