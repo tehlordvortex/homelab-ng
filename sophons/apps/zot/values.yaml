@@ -2,6 +2,7 @@ replicaCount: 3
 
 service:
   type: ClusterIP
+  trafficDistribution: PreferClose
 
 persistence: false
 resources:

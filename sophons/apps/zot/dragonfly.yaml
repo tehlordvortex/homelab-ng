@@ -33,7 +33,7 @@ spec:
           name: dragoonfly-s3-global-access-key
           key: AWS_SECRET_ACCESS_KEY
   snapshot:
-    cron: "*/30 * * * *" # every 30 minutes
+    cron: "* * * * *" # every hour
     dir: "s3://dragoonfly/zenlesszonezot"
 
   affinity:
