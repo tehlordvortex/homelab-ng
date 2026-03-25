@@ -9,6 +9,22 @@ admin:
   port: 23646
   grpcPort: 33646 # For worker connections
 
+  containerSecurityContext:
+    enabled: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
 master:
   nodeSelector: |
     weed.sophons.cloud/cluster: global
@@ -26,6 +42,22 @@ master:
       memory: 64Mi
     limits:
       memory: 200Mi
+
+  containerSecurityContext:
+    enabled: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
 
   extraEnvironmentVars:
     GOMEMLIMIT:
@@ -69,6 +101,23 @@ volume:
       resourceFieldRef:
         resource: limits.memory
 
+  containerSecurityContext:
+    enabled: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: Always
+    seccompProfile:
+      type: RuntimeDefault
+
 volumes:
   nl-east-1:
     dataCenter: nl-east-1
@@ -97,9 +146,9 @@ filer:
   tolerations: |
     - key: orunmila.sophons.cloud/ase-orun
       operator: Exists
-    - key: caeneus.sophons.cloud
-      operator: Exists
-  replicas: 6
+    # - key: caeneus.sophons.cloud
+    #   operator: Exists
+  replicas: 3
   # encryptVolumeData: true
   # redirectOnRead: true
 
@@ -128,6 +177,43 @@ filer:
       resourceFieldRef:
         resource: limits.memory
 
+  topologySpreadConstraints: |
+    - labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: seaweedfs
+          app.kubernetes.io/instance: weedfs
+          app.kubernetes.io/component: filer
+      maxSkew: 1
+      minDomains: 3
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    - labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: seaweedfs
+          app.kubernetes.io/instance: weedfs
+          app.kubernetes.io/component: filer
+      maxSkew: 1
+      minDomains: 3
+      topologyKey: topology.kubernetes.io/region
+      whenUnsatisfiable: DoNotSchedule
+
+  containerSecurityContext:
+    enabled: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: Always
+    seccompProfile:
+      type: RuntimeDefault
+
 worker:
   enabled: true
   nodeSelector: |
@@ -145,3 +231,19 @@ worker:
     GOMEMLIMIT:
       resourceFieldRef:
         resource: limits.memory
+
+  containerSecurityContext:
+    enabled: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault

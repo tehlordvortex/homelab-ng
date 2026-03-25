@@ -1,4 +1,4 @@
-seaweedfsFiler: weedfs-filer-local-proxy.weed-system.svc.cluster.local:8888
+seaweedfsFiler: weedfs-seaweedfs-filer-client:8888
 storageClassName: ""
 dataLocality: write_preferlocaldc
 
