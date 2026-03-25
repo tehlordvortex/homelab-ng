@@ -20,7 +20,8 @@ priorityClassName: system-node-critical
 
 resources:
   requests:
-    cpu: 25m
+    cpu: 10m
     memory: 32Mi
   limits:
-    memory: 32Mi
+    cpu: 50m
+    memory: 64Mi
