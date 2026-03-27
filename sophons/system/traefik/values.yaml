@@ -316,6 +316,8 @@ experimental:
     crowdsec-bouncer-traefik-plugin:
       moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
       version: "v1.4.6"
+  # Fun fact, there's a config to crash on failure to load them ya big dum
+  abortOnPluginFailure: true
 
 securityContext:
   capabilities:
