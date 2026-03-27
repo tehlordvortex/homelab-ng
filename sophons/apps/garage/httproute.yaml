@@ -7,9 +7,6 @@ spec:
   parentRefs:
     - name: traefik-gateway
       namespace: traefik
-      sectionName: web
-    - name: traefik-gateway
-      namespace: traefik
       sectionName: websecure
 
   hostnames:
@@ -21,13 +18,13 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /admin/ui
+            value: /ui
       filters:
-        - type: ExtensionRef
-          extensionRef:
-            group: traefik.io
-            kind: Middleware
-            name: cache
+        # - type: ExtensionRef
+        #   extensionRef:
+        #     group: traefik.io
+        #     kind: Middleware
+        #     name: cache
         - type: ExtensionRef
           extensionRef:
             group: traefik.io
@@ -62,21 +59,18 @@ spec:
   parentRefs:
     - name: traefik-gateway
       namespace: traefik
-      sectionName: web
-    - name: traefik-gateway
-      namespace: traefik
       sectionName: websecure
 
   hostnames:
     - test-s3-web.sphns.run
 
   rules:
-    - filters:
-        - type: ExtensionRef
-          extensionRef:
-            group: traefik.io
-            kind: Middleware
-            name: cache
+    - filters: []
+        # - type: ExtensionRef
+        #   extensionRef:
+        #     group: traefik.io
+        #     kind: Middleware
+        #     name: cache
       backendRefs:
         - name: s3-global
           port: 3902
