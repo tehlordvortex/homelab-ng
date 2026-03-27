@@ -151,6 +151,10 @@ configMap:
       path: /data/db.sqlite3
 
   session:
+    redis:
+      enabled: true
+      host: dragonfly-authelia
+      minimum_idle_connections: 2
     cookies:
       - domain: sophons.cloud
         subdomain: auth

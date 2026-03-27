@@ -3,14 +3,18 @@ kind: Dragonfly
 metadata:
   labels:
     app.kubernetes.io/name: dragonfly
-    app.kubernetes.io/instance: dragonfly-zenlesszonezot
+    app.kubernetes.io/instance: dragonfly-authelia
     app.kubernetes.io/part-of: dragonfly-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: dragonfly-operator
-  name: dragonfly-zenlesszonezot
-  namespace: zzzot
+  name: dragonfly-authelia
+  namespace: authelia
 spec:
   replicas: 1
+  authentication:
+    passwordFromSecret:
+      name: authelia
+      key: session.redis.password.txt
   args:
     - --s3_endpoint=s3-global.garage.svc.cluster.local:3900
     - --s3_use_https=false
@@ -35,7 +39,7 @@ spec:
           key: AWS_SECRET_ACCESS_KEY
   snapshot:
     cron: "0 * * * *" # every hour
-    dir: "s3://dragoonfly/zenlesszonezot"
+    dir: "s3://dragoonfly/authelia"
 
   affinity:
     podAffinity:
@@ -44,8 +48,8 @@ spec:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                app.kubernetes.io/name: zot
-                app.kubernetes.io/instance: zenlesszonezot
+                app.kubernetes.io/name: authelia
+                app.kubernetes.io/instance: authelia
             topologyKey: topology.kubernetes.io/zone
 
   resources:
