@@ -20,8 +20,6 @@ spec:
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
       tolerations:
-        - key: oduduwa.sophons.cloud/ase-orun
-          operator: Exists
         - key: caeneus.sophons.cloud
           operator: Exists
 
@@ -42,80 +40,6 @@ spec:
                 secretKeyRef:
                   name: garage
                   key: adminTokenGlobal
-
-          ports:
-            - name: http
-              containerPort: 3909
-              protocol: TCP
-
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-            seccompProfile:
-              type: RuntimeDefault
-
-          resources:
-            requests:
-              cpu: 50m
-              memory: 32Mi
-            limits:
-              memory: 64Mi
----
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: backup-garage-webui
-  namespace: garage
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: garage-webui
-      app.kubernetes.io/instance: backup
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: garage-webui
-        app.kubernetes.io/instance: backup
-    spec:
-      securityContext:
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
-
-      tolerations:
-        - key: caeneus.sophons.cloud
-          operator: Exists
-      nodeSelector:
-        kubernetes.io/hostname: sophons-caeneus
-
-      containers:
-        - name: webui
-          image: docker.io/khairul169/garage-webui:1.1.0
-          env:
-            - name: BASE_PATH
-              value: /admin/ui
-            - name: S3_REGION
-              value: global
-            - name: S3_ENDPOINT_URL
-              value: http://s3-backup.garage.svc.cluster.local:3900
-            - name: API_BASE_URL
-              value: http://s3-backup.garage.svc.cluster.local:3903
-            - name: API_ADMIN_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: garage
-                  key: adminTokenBackup
 
           ports:
             - name: http

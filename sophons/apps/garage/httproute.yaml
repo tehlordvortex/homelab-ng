@@ -56,7 +56,7 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: s3-backup
+  name: s3-web-global
   namespace: garage
 spec:
   parentRefs:
@@ -68,42 +68,15 @@ spec:
       sectionName: websecure
 
   hostnames:
-    - s3-backup.sophons.cloud
-    - s3-backup.sphns.run
-    - ps3-backup.sphns.run
+    - test-s3-web.sphns.run
 
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /admin/ui
-      filters:
+    - filters:
         - type: ExtensionRef
           extensionRef:
             group: traefik.io
             kind: Middleware
             name: cache
-        - type: ExtensionRef
-          extensionRef:
-            group: traefik.io
-            kind: Middleware
-            name: forwardauth-authelia
       backendRefs:
-        - name: backup-webui
-          port: 3909
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /admin
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /
-      backendRefs:
-        - name: s3-backup
-          port: 3903
-    - backendRefs:
-        - name: s3-backup
-          port: 3900
+        - name: s3-global
+          port: 3902

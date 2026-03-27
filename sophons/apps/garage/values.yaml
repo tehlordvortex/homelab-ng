@@ -23,13 +23,12 @@ image:
 
 resources:
   requests:
-    cpu: 150m
+    cpu: 250m
     memory: 128Mi
   limits:
     memory: 768Mi
 
 nodeSelector:
-  hugeloads.sophons.cloud/longhorn: "true"
   hugeloads.sophons.cloud/garage: "true"
   cluster.garage.sophons.cloud/global: "true"
 
@@ -53,3 +52,9 @@ securityContext:
   allowPrivilegeEscalation: false
   seccompProfile:
     type: RuntimeDefault
+
+monitoring:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true

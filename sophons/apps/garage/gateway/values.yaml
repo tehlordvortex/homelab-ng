@@ -53,7 +53,7 @@ image:
 
 resources:
   requests:
-    cpu: 50m
+    cpu: 150m
     memory: 32Mi
   limits:
     memory: 256Mi
@@ -82,3 +82,9 @@ affinity:
             cluster.garage.sophons.cloud: global
         mismatchLabelKeys: [pod-template-hash]
         topologyKey: kubernetes.io/hostname
+
+monitoring:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true

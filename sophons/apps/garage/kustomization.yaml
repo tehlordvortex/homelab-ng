@@ -1,10 +1,9 @@
 namespace: garage
 resources:
   - service.yaml
+  - cfdtunnel.yaml
   - httproute.yaml
   - deployment.yaml
   - middleware.yaml
   - secret.sops.yaml
-  - dnsendpoint.yaml
-  - persistentvolumeclaim.yaml
   - ciliumlocalredirectpolicy.yaml
