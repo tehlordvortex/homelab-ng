@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: rclone-s3-backup
+  labels:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-backup
+spec:
+  ports:
+    - name: s3
+      protocol: TCP
+      port: 8080
+  selector:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-backup
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: RequireDualStack
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: rclone-s3-backup-internal
+  labels:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-backup
+  annotations:
+    metallb.io/address-pool: internal
+spec:
+  type: LoadBalancer
+  ports:
+    - name: s3
+      protocol: TCP
+      port: 8080
+  selector:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-backup
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: rclone-s3-crypt-b2-backups
+  labels:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-crypt-b2-backups
+spec:
+  ports:
+    - name: s3
+      protocol: TCP
+      port: 8080
+  selector:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-crypt-b2-backups
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: RequireDualStack
+---

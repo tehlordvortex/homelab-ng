@@ -3,7 +3,7 @@ resources:
   - certificate.yaml
 
 configMapGenerator:
-  - name: litestream-legacy-juicefs
+  - name: litestream-juicefs
     options:
       disableNameSuffixHash: true
       annotations:
@@ -12,4 +12,5 @@ configMapGenerator:
         reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: |
           juicefs-system, victoriametrics-system
     files:
+      - litestream.yaml=config/litestream-juicefs.yaml
       - litestream-legacy.yaml=config/litestream-legacy-juicefs.yaml

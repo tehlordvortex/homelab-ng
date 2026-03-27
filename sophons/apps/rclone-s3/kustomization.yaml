@@ -1,0 +1,10 @@
+namespace: default
+resources:
+  - service.yaml
+  - httproute.yaml
+  - deployment.yaml
+  - persistentvolumeclaim.yaml
+
+secretGenerator:
+  - name: rclone-s3-crypt-b2-password
+    env: .env

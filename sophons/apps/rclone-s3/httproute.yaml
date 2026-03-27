@@ -1,0 +1,41 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: rclone-s3-backup
+  labels:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-backup
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - ps3-backup.sphns.run
+
+  rules:
+    - backendRefs:
+        - name: rclone-s3-backup
+          port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: rclone-s3-crypt-b2-backups
+  labels:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-crypt-b2-backups
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - ps3-b2.sphns.run
+
+  rules:
+    - backendRefs:
+        - name: rclone-s3-crypt-b2-backups
+          port: 8080
