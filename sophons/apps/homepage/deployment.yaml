@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: homepage
 spec:
   revisionHistoryLimit: 3
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
 
@@ -21,7 +21,15 @@ spec:
         app.kubernetes.io/name: homepage
     spec:
       imagePullSecrets:
-        - name: harbor-pull-cred
+        - name: z3-kluzter-pull-cred
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: homepage
+              matchLabelKeys: [pod-template-hash]
+              topologyKey: kubernetes.io/hostname
 
       serviceAccountName: homepage
       automountServiceAccountToken: true
@@ -30,7 +38,7 @@ spec:
 
       containers:
         - name: homepage
-          image: "poci.sphns.run/proxy-ghcr.io/gethomepage/homepage:v1.10.1"
+          image: "pz3.sphns.run/proxy-ghcr.io/gethomepage/homepage:v1.11.0"
           imagePullPolicy: Always
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS

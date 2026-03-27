@@ -11,7 +11,8 @@
       "bucket": "zenlesszonezot",
       "secure": false,
       "forcepathstyle": true,
-      "regionendpoint": "s3-global.garage.svc.cluster.local:3900"
+      "regionendpoint": "s3-global.garage.svc.cluster.local:3900",
+      "loglevel": "trace"
     },
     "cacheDriver": {
       "name": "redis",
