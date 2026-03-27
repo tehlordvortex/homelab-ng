@@ -12,3 +12,28 @@ patches:
       group: rbac.authorization.k8s.io
       kind: ClusterRoleBinding
       version: v1
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/tolerations
+        value:
+          - key: caeneus.sophons.cloud
+            operator: Exists
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 512Mi
+    target:
+      kind: StatefulSet
+      name: argocd-application-controller
