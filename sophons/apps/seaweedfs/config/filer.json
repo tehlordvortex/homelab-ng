@@ -1,0 +1,24 @@
+{
+  "version": 0,
+  "locations": [
+    {
+      "locationPrefix": "/buckets/dragoonfly",
+      "ttl": "1d",
+      "replication": "100"
+    },
+    {
+      "locationPrefix": "/buckets/monitoring",
+      "ttl": "7d",
+      "replication": "000"
+    },
+    {
+      "locationPrefix": "/buckets/zenlesszonezot",
+      "replication": "100"
+    },
+    {
+      "locationPrefix": "/buckets/litestream-ad-infinitum",
+      "ttl": "7d",
+      "replication": "100"
+    }
+  ]
+}

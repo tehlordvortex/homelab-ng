@@ -34,3 +34,46 @@ spec:
         memory: 32Mi
       limits:
         memory: 32Mi
+---
+apiVersion: cloudflared-operator.vrtx.sh/v1alpha1
+kind: CfdTunnel
+metadata:
+  name: weedfs-s3
+  namespace: weed-system
+spec:
+  dns:
+    externalDNS:
+      kind:
+        generated:
+          endpoints:
+            - dnsName: s3-weed.sophons.cloud
+            - dnsName: s3-weed.sphns.run
+
+  accountId: 93814820f122031e8f5004eb893430f0
+  apiToken:
+    secretRef:
+      name: cf-dns-api-token
+      namespace: default
+    key: api-token
+
+  serviceRef:
+    name: weedfs-seaweedfs-filer # we only need to run on nodes with a filer
+  ingress:
+    - service: https://traefik.traefik.svc.cluster.local
+  originRequestConfig: |
+    matchSNItoHost: true
+    http2Origin: true
+
+  podSpecOverrides:
+    priorityClassName: system-cluster-critical
+    tolerations:
+      - key: orunmila.sophons.cloud/ase-orun
+        operator: Exists
+  containerOverrides:
+    name: cloudflared
+    resources:
+      requests:
+        cpu: 10m
+        memory: 48Mi
+      limits:
+        memory: 48Mi

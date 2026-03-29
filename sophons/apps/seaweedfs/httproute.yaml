@@ -22,3 +22,25 @@ spec:
       backendRefs:
         - name: weedfs-seaweedfs-admin
           port: 23646
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: weedfs-s3
+  namespace: weed-system
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - s3-weed.sophons.cloud
+    - s3-weed.sphns.run
+    - ps3-weed.sphns.run
+
+  rules:
+    - backendRefs:
+        - group: traefik.io
+          kind: TraefikService
+          name: weedfs-s3

@@ -33,4 +33,4 @@ patches:
               fieldPath: metadata.labels['topology.kubernetes.io/zone']
       - op: add
         path: /spec/template/spec/containers/0/args/-
-        value: "--dataCenter=$(DATA_CENTER)"
+        value: "-dataCenter=$(DATA_CENTER)"

@@ -9,6 +9,13 @@ admin:
   port: 23646
   grpcPort: 33646 # For worker connections
 
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 64Mi
+
   containerSecurityContext:
     enabled: true
     privileged: false
@@ -29,16 +36,23 @@ master:
   nodeSelector: |
     weed.sophons.cloud/cluster: global
     weed.sophons.cloud/master: "true"
-
-  volumeSizeLimitMB: 1024
+  priorityClassName: system-cluster-critical
+  volumeSizeLimitMB: 512
   data:
     type: emptyDir
   logs:
     type: null
 
+  config: |-
+    [master.volume_growth]
+    copy_1 = 1
+    copy_2 = 1
+    copy_3 = 1
+    copy_other = 1
+
   resources:
     requests:
-      cpu: 100m
+      cpu: 75m
       memory: 64Mi
     limits:
       memory: 200Mi
@@ -47,6 +61,7 @@ master:
     enabled: true
     privileged: false
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop: [ALL]
 
@@ -65,14 +80,48 @@ master:
         resource: limits.memory
 
 volume:
-  enabled: false
-  replicas: 0
+  enabled: true
+  replicas: 3
+  priorityClassName: system-cluster-critical
+
   nodeSelector: |
     weed.sophons.cloud/cluster: global
     weed.sophons.cloud/volume: "true"
+
   tolerations: |
     - key: orunmila.sophons.cloud/ase-orun
       operator: Exists
+
+  affinity: |
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: seaweedfs
+              app.kubernetes.io/instance: weedfs
+              app.kubernetes.io/component: volume
+          matchLabelKeys: [controller-revision-hash]
+          topologyKey: "kubernetes.io/hostname"
+
+  topologySpreadConstraints: |
+    - labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: seaweedfs
+          app.kubernetes.io/instance: weedfs
+          app.kubernetes.io/component: volume
+      maxSkew: 1
+      minDomains: 3
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    - labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: seaweedfs
+          app.kubernetes.io/instance: weedfs
+          app.kubernetes.io/component: volume
+      maxSkew: 1
+      minDomains: 3
+      topologyKey: topology.kubernetes.io/region
+      whenUnsatisfiable: DoNotSchedule
 
   readMode: redirect
   dataDirs:
@@ -80,7 +129,7 @@ volume:
       type: persistentVolumeClaim
       storageClass: local-path
       size: 32Gi
-      maxVolumes: 24
+      maxVolumes: 48
 
   idx:
     type: persistentVolumeClaim
@@ -91,20 +140,26 @@ volume:
 
   resources:
     requests:
-      cpu: 150m
+      cpu: 100m
       memory: 64Mi
     limits:
-      memory: 400Mi
+      memory: 256Mi
 
   extraEnvironmentVars:
     GOMEMLIMIT:
       resourceFieldRef:
         resource: limits.memory
+    DATA_CENTER:
+      fieldRef:
+        fieldPath: metadata.labels['topology.kubernetes.io/zone']
+  extraArgs:
+    - -dataCenter=$(DATA_CENTER)
 
   containerSecurityContext:
     enabled: true
     privileged: false
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop: [ALL]
 
@@ -118,65 +173,13 @@ volume:
     seccompProfile:
       type: RuntimeDefault
 
-volumes:
-  nl-east-1:
-    dataCenter: nl-east-1
-    replicas: 1
-    nodeSelector: |
-      weed.sophons.cloud/cluster: global
-      weed.sophons.cloud/volume: "true"
-      topology.kubernetes.io/zone: nl-east-1
-  de-east-1:
-    dataCenter: de-east-1
-    replicas: 1
-    nodeSelector: |
-      weed.sophons.cloud/cluster: global
-      weed.sophons.cloud/volume: "true"
-      topology.kubernetes.io/zone: de-east-1
-  ng-west-1:
-    dataCenter: ng-west-1
-    replicas: 1
-    nodeSelector: |
-      weed.sophons.cloud/cluster: global
-      weed.sophons.cloud/volume: "true"
-      topology.kubernetes.io/zone: ng-west-1
-
 filer:
   loggingOverrideLevel: 0 # noisy filer generates data for logs/metrics, which generates logs in filer, which...
+  replicas: 3
+  priorityClassName: system-cluster-critical
   tolerations: |
     - key: orunmila.sophons.cloud/ase-orun
       operator: Exists
-    # - key: caeneus.sophons.cloud
-    #   operator: Exists
-  replicas: 3
-  # encryptVolumeData: true
-  # redirectOnRead: true
-
-  data:
-    type: persistentVolumeClaim
-    storageClass: local-path
-    size: 8Gi
-
-  logs:
-    type: null
-
-  s3:
-    enabled: true
-    enableAuth: true
-    existingConfigSecret: weed-s3
-
-  resources:
-    requests:
-      cpu: 150m
-      memory: 100Mi
-    limits:
-      memory: 172Mi
-
-  extraEnvironmentVars:
-    GOMEMLIMIT:
-      resourceFieldRef:
-        resource: limits.memory
-
   topologySpreadConstraints: |
     - labelSelector:
         matchLabels:
@@ -197,10 +200,160 @@ filer:
       topologyKey: topology.kubernetes.io/region
       whenUnsatisfiable: DoNotSchedule
 
+  sidecars:
+    - name: filer-config
+      image: docker.io/library/alpine:edge
+      imagePullPolicy: Always
+      command:
+        - sh
+        - -c
+        - |
+          set -xeuo pipefail
+          filename=/etc/seaweedfs/filer.conf
+
+          apk add --no-cache inotify-tools curl
+
+          put_config() {
+            cat $filename
+            curl -X PUT --upload-file $filename "http://localhost:8888$filename"
+          }
+
+          watch_config() {
+            inotifywait -q -m -e close_write $filename |
+              while read -r filename event; do put_config; done
+          }
+
+          put_config
+          watch_config &
+          pid=$!
+          trap "kill $pid" SIGTERM
+          wait
+      securityContext:
+        privileged: false
+        runAsNonRoot: false
+        runAsUser: 0
+        runAsGroup: 0
+        readOnlyRootFilesystem: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      volumeMounts:
+        - name: filer-config
+          mountPath: /etc/seaweedfs
+          readOnly: true
+      resources:
+        requests:
+          memory: 16Mi
+        limits:
+          memory: 64Mi
+
+  extraVolumes: |
+    - name: tmp
+      emptyDir: {}
+    - name: filer-config
+      configMap:
+        name: weed-filer
+  extraVolumeMounts: |
+    - name: tmp
+      mountPath: /tmp
+
+  data:
+    type: persistentVolumeClaim
+    storageClass: local-path
+    size: 8Gi
+
+  logs:
+    type: null
+
+  s3:
+    enabled: true
+    enableAuth: true
+    existingConfigSecret: weed-s3
+
+    createBuckets:
+      - name: monitoring
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+  extraEnvironmentVars:
+    GOMEMLIMIT:
+      resourceFieldRef:
+        resource: limits.memory
+    DATA_CENTER:
+      fieldRef:
+        fieldPath: metadata.labels['topology.kubernetes.io/zone']
+  extraArgs:
+    - -dataCenter=$(DATA_CENTER)
+
   containerSecurityContext:
     enabled: true
     privileged: false
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ALL]
+
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: Always
+    seccompProfile:
+      type: RuntimeDefault
+
+s3:
+  enabled: false
+  enableAuth: true
+  existingConfigSecret: weed-s3
+  priorityClassName: system-cluster-critical
+
+  logs:
+    type: null
+  replicas: 7
+  tolerations: |
+    - operator: Exists
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 100Mi
+
+  extraVolumes: |
+    - name: tmp
+      emptyDir: {}
+  extraVolumeMounts: |
+    - name: tmp
+      mountPath: /tmp
+
+  extraEnvironmentVars:
+    GOMEMLIMIT:
+      resourceFieldRef:
+        resource: limits.memory
+
+  topologySpreadConstraints: |
+    - labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: seaweedfs
+          app.kubernetes.io/instance: weedfs
+          app.kubernetes.io/component: s3
+      maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+
+  containerSecurityContext:
+    enabled: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop: [ALL]
 
@@ -221,7 +374,7 @@ worker:
 
   resources:
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 64Mi
     limits:
       cpu: 250m
@@ -236,6 +389,7 @@ worker:
     enabled: true
     privileged: false
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop: [ALL]
 

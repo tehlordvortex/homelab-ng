@@ -1,0 +1,12 @@
+apiVersion: traefik.io/v1alpha1
+kind: TraefikService
+metadata:
+  name: weedfs-s3
+  namespace: weed-system
+spec:
+  weighted:
+    services:
+      - name: weedfs-s3
+        port: 8333
+        strategy: leasttime
+        nativeLB: false
