@@ -19,3 +19,33 @@
 - need to migrate all litestream instances to v0.3.13, v0.5.2 doesn't actually enforce retention:
   - <https://github.com/benbjohnson/litestream/blob/v0.5.2/replica.go#L230>
   - so it can grow infinitely, and restore time can get insane (i think this is due to the snapshot process being different too?)
+
+#### manual etcd recovery without reset in case of data corruption
+
+- pull ssd and run this on workstation or use node-debugger: `while true; do pkill -9 -e etcd$; sleep 0.25; done` to shoot etcd whenever it tries to restart
+- grab same etcd version from <https://github.com/etcd-io/etcd/releases>
+- copy secrets from `/host/system/secrets/etcd` to `/tmp/secrets/etcd`, `chown 60:60 secrets`
+- start etcd instance with user 60:60 in node-debugger container using, e.g.:
+
+```sh
+sudo -u etcd ./etcd2 --advertise-client-urls=https://node-a-ip:2379,https://node-a-ip2:2379 \
+  --auto-tls=false --cert-file=/tmp/secrets/etcd/server.crt --client-cert-auth=true --data-dir=/tmp/etcd \
+  --election-timeout=50000 --experimental-compact-hash-check-enabled=true --experimental-initial-corrupt-check=true \
+  --experimental-watch-progress-notify-interval=5s --heartbeat-interval=5000 \
+  --initial-advertise-peer-urls=https://node-a-ip:2380,https://node-a-ip2:2380 \
+  --key-file=/tmp/secrets/etcd/server.key \
+  --listen-client-urls=https://127.0.0.1:2379,https://node-a-ip:2379,https://node-a-ip2:2379 \
+  --listen-peer-urls=https://node-a-ip:2380,https://node-a-ip2:2380 \
+  --name=sophons-beta --peer-auto-tls=false --peer-cert-file=/tmp/secrets/etcd/peer.crt \
+  --peer-client-cert-auth=true --peer-key-file=/tmp/secrets/etcd/peer.key  \
+  --peer-trusted-ca-file=/tmp/secrets/etcd/ca.crt --trusted-ca-file=/tmp/secrets/etcd/ca.crt \
+  --initial-cluster-state=existing \
+  --initial-cluster="node-a=https://ip:2380,node-a=https://ip2:2380,node-b=https://ip:2380,node-b=https://ip2:2380"
+```
+
+- wait for etcd to publish member, download snapshot, sigint to trigger graceful shutdown
+- swap in the fixed database:
+
+```sh
+pkill -9 -e etcd$ && mv /host/var/lib/etcd/member /tmp/etcd/member.old && mv /tmp/etcd/member /host/var/lib/etcd/member`
+```
