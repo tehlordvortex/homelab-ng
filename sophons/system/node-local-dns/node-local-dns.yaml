@@ -83,7 +83,7 @@ data:
             fallthrough
         }
         template IN ANY sphns.run {
-            match "^(pauth|ps3-(global|backup|weed|b2)|poci|pz3)[.]"
+            match "^(pauth|ps3-(global|backup|weed|b2)|prestic-(backup|b2)|poci|pz3)[.]"
             answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
             fallthrough
         }

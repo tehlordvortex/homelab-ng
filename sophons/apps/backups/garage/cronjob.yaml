@@ -1,0 +1,363 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: global-garage-backup-to-rclone-backup
+  namespace: backup-system
+  labels:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: global
+    app.kubernetes.io/component: backup
+spec:
+  schedule: "0 3 * * *" # 3am daily
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: garage
+        app.kubernetes.io/instance: global
+        app.kubernetes.io/component: backup
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: garage
+            app.kubernetes.io/instance: global
+            app.kubernetes.io/component: backup
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          nodeSelector:
+            kubernetes.io/hostname: sophons-caeneus
+          tolerations:
+            - key: caeneus.sophons.cloud
+              operator: Exists
+
+          initContainers:
+            - name: rclone-mount
+              image: ghcr.io/rclone/rclone:1.73.3
+              restartPolicy: Always
+              command:
+                - sh
+                - -c
+                - |
+                  set -xeuo pipefail
+                  mkdir -p /tmp/garage
+                  exec rclone mount -v --vfs-read-chunk-size=2M --vfs-read-chunk-streams=8 \
+                    --read-only --uid 1000 --gid 1000 --allow-other garage: /tmp/garage
+
+              startupProbe:
+                exec:
+                  command: [mountpoint, -q, /tmp/garage]
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                failureThreshold: 5
+
+              envFrom:
+                - secretRef:
+                    name: global-garage-access-key
+                - configMapRef:
+                    name: rclone-garage-config
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  mountPropagation: Bidirectional
+
+              securityContext:
+                runAsUser: 0
+                runAsGroup: 0
+                runAsNonRoot: false
+                privileged: true
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+                  add: [SYS_ADMIN]
+            - name: restic-forget
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - forget
+                - -v
+                - --host=garage
+                - --group-by=host
+                - --prune
+                - --keep-within-daily=30d
+              envFrom:
+                - secretRef:
+                    name: global-garage-access-key
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-backup:8081
+                - name: RESTIC_REST_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_ACCESS_KEY_ID
+                - name: RESTIC_REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_SECRET_ACCESS_KEY
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
+
+              securityContext:
+                privileged: false
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: restic-backup
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - backup
+                - -vv
+                - --host=garage
+                - --read-concurrency=8
+                - /garage
+              envFrom:
+                - secretRef:
+                    name: global-garage-access-key
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-backup:8081
+                - name: RESTIC_REST_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_ACCESS_KEY_ID
+                - name: RESTIC_REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_SECRET_ACCESS_KEY
+
+              volumeMounts:
+                - mountPath: /garage
+                  name: tmp
+                  subPath: garage
+                  mountPropagation: HostToContainer
+                - mountPath: /tmp
+                  name: tmp
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
+
+              securityContext:
+                privileged: false
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+
+          volumes:
+            - name: tmp
+              emptyDir: {}
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: global-garage-backup-to-rclone-crypt-b2
+  namespace: backup-system
+  labels:
+    app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: global
+    app.kubernetes.io/component: backup-crypt-b2
+spec:
+  schedule: "0 3 * * *" # 3am daily
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: garage
+        app.kubernetes.io/instance: global
+        app.kubernetes.io/component: backup-crypt-b2
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: garage
+            app.kubernetes.io/instance: global
+            app.kubernetes.io/component: backup-crypt-b2
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+
+          affinity:
+            podAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: rclone
+                        app.kubernetes.io/instance: crypt-b2
+                    namespaceSelector:
+                      matchLabels:
+                        kubernetes.io/metadata.name: default
+                    topologyKey: topology.kubernetes.io/zone
+                  weight: 100
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - preference:
+                    matchExpressions:
+                      - key: topology.kubernetes.io/region
+                        operator: NotIn
+                        values: [ng]
+                  weight: 100
+
+          initContainers:
+            - name: rclone-mount
+              image: ghcr.io/rclone/rclone:1.73.3
+              restartPolicy: Always
+              command:
+                - sh
+                - -c
+                - |
+                  set -xeuo pipefail
+                  mkdir -p /tmp/garage
+                  exec rclone mount -v --vfs-read-chunk-size=2M --vfs-read-chunk-streams=8 \
+                    --read-only --uid 1000 --gid 1000 --allow-other garage: /tmp/garage
+
+              startupProbe:
+                exec:
+                  command: [mountpoint, -q, /tmp/garage]
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                failureThreshold: 5
+
+              envFrom:
+                - secretRef:
+                    name: global-garage-access-key
+                - configMapRef:
+                    name: rclone-garage-config
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  mountPropagation: Bidirectional
+
+              securityContext:
+                runAsUser: 0
+                runAsGroup: 0
+                runAsNonRoot: false
+                privileged: true
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+                  add: [SYS_ADMIN]
+            - name: restic-forget
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - forget
+                - -v
+                - --host=garage
+                - --group-by=host
+                - --prune
+                - --keep-within-daily=30d
+              envFrom:
+                - secretRef:
+                    name: global-garage-access-key
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-crypt-b2:8081
+                - name: RESTIC_REST_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_ACCESS_KEY_ID
+                - name: RESTIC_REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_SECRET_ACCESS_KEY
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
+
+              securityContext:
+                privileged: false
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: restic-backup
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - backup
+                - -vv
+                - --host=garage
+                - --read-concurrency=8
+                - /garage
+              envFrom:
+                - secretRef:
+                    name: global-garage-access-key
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-crypt-b2:8081
+                - name: RESTIC_REST_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_ACCESS_KEY_ID
+                - name: RESTIC_REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_SECRET_ACCESS_KEY
+
+              volumeMounts:
+                - mountPath: /garage
+                  name: tmp
+                  subPath: garage
+                  mountPropagation: HostToContainer
+                - mountPath: /tmp
+                  name: tmp
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
+
+              securityContext:
+                privileged: false
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+
+          volumes:
+            - name: tmp
+              emptyDir: {}

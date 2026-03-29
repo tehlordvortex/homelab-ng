@@ -1,0 +1,8 @@
+[sink.s3]
+# read credentials doc at https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
+# default loads credentials from the shared credentials file (~/.aws/credentials).
+enabled = true
+bucket = "sss"                         # an existing bucket
+directory = "/weedfs/data"             # destination directory
+endpoint = "http://rclone-backup:8080"
+is_incremental = true

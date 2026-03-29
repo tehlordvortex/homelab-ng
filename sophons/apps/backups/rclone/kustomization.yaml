@@ -1,0 +1,24 @@
+namespace: backup-system
+resources:
+  - service.yaml
+  - httproute.yaml
+  - deployment.yaml
+  - persistentvolumeclaim.yaml
+
+configMapGenerator:
+  - name: rclone-b2-config
+    literals:
+      - RCLONE_CONFIG_B2_TYPE=s3
+      - RCLONE_CONFIG_B2_ENDPOINT=s3.eu-central-003.backblazeb2.com
+      - RCLONE_CONFIG_B2_REGION=eu-central-003
+      - RCLONE_CONFIG_B2_ENV_AUTH=true
+
+  - name: rclone-locals3-config
+    literals:
+      - RCLONE_CONFIG_LOCALS3_TYPE=s3
+      - RCLONE_CONFIG_LOCALS3_ENDPOINT=http://localhost:8080
+      - RCLONE_CONFIG_LOCALS3_ENV_AUTH=true
+
+secretGenerator:
+  - name: rclone-crypt-b2-password
+    env: .env

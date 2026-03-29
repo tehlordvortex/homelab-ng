@@ -1,0 +1,9 @@
+namespace: backup-system
+resources:
+  - cronjob.yaml
+
+configMapGenerator:
+  - name: weed-backup
+    files:
+      - config/b2.replication.toml
+      - config/s3.replication.toml
