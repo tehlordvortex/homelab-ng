@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: klusterexporter
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: wgexporter
+      app.kubernetes.io/instance: klusterexporter
+  endpoints:
+    - port: metrics

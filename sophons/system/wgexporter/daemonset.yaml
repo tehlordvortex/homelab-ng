@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/daemonset-apps-v1.json
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: klusterexporter
+  namespace: kube-system
+spec:
+  selector: {}
+  template:
+    spec:
+      tolerations:
+        - operator: Exists
+
+      hostNetwork: true
+      containers:
+        - name: wgexporter
+          image: ghcr.io/tehlordvortex/wgexporter:dev
+          imagePullPolicy: Always
+          args:
+            - -i
+            - wg.kluster
+            # TODO: Less warning spam
+            - -i
+            - wg.dbg
+          env:
+            - name: RUST_LOG
+              value: info
+            - name: METRICS_PORT
+              value: "9069"
+          ports:
+            - containerPort: 9069
+              protocol: TCP
+              name: metrics
+
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "8Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"
+
+          securityContext:
+            capabilities:
+              add: [NET_ADMIN]
+
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics

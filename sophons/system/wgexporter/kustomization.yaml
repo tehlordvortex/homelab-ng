@@ -1,0 +1,12 @@
+namespace: kube-system
+labels:
+  - pairs:
+      app.kubernetes.io/name: wgexporter
+      app.kubernetes.io/instance: klusterexporter
+    includeTemplates: true
+    includeSelectors: true
+
+resources:
+  - service.yaml
+  - daemonset.yaml
+  - servicemonitor.yaml
