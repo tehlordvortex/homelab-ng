@@ -10,7 +10,7 @@ metadata:
   name: dragonfly-zenlesszonezot
   namespace: zzzot
 spec:
-  replicas: 1
+  replicas: 3
   args:
     - --s3_endpoint=s3-global.garage.svc.cluster.local:3900
     - --s3_use_https=false
@@ -44,9 +44,26 @@ spec:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                app.kubernetes.io/name: zot
-                app.kubernetes.io/instance: zenlesszonezot
+                app: dragonfly-zenlesszonezot
+                app.kubernetes.io/name: dragonfly
             topologyKey: topology.kubernetes.io/zone
+  topologySpreadConstraints:
+    - labelSelector:
+        matchLabels:
+          app: dragonfly-zenlesszonezot
+          app.kubernetes.io/name: dragonfly
+      maxSkew: 1
+      minDomains: 3
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    - labelSelector:
+        matchLabels:
+          app: dragonfly-zenlesszonezot
+          app.kubernetes.io/name: dragonfly
+      maxSkew: 1
+      minDomains: 3
+      topologyKey: topology.kubernetes.io/region
+      whenUnsatisfiable: DoNotSchedule
 
   resources:
     requests:
