@@ -2,8 +2,6 @@ initChownData:
   enabled: false
 
 tolerations:
-  - key: orunmila.sophons.cloud/ase-orun
-    operator: Exists
   - key: caeneus.sophons.cloud
     operator: Exists
 

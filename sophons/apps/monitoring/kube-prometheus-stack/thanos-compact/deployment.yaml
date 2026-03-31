@@ -1,0 +1,117 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/deployment-apps-v1.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: promstack
+  namespace: monitoring-system
+spec:
+  replicas: 1
+  selector: {}
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: NotIn
+                    values: [ng]
+              weight: 100
+
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: {}
+                topologyKey: kubernetes.io/hostname
+                matchLabelKeys: [pod-template-hash]
+              weight: 100
+
+      containers:
+        - name: thanos-compact
+          args:
+            - compact
+            - --log.level=info
+            - --log.format=logfmt
+            - --data-dir=/var/thanos/compact
+            - --http-address=0.0.0.0:10902
+            - --objstore.config-file=/etc/thanos/storage.yaml
+            - --wait
+            - --wait-interval=5m
+            - --consistency-delay=10m
+            - --downsampling.disable
+            - --retention.resolution-raw=7d
+            - --retention.resolution-5m=7d
+            - --retention.resolution-1h=7d
+          env:
+            - name: HOST_IP_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+          image: quay.io/thanos/thanos
+          imagePullPolicy: IfNotPresent
+
+          livenessProbe:
+            failureThreshold: 4
+            httpGet:
+              path: /-/healthy
+              port: http
+            periodSeconds: 30
+
+          ports:
+            - containerPort: 10902
+              name: http
+
+          readinessProbe:
+            failureThreshold: 20
+            httpGet:
+              path: /-/ready
+              port: http
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePolicy: FallbackToLogsOnError
+
+          volumeMounts:
+            - mountPath: /var/thanos/compact
+              name: data
+              readOnly: false
+            - mountPath: /etc/thanos
+              name: config
+              readOnly: true
+
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 120
+
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: config
+          secret:
+            secretName: thanos-config

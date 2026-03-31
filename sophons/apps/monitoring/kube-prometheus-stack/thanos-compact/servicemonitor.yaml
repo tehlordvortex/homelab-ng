@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: promstack
+  namespace: monitoring-system
+spec:
+  endpoints:
+    - port: http
+      relabelings:
+        - action: replace
+          separator: /
+          sourceLabels:
+            - namespace
+            - pod
+          targetLabel: instance
+  selector: {}

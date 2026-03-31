@@ -1,0 +1,10 @@
+apiVersion: 1
+datasources:
+  - name: THANOS
+    type: prometheus
+    uid: thanos
+    url: http://promstack-thanos-query:9090/
+    access: proxy
+    jsonData:
+      httpMethod: POST
+      timeInterval: 30s

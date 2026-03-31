@@ -1,0 +1,10 @@
+namereference:
+  - kind: Secret
+    fieldSpecs:
+      - kind: Prometheus
+        path: spec/thanos/objectStorageConfig/name
+
+commonLabels:
+  - path: spec/selector/matchLabels
+    create: true
+    kind: ServiceMonitor

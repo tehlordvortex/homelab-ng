@@ -1,0 +1,121 @@
+nameOverride: promstack
+
+grafana:
+  enabled: false
+  forceDeployDashboards: true
+  forceDeployDatasources: true
+
+prometheusOperator:
+  admissionWebhooks:
+    certManager:
+      enabled: true
+
+  service:
+    ipDualStack:
+      enabled: true
+
+  thanosImage:
+    registry: quay.io
+    repository: thanos/thanos
+    tag: v0.41.0
+
+alertmanager:
+  alertmanagerSpec:
+    image:
+      registry: quay.io
+      repository: prometheus/alertmanager
+      tag: v0.31.1
+
+prometheus:
+  thanosServiceMonitor:
+    enabled: true
+  # --store=dnssrv+_grpc._tcp.promstack-thanos-discovery.monitoring-system.svc.cluster.local
+  thanosService:
+    enabled: true
+    ipDualStack:
+      enabled: true
+
+  prometheusSpec:
+    image:
+      registry: quay.io
+      repository: prometheus/prometheus
+      tag: v3.10.0
+
+    retention: 4h
+    disableCompaction: true
+
+    # ruleNamespaceSelector:
+    #   matchLabels:
+    #     kubernetes.io/metadata.name: monitoring-system
+    # probeNamespaceSelector:
+    #   matchLabels:
+    #     kubernetes.io/metadata.name: monitoring-system
+    # podMonitorNamespaceSelector:
+    #   matchLabels:
+    #     kubernetes.io/metadata.name: monitoring-system
+    # scrapeConfigNamespaceSelector:
+    #   matchLabels:
+    #     kubernetes.io/metadata.name: monitoring-system
+    # serviceMonitorNamespaceSelector:
+    #   matchLabels:
+    #     kubernetes.io/metadata.name: monitoring-system
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+    serviceName: promstack-thanos-discovery
+    service:
+      ipDualStack:
+        enabled: true
+
+    tolerations:
+      - key: caeneus.sophons.cloud
+        operator: Exists
+    nodeSelector:
+      kubernetes.io/hostname: sophons-caeneus
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+                - key: topology.kubernetes.io/region
+                  operator: In
+                  values: [ng]
+            weight: 100
+
+    resources:
+      requests:
+        cpu: 150m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1.5Gi # lmaoooooooo WHY IS IT SO MUCH TT-TT
+        # absolutely mogged by VictoriaMetrics
+
+    containers:
+      - name: prometheus
+        env:
+          - name: GOMEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.memory
+      - name: thanos-sidecar
+        env:
+          - name: GOMEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.memory
+
+    thanos:
+      blockSize: 5m
+      objectStorageConfig:
+        existingSecret:
+          name: thanos-config
+          key: storage.yaml
+
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 250m
+          memory: 128Mi

@@ -1,0 +1,6 @@
+namespace: monitoring-system
+secretGenerator:
+  - name: thanos-config
+    namespace: monitoring-system
+    files:
+      - storage.yaml=thanos.storage.sops.yaml

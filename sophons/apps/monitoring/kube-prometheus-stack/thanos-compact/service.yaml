@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/service.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: promstack
+  namespace: monitoring-system
+spec:
+  ports:
+    - name: http
+      port: 10902
+  selector: {}

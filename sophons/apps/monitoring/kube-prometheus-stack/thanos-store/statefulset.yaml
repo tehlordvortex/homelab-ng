@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/statefulset-apps-v1.json
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: promstack
+  namespace: monitoring-system
+spec:
+  replicas: 1
+  selector: {}
+  serviceName: promstack-thanos-store
+  template:
+    spec:
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
+      nodeSelector:
+        kubernetes.io/hostname: sophons-caeneus
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: {}
+                topologyKey: kubernetes.io/hostname
+                matchLabelKeys: [controller-revision-hash]
+              weight: 100
+
+      containers:
+        - name: thanos-store
+          args:
+            - store
+            - --log.level=info
+            - --log.format=logfmt
+            - --data-dir=/var/thanos/store
+            - --grpc-address=0.0.0.0:10901
+            - --http-address=0.0.0.0:10902
+            - --objstore.config-file=/etc/thanos/storage.yaml
+            - --ignore-deletion-marks-delay=24h
+          env:
+            - name: HOST_IP_ADDRESS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+
+          image: quay.io/thanos/thanos
+          imagePullPolicy: IfNotPresent
+
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /-/healthy
+              port: 10902
+              scheme: HTTP
+            periodSeconds: 30
+
+          ports:
+            - containerPort: 10901
+              name: grpc
+            - containerPort: 10902
+              name: http
+
+          readinessProbe:
+            failureThreshold: 25
+            httpGet:
+              path: /-/ready
+              port: 10902
+              scheme: HTTP
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePolicy: FallbackToLogsOnError
+
+          volumeMounts:
+            - mountPath: /var/thanos/store
+              name: data
+              readOnly: false
+            - mountPath: /etc/thanos
+              name: config
+              readOnly: true
+
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 120
+
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: config
+          secret:
+            secretName: thanos-config
