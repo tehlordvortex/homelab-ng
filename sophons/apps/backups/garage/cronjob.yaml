@@ -95,7 +95,7 @@ spec:
                     name: global-garage-access-key
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-backup:8081
+                  value: rest:http://rclone-backup:8081/garage/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -137,7 +137,7 @@ spec:
                     name: global-garage-access-key
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-backup:8081
+                  value: rest:http://rclone-backup:8081/garage/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -285,7 +285,7 @@ spec:
                     name: global-garage-access-key
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-crypt-b2:8081
+                  value: rest:http://rclone-crypt-b2:8081/garage/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -327,7 +327,7 @@ spec:
                     name: global-garage-access-key
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-crypt-b2:8081
+                  value: rest:http://rclone-crypt-b2:8081/garage/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
