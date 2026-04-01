@@ -304,6 +304,8 @@ volumes:
 tolerations:
   - key: orunmila.sophons.cloud/ase-orun
     operator: Exists
+  - key: caeneus.sophons.cloud
+    operator: Exists
 
 experimental:
   # Fun fact, using plugins essentially introduce a hard dependency

@@ -119,3 +119,8 @@ prometheus:
         limits:
           cpu: 250m
           memory: 128Mi
+
+kube-state-metrics:
+  tolerations:
+    - key: caeneus.sophons.cloud
+      operator: Exists

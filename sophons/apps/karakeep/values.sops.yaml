@@ -7,9 +7,9 @@
 applicationProtocol: https
 applicationHost: holding.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:k40lFcvWvepWlohkL5IMU36UbZAokOexw1wRn1hQSGOFzU7o6lLQus0fp7i7pnMp,iv:UANIpZwxw9q1xhPkwOl837vUrBeGpjhJ796qws+CSSY=,tag:toReYNYSVMAoUysreOveuA==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:rADuteOF4K2LIR5QfOadtxyPiiT9OW3VxG5zmw/5UAOYt7NMzLsJyOxMoJN4cqkE,iv:7x5TXVkRgmDRcWVMtYJvSIohrLSkE/f2iwQFYifYqec=,tag:YUBD1d4R6L97uxFlMiXjyQ==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:0r7IDYzG+mXAnWKJ4TK99wZ1PSQTaFuIO5z7Dodg,iv:yQA2w4vN3euGd7pzQo/TgAMBvpvuFTI88zlQdANILH4=,tag:Ns87NBiCMWaM4cFfhrrV+w==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:4gysaSVZ5Sododj/olt57ZXFa/m3PD6Rjr1mRgKM,iv:vg9L8jhdbNTwJ/ipmhYYG61O9TRYbVLYesoIFjvOeNc=,tag:J11syO2vR6iwVnohhXq8aA==,type:str]
 ingress:
   karakeep:
     enabled: false
@@ -19,6 +19,17 @@ controllers:
     strategy: Recreate
     statefulset:
       volumeClaimTemplates: []
+    pod:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: In
+                    values:
+                      - ng
+              weight: 100
     containers:
       karakeep:
         image:
@@ -42,6 +53,8 @@ controllers:
         env:
           DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
+          BROWSER_WEB_URL: null
+          BROWSER_WEBSOCKET_URL: ws://{{ .Release.Name }}-chrome:3000
           ASSET_STORE_S3_ENDPOINT: https://ps3-global.sphns.run
           ASSET_STORE_S3_REGION: global
           ASSET_STORE_S3_BUCKET: karakeep
@@ -206,27 +219,50 @@ controllers:
   chrome:
     pod:
       nodeSelector:
-        topology.kubernetes.io/region: ng
+        kubernetes.io/hostname: sophons-caeneus
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
     containers:
       chrome:
-        args:
-          # FIXME: CHROME SANDBOX
-          # - --no-sandbox
-          - --remote-debugging-address=0.0.0.0
-          - --remote-debugging-port=9222
-          - --headless
-          - --hide-scrollbars
-          - --disable-gpu
-          - --disable-dev-shm-usage
+        # https://github.com/jlandure/alpine-chrome/issues/272#issuecomment-3536582057
+        # Can't trust the alpine container :(
+        image:
+          repository: ghcr.io/browserless/chromium
+          tag: v2.42.0
+        args: null
+        # args:
+        #   # FIXME: CHROME SANDBOX
+        #   # - --no-sandbox
+        #   - --remote-debugging-address=0.0.0.0
+        #   - --remote-debugging-port=9222
+        #   - --headless
+        #   - --hide-scrollbars
+        #   - --disable-gpu
+        #   - --disable-dev-shm-usage
+        probes:
+          liveness:
+            enabled: true
+            spec:
+              httpGet:
+                path: /
+                port: 3000
+          readiness:
+            enabled: true
+            spec:
+              httpGet:
+                path: /
+                port: 3000
         securityContext:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
-            add:
-              - SYS_ADMIN
+            add: null
+            drop:
+              - ALL
+              # - SYS_ADMIN
           seccompProfile:
             type: RuntimeDefault
-            # # TODO: WHY WON'T THIS SHIT WORK
             # seccompProfile:
             #   type: Localhost
             #   localhostProfile: profiles/chrome.json
@@ -235,6 +271,12 @@ controllers:
             cpu: 100m
           limits:
             cpu: null
+service:
+  chrome:
+    ports:
+      http: null
+      ws:
+        port: 3000
 persistence:
   data:
     type: emptyDir
@@ -272,13 +314,23 @@ persistence:
         02-litestream-legacy-replicate:
           - path: /etc/litestream
 meilisearch:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: In
+                values:
+                  - ng
+          weight: 100
   resources:
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: 32Mi
     limits:
       cpu: 250m
-      memory: 512Mi
+      memory: 256Mi
   persistence:
     existingClaim: karakeep-meilisearch
 sops:
@@ -286,23 +338,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBiYk1V
-        YUZGTVNNL2NVdENKb09xM2hFclBnQkdLYUdLWGIyZHNJWVlKZlVNCjZtK3Q4WUY3
-        Sk5mUXZVdWtNU2tDNU55S3BPamExdmRPU0pRWGFwb3FqS1UKLS0tIFVtSlppNFZZ
-        bk5BVzd0eDVaRXZsNE91cmFtUnZ0QlZ1ZGtMSGhWbmlQS3MKdDbqKDNLH24yuAoY
-        2ADj2UQTFS6UfYspvEcpf9bPCy9amq0TgwLvh6CdfftITfw2QxN2SsZxCe0blFMM
-        ROy/jg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBKT2w5
+        WFZlTkpYdXMyZXhPc3U0eXZMVzV2TjdUVjlRSFZTb0VUaGlpK3hvCkpHUVh4dzU5
+        T1c2YW9zNEVCVEVPekdhTG9LMTVwa3RBQ2ZHMVN0dUUrbk0KLS0tIFBFUmZoM3hX
+        YVM0aW5oTm1zMU0zQjh4SlJQNlhaaUhOZVVvb003MFRxVlUKotzxEej6diEKA1MJ
+        hxqUlnFA4++l6SBvYkcR0/ODxWKEeIygXJ3fLNJ3L95g8r6pqLT2i4Pyt2lTZC1U
+        5VfE9g==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBjb0ZRakdNRysvemJOc2pj
-        aGpuWkpTYzVac2gvMXprSzMra0RnTjk4azBFCmJVM1BNNW0wKzNqN2xES0NjNGpP
-        R2FHalMxU2JzeTlYVnY3Y0hXalVHSFUKLS0tICt1VjJtQ1JnN2R1OVg5dTl4dzRX
-        djY2K1FQTElYSTZtRjkzOUVtVkY0cW8KaRljsnDjvu3FnWDmqvUVn04A/5SE5PrK
-        unhRwIEs8Y530nqAngqbuKysK+5K2Tw75nopJrhRswavXSA63k3hOQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBiNXFWOEdGajRsM3hiejEy
+        TEJhRWgyeGV5YjQvK1lTcVZlVUdVZlhrcVdFCjVZWXNXcGFHaHN2Z3V4VDNUdE52
+        UnZReVJmU01HSGx3YjhoVGR2RFdwM2cKLS0tIFJ6WFpBdnoyU2lVK0RMeU04Wkw5
+        K0xOZzgzelFxVGlQUlkyOVluMzBjTzQKzvKh+ed/s92xpKOsv7q7jrD+dYDsGq/I
+        N6Re4lzVMtAeggYxrdXzp172u87bUGmUH2csSvnf5kaNT9J/a7dVWA==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-02-23T02:02:52Z"
-  mac: ENC[AES256_GCM,data:Rh7fHz9gblkWOm+N8uH2L2KeyrMl8F6CEDb0hW+ey4EdHbRova/SvHoYh40Diyt9s3OspVKNWpCWikKf0Yyv/t6hPvprfFoF5se7H3TIHQZv05EGOlhoZOLNkKLTEeb4PBOPgM3jEUWkr6Z9QvMcoBSWHHuwvJD+28C+uOUR3wQ=,iv:KJ/+WVsezE/UO+cBFbzKOWAMFBt/UN1eikeEXwrurR4=,tag:JblG84QixXt5DkfbmFppUg==,type:str]
+  lastmodified: "2026-04-01T10:09:30Z"
+  mac: ENC[AES256_GCM,data:E6/zcjF8RRsGqIRk2Dfa+dzhQgcoQT9m2oYh+NRi4wZ3V1Ajz8hUlEdNab2sHxH2Tk2w/xra8UuBBxAC69d5kM8C7h3cGEKwDZSVrCj7InHEVyyx9BXdOIbfOGfIT+AxEdhVayEnP0ZUelta3nLNkK7zvqoJORS1fgktmrnEZF0=,iv:yRDay74fVZXzgUTLAlPzKf3/8XGHasEz4GGoCBhsiRs=,tag:pBIg2VYE5cbaVYjpD+ex2A==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

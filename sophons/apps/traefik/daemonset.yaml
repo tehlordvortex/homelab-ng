@@ -21,6 +21,8 @@ spec:
       tolerations:
         - key: orunmila.sophons.cloud/ase-orun
           operator: Exists
+        - key: caeneus.sophons.cloud
+          operator: Exists
 
       # securityContext:
       #   sysctls:
@@ -49,11 +51,10 @@ spec:
                   resource: limits.memory
           resources:
             requests:
-              cpu: "50m"
+              cpu: "10m"
               memory: "32Mi"
             limits:
-              cpu: "150m"
-              memory: "128Mi"
+              memory: "48Mi"
           command:
             - cloudflared
             - tunnel
