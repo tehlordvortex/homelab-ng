@@ -32,9 +32,31 @@ nodeSelector:
   hugeloads.sophons.cloud/garage: "true"
   cluster.garage.sophons.cloud/global: "true"
 
+deployment:
+  kind: StatefulSet
+  replicaCount: 3
+
 tolerations:
   - key: orunmila.sophons.cloud/ase-orun
     operator: Exists
+  - key: node.kubernetes.io/not-ready
+    operator: Exists
+    effect: NoExecute
+  - key: node.kubernetes.io/unreachable
+    operator: Exists
+    effect: NoExecute
+  - key: node.kubernetes.io/disk-pressure
+    operator: Exists
+    effect: NoSchedule
+  - key: node.kubernetes.io/memory-pressure
+    operator: Exists
+    effect: NoSchedule
+  - key: node.kubernetes.io/pid-pressure
+    operator: Exists
+    effect: NoSchedule
+  - key: node.kubernetes.io/unschedulable
+    operator: Exists
+    effect: NoSchedule
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
@@ -42,11 +64,10 @@ affinity:
           matchLabels:
             app.kubernetes.io/name: garage
             app.kubernetes.io/instance: global
-            cluster.garage.sophons.cloud: global
-        mismatchLabelKeys: [pod-template-hash]
-        topologyKey: topology.kubernetes.io/zone
+        mismatchLabelKeys: [controller-revision-hash]
+        topologyKey: topology.kubernetes.io/region
 
-priorityClassName: system-cluster-critical
+priorityClassName: system-node-critical
 
 securityContext:
   allowPrivilegeEscalation: false

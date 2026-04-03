@@ -8,3 +8,30 @@ resources:
   - middleware.yaml
   - secret.sops.yaml
   - ciliumlocalredirectpolicy.yaml
+
+patches:
+  - patch: |
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: global-garage
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: garage
+                    app.kubernetes.io/instance: global
+                maxSkew: 1
+                minDomains: 3
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: DoNotSchedule
+              - labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: garage
+                    app.kubernetes.io/instance: global
+                maxSkew: 1
+                minDomains: 3
+                topologyKey: topology.kubernetes.io/region
+                whenUnsatisfiable: DoNotSchedule

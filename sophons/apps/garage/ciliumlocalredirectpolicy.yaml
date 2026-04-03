@@ -12,7 +12,6 @@ spec:
     localEndpointSelector:
       matchLabels:
         app.kubernetes.io/name: garage
-        app.kubernetes.io/instance: global-gateway
     toPorts:
       - name: s3-api
         port: "3900"

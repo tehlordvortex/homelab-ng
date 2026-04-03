@@ -9,8 +9,10 @@ reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
   replication: "100" # 2 copies, 1 per zone
-  metadataFlushSeconds: "30"
   volumeServerAccess: publicUrl
+  collection: weedfs
+  dataLocality: write_preferlocaldc
+  parentDir: "/pvcs"
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/storageclass-storage-v1.json
 apiVersion: storage.k8s.io/v1
@@ -23,5 +25,7 @@ reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
   replication: "000" # 1 copy, what could go wrong?
-  metadataFlushSeconds: "10"
   volumeServerAccess: publicUrl
+  collection: weedfs-no-repl
+  dataLocality: write_preferlocaldc
+  parentDir: "/pvcs"

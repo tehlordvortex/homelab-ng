@@ -13,13 +13,37 @@ patches:
       spec:
         template:
           spec:
+            volumes:
+              - name: cache
+                emptyDir: null
+                hostPath:
+                  path: /var/lib/garage/weedfs/cache
             containers:
               - name: seaweedfs-mount
                 env:
+                  - name: GOGC
+                    value: "25"
                   - name: GOMEMLIMIT
                     valueFrom:
                       resourceFieldRef:
                         resource: limits.memory
+
+  - target:
+      kind: DaemonSet
+      name: weedfs-csi-driver-node
+    patch: |
+      kind: DaemonSet
+      metadata:
+        name: weedfs-csi-driver-node
+      spec:
+        template:
+          spec:
+            volumes:
+              - name: cache
+                emptyDir: null
+                hostPath:
+                  path: /var/lib/garage/weedfs/cache
+
   - target:
       kind: DaemonSet
       name: weedfs-csi-driver-node
@@ -30,7 +54,7 @@ patches:
           name: DATA_CENTER
           valueFrom:
             fieldRef:
-              fieldPath: metadata.labels['topology.kubernetes.io/zone']
+              fieldPath: metadata.labels['topology.kubernetes.io/region']
       - op: add
         path: /spec/template/spec/containers/0/args/-
         value: "-dataCenter=$(DATA_CENTER)"

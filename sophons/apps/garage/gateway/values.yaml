@@ -4,42 +4,7 @@ commonLabels:
 garage:
   kubernetesSkipCrd: true
   existingRpcSecret: garage
-  garageTomlString: |
-    metadata_dir = "/mnt/meta"
-    data_dir = "/mnt/data"
-
-    db_engine = "lmdb"
-
-    block_size = "2097152"
-
-    replication_factor = 3
-    consistency_mode = "consistent"
-
-    compression_level = 3
-    metadata_auto_snapshot_interval = "1h"
-
-    rpc_bind_addr = "[::]:3901"
-    # rpc_secret will be populated by the init container from a k8s secret object
-    rpc_secret = "__RPC_SECRET_REPLACE__"
-
-
-    [kubernetes_discovery]
-    namespace = "garage"
-    service_name = "global-garage"
-    skip_crd = true
-
-    [s3_api]
-    s3_region = "global"
-    api_bind_addr = "[::]:3900"
-    root_domain = ".s3.garage.tld"
-
-    [s3_web]
-    bind_addr = "[::]:3902"
-    root_domain = ".web.garage.tld"
-    index = "index.html"
-
-    [admin]
-    api_bind_addr = "[::]:3903"
+  existingConfigMap: global-garage-config
 
 persistence:
   enabled: true
@@ -53,12 +18,12 @@ image:
 
 resources:
   requests:
-    cpu: 150m
-    memory: 32Mi
+    cpu: 100m
+    memory: 48Mi
   limits:
     memory: 256Mi
 
-priorityClassName: system-cluster-critical
+priorityClassName: system-node-critical
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -67,7 +32,7 @@ securityContext:
 
 deployment:
   kind: StatefulSet
-  replicaCount: 7
+  replicaCount: 4
 
 tolerations:
   - operator: Exists
@@ -79,8 +44,12 @@ affinity:
           matchLabels:
             app.kubernetes.io/name: garage
             app.kubernetes.io/instance: global-gateway
-            cluster.garage.sophons.cloud: global
-        mismatchLabelKeys: [pod-template-hash]
+        mismatchLabelKeys: [controller-revision-hash]
+        topologyKey: kubernetes.io/hostname
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: garage
+            app.kubernetes.io/instance: global
         topologyKey: kubernetes.io/hostname
 
 monitoring:

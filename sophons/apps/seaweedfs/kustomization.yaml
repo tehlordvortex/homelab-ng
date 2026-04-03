@@ -5,6 +5,7 @@ resources:
   - cfdtunnel.yaml
   - httproute.yaml
   - middleware.yaml
+  - deployment.yaml
   - traefikservice.yaml
   # - storageclass.yaml # managed seperately
 
