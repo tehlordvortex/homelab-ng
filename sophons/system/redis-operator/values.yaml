@@ -1,0 +1,35 @@
+redisOperator:
+  featureGates:
+    GenerateConfigInInitContainer: true
+
+  webhook: true
+  service:
+    namespace: redis-system
+
+  certmanager:
+    enabled: true
+  issuer:
+    create: true
+    kind: ClusterIssuer
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
