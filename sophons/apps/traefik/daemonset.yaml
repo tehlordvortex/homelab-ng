@@ -51,10 +51,11 @@ spec:
                   resource: limits.memory
           resources:
             requests:
-              cpu: "10m"
-              memory: "32Mi"
+              cpu: 10m
+              memory: 32Mi
             limits:
-              memory: "48Mi"
+              cpu: 100m
+              memory: 64Mi
           command:
             - cloudflared
             - tunnel
@@ -69,6 +70,10 @@ spec:
             - --config
             - /.cloudflared/config.yaml
             - run
+          ports:
+            - containerPort: 2000
+              name: cfd-metrics
+              protocol: TCP
           volumeMounts:
             - name: cloudflared
               mountPath: /.cloudflared
@@ -78,7 +83,7 @@ spec:
               # Cloudflared has a /ready endpoint which returns 200 if and only if
               # it has an active connection to Cloudflare's network.
               path: /ready
-              port: 2000
+              port: cfd-metrics
             failureThreshold: 1
             initialDelaySeconds: 10
             periodSeconds: 10

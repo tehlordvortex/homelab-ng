@@ -37,10 +37,6 @@ logs:
   access:
     enabled: true
 
-metrics:
-  prometheus:
-    enabled: true
-
 ingressRoute:
   dashboard:
     enabled: true
@@ -288,6 +284,17 @@ updateStrategy:
 deployment:
   kind: DaemonSet
 
+livenessProbe:
+  initialDelaySeconds: 10
+  failureThreshold: 5
+  timeoutSeconds: 4
+readinessProbe:
+  initialDelaySeconds: 10
+  failureThreshold: 2
+  timeoutSeconds: 4
+env:
+  - name: GOGC
+    value: "50"
 resources:
   requests:
     cpu: "100m"
@@ -339,3 +346,42 @@ affinity:
             app.kubernetes.io/name: '{{ template "traefik.name" . }}'
             app.kubernetes.io/instance: '{{ .Release.Name }}-{{ include "traefik.namespace" . }}'
         topologyKey: kubernetes.io/hostname
+
+metrics:
+  prometheus:
+    service:
+      enabled: true
+    disableAPICheck: false
+    serviceMonitor:
+      enabled: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          separator: ;
+          regex: ^fluentd_output_status_buffer_(oldest|newest)_.+
+          replacement: $1
+          action: drop
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          separator: ;
+          regex: ^(.*)$
+          targetLabel: nodename
+          replacement: $1
+          action: replace
+      jobLabel: traefik
+      interval: 30s
+      honorLabels: true
+    headerLabels:
+      user_id: X-User-Id
+      tenant: X-Tenant
+    prometheusRule:
+      enabled: true
+      rules:
+        - alert: TraefikDown
+          expr: up{job="traefik"} == 0
+          for: 5m
+          labels:
+            context: traefik
+            severity: warning
+          annotations:
+            summary: "Traefik Down"
+            description: "{{ $labels.pod }} on {{ $labels.nodename }} is down"
