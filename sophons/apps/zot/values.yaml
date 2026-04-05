@@ -1,4 +1,22 @@
 replicaCount: 3
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: zot
+            app.kubernetes.io/instance: zenlesszonezot
+        matchLabelKeys: [pod-template-hash]
+        topologyKey: "kubernetes.io/hostname"
+
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app: redis-z3
+          topologyKey: topology.kubernetes.io/zone
 
 service:
   type: ClusterIP
@@ -7,9 +25,14 @@ service:
 persistence: false
 resources:
   requests:
+    cpu: 50m
     memory: 64Mi
   limits:
-    memory: 256Mi
+    cpu: 250m
+    memory: 300Mi
+startupProbe:
+  initialDelaySeconds: 15
+  failureThreshold: 60
 
 securityContext:
   runAsUser: 1000
@@ -23,6 +46,12 @@ securityContext:
     type: RuntimeDefault
 
 env:
+  - name: GOGC
+    value: "25"
+  - name: GOMEMLIMIT
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.memory
   - name: AWS_ACCESS_KEY_ID
     valueFrom:
       secretKeyRef:

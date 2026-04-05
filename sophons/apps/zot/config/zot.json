@@ -16,8 +16,11 @@
     },
     "cacheDriver": {
       "name": "redis",
-      "url": "redis://dragonfly-zenlesszonezot:6379",
-      "keyprefix": "zot"
+      "master_name": "myMaster",
+      "addr": [
+        "redis-z3-sentinel:26379"
+      ],
+      "keyprefix": "z3"
     }
   },
   "http": {
@@ -125,6 +128,12 @@
           "tlsVerify": true
         }
       ]
+    },
+    "metrics": {
+      "enable": true,
+      "prometheus": {
+        "path": "/metrics"
+      }
     }
   }
 }
