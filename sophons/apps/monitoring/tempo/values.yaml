@@ -1,0 +1,67 @@
+tempo:
+  resources:
+    requests:
+      cpu: 150m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+  extraEnv:
+    - name: GOGC
+      value: "5"
+    - name: GOMEMLIMIT
+      value: 500MiB
+  extraEnvFrom:
+    - secretRef:
+        name: weed-s3-access-key
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  memBallastSizeMbs: 128
+  reportingEnabled: false
+  multitenancyEnabled: false
+  retention: 48h
+
+  metricsGenerator:
+    enabled: true
+    remoteWriteUrl: http://mimir-mirage:9009/api/v1/push
+    storage:
+      path: /tmp/tempo/blocks
+    traces_storage:
+      path: /tmp/tempo/traces
+
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: monitoring
+        prefix: tempo/
+        endpoint: ps3-weed.sphns.run
+        forcepathstyle: true
+        enable_dual_stack: true
+      wal:
+        path: /tmp/tempo/wal
+  extraVolumeMounts:
+    - mountPath: /tmp
+      name: tmp
+
+persistence:
+  enabled: false
+priorityClassName: system-node-critical
+tolerations:
+  - key: caeneus.sophons.cloud
+    operator: Exists
+nodeSelector:
+  topology.kubernetes.io/region: ng
+
+serviceMonitor:
+  enabled: true
+
+extraVolumes:
+  - name: tmp
+    emptyDir: {}

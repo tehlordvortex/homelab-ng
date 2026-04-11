@@ -27,42 +27,67 @@ alertmanager:
       tag: v0.31.1
 
 prometheus:
-  thanosServiceMonitor:
-    enabled: true
-  # --store=dnssrv+_grpc._tcp.promstack-thanos-discovery.monitoring-system.svc.cluster.local
-  thanosService:
-    enabled: true
-    ipDualStack:
-      enabled: true
+  enabled: false
+  # thanosServiceMonitor:
+  #   enabled: true
+  # # --store=dnssrv+_grpc._tcp.promstack-thanos-discovery.monitoring-system.svc.cluster.local
+  # thanosService:
+  #   enabled: true
+  #   ipDualStack:
+  #     enabled: true
 
   prometheusSpec:
+    replicas: 1
     image:
       registry: quay.io
       repository: prometheus/prometheus
       tag: v3.10.0
 
-    retention: 4h
-    disableCompaction: true
+    logLevel: debug
 
+    retention: 5d
+    retentionSize: "7.95GiB"
+    enableRemoteWriteReceiver: true
+    remoteWriteDashboards: true
+    maximumStartupDurationSeconds: 1800 # 30m
+    # disableCompaction: true
+
+    # storageSpec:
+    #   volumeClaimTemplate:
+    #     metadata:
+    #       name: db
+    #     spec:
+    #       accessModes: [ReadWriteMany]
+    #       storageClassName: weedfs-no-repl
+    #       resources:
+    #         requests:
+    #           storage: 8Gi
+
+    # probeSelector: null
+    # podMonitorSelector: null
+    # scrapeConfigSelector: null
+    # serviceMonitorSelector: null
     # ruleNamespaceSelector:
     #   matchLabels:
     #     kubernetes.io/metadata.name: monitoring-system
     # probeNamespaceSelector:
     #   matchLabels:
-    #     kubernetes.io/metadata.name: monitoring-system
+    #     lol: "no"
     # podMonitorNamespaceSelector:
     #   matchLabels:
-    #     kubernetes.io/metadata.name: monitoring-system
+    #     lol: "no"
     # scrapeConfigNamespaceSelector:
     #   matchLabels:
-    #     kubernetes.io/metadata.name: monitoring-system
+    #     lol: "no"
     # serviceMonitorNamespaceSelector:
     #   matchLabels:
-    #     kubernetes.io/metadata.name: monitoring-system
+    #     lol: "no"
+    probeSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
     serviceMonitorSelectorNilUsesHelmValues: false
 
-    serviceName: promstack-thanos-discovery
+    # serviceName: promstack-thanos-discovery
     service:
       ipDualStack:
         enabled: true
@@ -82,43 +107,141 @@ prometheus:
                   values: [ng]
             weight: 100
 
+    volumes:
+      - name: tmp
+        emptyDir: {}
+
+    initContainers:
+      - name: weed-mount
+        image: docker.io/chrislusf/seaweedfs:4.18
+        restartPolicy: Always
+
+        env:
+          - name: DATA_CENTER
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['topology.kubernetes.io/region']
+          - name: GOGC
+            value: "5"
+          - name: GOMEMLIMIT
+            value: 300MiB
+
+        command:
+          - sh
+          - -c
+          - |
+            set -xeuo pipefail
+            if mountpoint -q /tmp/fs; then
+              umount /tmp/fs || umount -f /tmp/fs
+            fi
+
+            exec weed -logtostderr=true mount -dirAutoCreate=true -umask=000 \
+              -asyncDio -dir=/tmp/fs -cacheDir=/tmp/cache -cacheDirWrite=/tmp/write-cache \
+              -cacheMetaTtlSec=60 -cacheCapacityMB=4096 -cacheSymlink -metadataFlushSeconds=30 \
+              -filer=weedfs-seaweedfs-filer-client.weed-system:8888 -filer.path=/pvcs/promstack-prometheus-db \
+              -concurrentReaders=8 -concurrentWriters=8 -dataCenter=$DATA_CENTER -collectionQuotaMB=8192 \
+              -volumeServerAccess=publicUrl -collection=weedfs-no-repl -replication=000
+
+        startupProbe:
+          exec:
+            command: [mountpoint, -q, /tmp/fs]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 5
+
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmp
+            mountPropagation: Bidirectional
+
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
+            # prob mem leak
+
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          runAsNonRoot: false
+          privileged: true
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: [ALL]
+            add: [SYS_ADMIN]
+
     resources:
       requests:
-        cpu: 150m
-        memory: 512Mi
+        cpu: 250m
+        memory: 1.5Gi
       limits:
-        cpu: 1000m
-        memory: 1.5Gi # lmaoooooooo WHY IS IT SO MUCH TT-TT
+        cpu: 2000m
+        memory: 1.75Gi # lmaoooooooo WHY IS IT SO MUCH TT-TT
         # absolutely mogged by VictoriaMetrics
-
     containers:
       - name: prometheus
         env:
+          - name: GOGC
+            value: "5"
           - name: GOMEMLIMIT
-            valueFrom:
-              resourceFieldRef:
-                resource: limits.memory
-      - name: thanos-sidecar
-        env:
-          - name: GOMEMLIMIT
-            valueFrom:
-              resourceFieldRef:
-                resource: limits.memory
+            value: 1536MiB
+            # valueFrom:
+            #   resourceFieldRef:
+            #     resource: limits.memory
+        volumeMounts:
+          - mountPath: /prometheus
+            name: tmp
+            subPath: fs
+            mountPropagation: HostToContainer
+        livenessProbe:
+          timeoutSeconds: 5
+          failureThreshold: 10
+      # - name: thanos-sidecar
+      #   env:
+      #     - name: GOGC
+      #       value: "50"
+      #     - name: GOMEMLIMIT
+      #       valueFrom:
+      #         resourceFieldRef:
+      #           resource: limits.memory
 
-    thanos:
-      blockSize: 5m
-      objectStorageConfig:
-        existingSecret:
-          name: thanos-config
-          key: storage.yaml
+    # thanos:
+    #   blockSize: 5m
+    #   objectStorageConfig:
+    #     existingSecret:
+    #       name: thanos-config
+    #       key: storage.yaml
 
-      resources:
-        requests:
-          cpu: 50m
-          memory: 64Mi
-        limits:
-          cpu: 250m
-          memory: 128Mi
+    #   resources:
+    #     requests:
+    #       cpu: 50m
+    #       memory: 64Mi
+    #     limits:
+    #       cpu: 250m
+    #       memory: 128Mi
+
+kubeEtcd:
+  enabled: false
+  service:
+    selector:
+      k8s-app: kube-controller-manager # Fix selector for kube-etcd for Talos (set itentionally to kube-controller-manager because all master nodes has the same roles)
+  serviceMonitor:
+    relabelings: # Add nodename label
+      - sourceLabels: [__meta_kubernetes_pod_node_name]
+        separator: ;
+        regex: ^(.*)$
+        targetLabel: nodename
+        replacement: $1
+        action: replace
+    metricRelabelings: # Remove pod label
+      - action: labeldrop
+        regex: pod
+
+kubeStateMetrics:
+  enabled: false
 
 kube-state-metrics:
   tolerations:

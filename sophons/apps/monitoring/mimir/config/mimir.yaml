@@ -1,0 +1,86 @@
+# Do not use this configuration in production. (lol)
+# It is for demonstration purposes only.
+# Run Mimir in single process mode, with all components running in 1 process.
+target: all,alertmanager,overrides-exporter
+multitenancy_enabled: false
+runtime_config:
+  file: /etc/mimir/runtime/mimir.yaml
+limits:
+  compactor_blocks_retention_period: 5d
+  # max_global_series_per_user: 250000
+  # ingestion_rate: 25000
+  # ruler_alertmanager_client_config:
+  #   alertmanager_url: ""
+
+server:
+  log_level: info
+  http_listen_port: 9009
+  grpc_server_num_workers: 16
+  grpc_server_max_concurrent_streams: 25
+
+# Configure Mimir to use Minio as object storage backend.
+common:
+  storage:
+    backend: s3
+    s3:
+      endpoint: ps3-weed.sphns.run
+      bucket_name: monitoring
+      trace:
+        enabled: true
+
+# Blocks storage requires a prefix when using a common object storage bucket.
+blocks_storage:
+  storage_prefix: mimirblocks
+  tsdb:
+    dir: /data/ingester
+    stripe_size: 512
+    wal_compression_enabled: true
+    wal_segment_size_bytes: 16777216 # 16MiB
+    wal_replay_concurrency: 8
+    ship_concurrency: 4
+    head_chunks_write_buffer_size_bytes: 524288 # 512KiB
+    flush_blocks_on_shutdown: true
+  bucket_store:
+    sync_dir: /tmp/tsdb-sync
+    index_cache:
+      inmemory:
+        max_size_bytes: 134217728 # 128MiB
+    series_hash_cache_max_size_bytes: 134217728 # 128MiB
+    index_header:
+      lazy_loading_idle_timeout: 10m
+      lazy_loading_concurrency: 4
+    max_concurrent: 8
+
+ruler:
+  rule_path: /tmp/data-ruler
+ruler_storage:
+  storage_prefix: mimirruler
+
+alertmanager:
+  data_dir: /tmp/data-alertmanager
+  # fallback_config_file: /etc/alertmanager-fallback-config.yaml
+  external_url: http://mimir-mirage.monitoring-system:9009/alertmanager
+alertmanager_storage:
+  storage_prefix: mimiralertmanager
+
+compactor:
+  data_dir: /tmp/data-compactor
+distributor:
+  reusable_ingester_push_workers: 16
+  ring:
+    kvstore:
+      store: inmemory
+ingester:
+  ring:
+    kvstore:
+      store: inmemory
+    replication_factor: 1
+store_gateway:
+  sharding_ring:
+    replication_factor: 1
+
+usage_stats:
+  enabled: false
+
+activity_tracker:
+  filepath: /data/metrics-activity.log

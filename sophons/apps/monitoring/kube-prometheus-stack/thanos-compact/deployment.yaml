@@ -32,7 +32,7 @@ spec:
         - name: thanos-compact
           args:
             - compact
-            - --log.level=info
+            - --log.level=debug
             - --log.format=logfmt
             - --data-dir=/var/thanos/compact
             - --http-address=0.0.0.0:10902
@@ -40,11 +40,18 @@ spec:
             - --wait
             - --wait-interval=5m
             - --consistency-delay=10m
+            - --delete-delay=1h
             - --downsampling.disable
-            - --retention.resolution-raw=7d
-            - --retention.resolution-5m=7d
-            - --retention.resolution-1h=7d
+            - --retention.resolution-raw=12h
+            - --retention.resolution-5m=12h
+            - --retention.resolution-1h=12h
           env:
+            - name: GOGC
+              value: "40"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
             - name: HOST_IP_ADDRESS
               valueFrom:
                 fieldRef:

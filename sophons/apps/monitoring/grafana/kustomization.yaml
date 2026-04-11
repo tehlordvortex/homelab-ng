@@ -20,3 +20,5 @@ configMapGenerator:
         grafana_dashboard: "true"
     files:
       - victoriametrics-operator.json=https://grafana.com/api/dashboards/17869/revisions/8/download
+      - traefik-kubernetes.json=https://grafana.com/api/dashboards/17347/revisions/9/download
+      - config/dashboards/cloudflared.json

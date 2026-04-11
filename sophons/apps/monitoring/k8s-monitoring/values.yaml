@@ -1,0 +1,246 @@
+# yaml-language-server: $schema=https://github.com/grafana/k8s-monitoring-helm/raw/refs/tags/k8s-monitoring-4.0.1/charts/k8s-monitoring/values.schema.json
+cluster:
+  name: sophons
+
+global:
+  scrapeInterval: 30s
+
+destinations:
+  mimir-mirage:
+    type: prometheus
+    url: http://mimir-mirage:9009/api/v1/push
+  lady-loki:
+    type: loki
+    url: http://lady-loki:3100/loki/api/v1/push
+  tempo-temporium:
+    type: otlp
+    url: http://tempo-temporium:4317
+    protocol: grpc
+    tls:
+      insecure: true
+    traces: { enabled: true }
+    metrics: { enabled: false }
+    logs: { enabled: false }
+
+podLogsViaLoki:
+  enabled: true
+  gatherMethod: volumes
+  # collector: alloy-logsntraces
+
+nodeLogs:
+  enabled: false
+
+applicationObservability:
+  enabled: true
+  # collector: alloy-logsntraces
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+      http:
+        enabled: true
+
+clusterMetrics:
+  enabled: true
+  # collector: alloy-metrics
+  controlPlane:
+    enabled: true
+
+clusterEvents:
+  enabled: true
+  # collector: alloy-metrics
+
+hostMetrics:
+  enabled: true
+  # collector: alloy-metrics
+
+prometheusOperatorObjects:
+  enabled: true
+  # collector: alloy-metrics
+
+telemetryServices:
+  node-exporter:
+    deploy: true
+
+  kube-state-metrics:
+    deploy: true
+
+    priorityClassName: system-node-critical
+    tolerations:
+      - key: caeneus.sophons.cloud
+        operator: Exists
+    nodeSelector:
+      topology.kubernetes.io/region: ng
+
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        namespaces: [monitoring-system]
+        labelSelectors:
+          app.kubernetes.io/instance: zero-order-alloy
+      # - name: alloy-metrics
+      #   namespaces: [monitoring-system]
+      #   labelSelectors:
+      #     app.kubernetes.io/instance: zero-order-alloy-metrics
+
+  etcd:
+    instances:
+      - name: etcd
+        namespaces: [kube-system]
+        labelSelectors:
+          k8s-app: kube-controller-manager # Fix selector for kube-etcd for Talos (set itentionally to kube-controller-manager because all master nodes has the same roles)
+
+  cert-manager:
+    instances:
+      - name: cert-manager
+        namespaces: [cert-manager]
+        labelSelectors:
+          app.kubernetes.io/name: cert-manager
+
+collectors:
+  alloy:
+    presets: [filesystem-log-reader, daemonset, clustered]
+    liveDebugging:
+      enabled: true
+
+    controller:
+      priorityClassName: system-node-critical
+    alloy:
+      clustering:
+        enabled: true
+      resources:
+        requests:
+          cpu: 250m
+          memory: 256Mi
+        limits:
+          cpu: 1250m
+          memory: 768Mi
+      extraEnv:
+        - name: GOGC
+          value: "10"
+        - name: GOMEMLIMIT
+          value: 700MiB
+
+      timeoutSeconds: 5 # readiness probe
+      enableReporting: false
+
+    configReloader:
+      resources:
+        requests:
+          cpu: 25m
+        limits:
+          memory: 64Mi
+      customArgs:
+        - --watched-dir=/etc/alloy
+        - --reload-url=http://localhost:12345/-/reload
+        - --reload-timeout=45s
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+        seccompProfile:
+          type: RuntimeDefault
+
+    extraConfig: |-
+      loki.source.file "node_logs" {
+        file_match {
+          enabled = true
+        }
+
+        targets    = [
+          {__path__ = "/var/log/*.log"},
+        ]
+        forward_to = [loki.relabel.node_logs.receiver]
+      }
+
+      loki.relabel "node_logs" {
+        forward_to = [loki.process.static_labels.receiver]
+
+        rule {
+          source_labels = ["filename"]
+          action = "replace"
+          target_label = "job"
+          regex = `\/var\/log\/([\w-]+)\.log`
+          replacement = "node/$1"
+        }
+      }
+
+      loki.process "static_labels" {
+        stage.static_labels {
+            values = {
+              node_name = coalesce(sys.env("HOSTNAME"), constants.hostname),
+            }
+        }
+
+        forward_to = [loki.write.lady_loki.receiver]
+      }
+
+      mimir.rules.kubernetes "default" {
+        address   = "http://mimir-mirage:9009"
+      }
+
+  # alloy-metrics:
+  #   presets: [clustered, statefulset]
+  #   replicas: 2
+  #   liveDebugging:
+  #     enabled: true
+
+  #   controller:
+  #     priorityClassName: system-node-critical
+  #     tolerations:
+  #       - key: caeneus.sophons.cloud
+  #         operator: Exists
+  #     nodeSelector:
+  #       topology.kubernetes.io/region: ng
+
+  #   alloy:
+  #     resources:
+  #       requests:
+  #         cpu: 250m
+  #         memory: 128Mi
+  #       limits:
+  #         memory: 512Mi
+  #     extraEnv:
+  #       - name: GOGC
+  #         value: "10"
+  #       - name: GOMEMLIMIT
+  #         value: 480MiB
+
+  #     timeoutSeconds: 5 # readiness probe
+  #     enableReporting: false
+
+  #   configReloader:
+  #     resources:
+  #       requests:
+  #         cpu: 25m
+  #       limits:
+  #         memory: 64Mi
+  #     customArgs:
+  #       - --watched-dir=/etc/alloy
+  #       - --reload-url=http://localhost:12345/-/reload
+  #       - --reload-timeout=45s
+  #     securityContext:
+  #       runAsNonRoot: true
+  #       runAsUser: 65534
+  #       runAsGroup: 65534
+  #       allowPrivilegeEscalation: false
+  #       capabilities:
+  #         drop: [ALL]
+  #       seccompProfile:
+  #         type: RuntimeDefault
+
+alloy-operator:
+  waitForAlloyRemoval:
+    enabled: false # enable if needed
+
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 150m
+      memory: 128Mi

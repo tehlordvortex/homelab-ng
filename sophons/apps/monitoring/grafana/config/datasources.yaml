@@ -1,10 +1,31 @@
 apiVersion: 1
 datasources:
-  - name: THANOS
-    type: prometheus
-    uid: thanos
-    url: http://promstack-thanos-query:9090/
+  - name: Lady Loki
+    type: loki
+    uid: loki
     access: proxy
+    url: http://lady-loki:3100
+  - name: Mimir Mirage
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://mimir-mirage:9009/prometheus
+  - name: Tempo Temporium
+    type: tempo
+    uid: tempo
+    access: proxy
+    url: http://tempo-temporium:3200
     jsonData:
-      httpMethod: POST
-      timeInterval: 30s
+      serviceMap:
+        datasourceUid: prometheus
+      # streamingEnabled:
+      #   search: true
+      #   metrics: true
+  # - name: klusterstalker-prometheus
+  #   type: prometheus
+  #   access: proxy
+  #   url: http://vmsingle-klusterstalker.victoriametrics-system:8428
+  # - name: klusterstalker-metrics
+  #   type: victoriametrics-metrics-datasource
+  #   access: proxy
+  #   url: http://vmsingle-klusterstalker.victoriametrics-system:8428

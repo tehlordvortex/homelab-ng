@@ -1,0 +1,166 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/deployment-apps-v1.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir-mirage
+  namespace: monitoring-system
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector: {}
+  template:
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
+      nodeSelector:
+        topology.kubernetes.io/region: ng
+      terminationGracePeriodSeconds: 600
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: seaweedfs-cache
+          hostPath:
+            path: /var/lib/garage/weedfs/cache
+        - name: config
+          configMap:
+            name: mimir-mirage-config
+        - name: runtime-config
+          configMap:
+            name: mimir-mirage-runtime-config
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        - name: weed-mount
+          image: docker.io/chrislusf/seaweedfs:4.19
+          restartPolicy: Always
+
+          env:
+            - name: DATA_CENTER
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['topology.kubernetes.io/region']
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              value: 512MiB
+
+          command:
+            - sh
+            - -c
+            - |
+              set -xeuo pipefail
+              if mountpoint -q /tmp/fs; then
+                umount /tmp/fs || umount -f /tmp/fs
+              fi
+
+              exec weed -logtostderr=true mount -dirAutoCreate=true -umask=000 \
+                -asyncDio -dir=/tmp/fs -cacheDir=/var/cache/seaweedfs/mimirpv -cacheDirWrite=/tmp/write-cache \
+                -cacheMetaTtlSec=60 -cacheCapacityMB=4096 -cacheSymlink -metadataFlushSeconds=30 \
+                -filer=weedfs-seaweedfs-filer-client.weed-system:8888 -filer.path=/buckets/monitoring/mimirpv \
+                -concurrentReaders=16 -concurrentWriters=16 -dataCenter=$DATA_CENTER -collectionQuotaMB=8192 \
+                -volumeServerAccess=publicUrl -collection=monitoring -replication=000
+
+          startupProbe:
+            exec:
+              command: [mountpoint, -q, /tmp/fs]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 5
+
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+              mountPropagation: Bidirectional
+            - mountPath: /var/cache/seaweedfs
+              name: seaweedfs-cache
+
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
+              # prob mem leak
+
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            runAsNonRoot: false
+            privileged: true
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+              add: [SYS_ADMIN]
+
+      containers:
+        - name: mimir
+          image: docker.io/grafana/mimir
+          args: [-config.file=/etc/mimir/mimir.yaml]
+          env:
+            - name: GOGC
+              value: "5"
+            - name: GOMEMLIMIT
+              value: 1230MiB
+          envFrom:
+            - secretRef:
+                name: weed-s3-access-key
+
+          ports:
+            - containerPort: 9009
+              protocol: TCP
+              name: prometheus
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: prometheus
+            timeoutSeconds: 5
+            initialDelaySeconds: 15
+            failureThreshold: 10
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: prometheus
+            timeoutSeconds: 5
+            initialDelaySeconds: 10
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mimir
+              readOnly: true
+            - name: runtime-config
+              mountPath: /etc/mimir/runtime
+              readOnly: true
+            - name: tmp
+              mountPath: /data
+              subPath: fs
+              mountPropagation: HostToContainer
+            - name: tmp
+              mountPath: /tmp
+              subPath: mimir-tmp
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 1.25Gi

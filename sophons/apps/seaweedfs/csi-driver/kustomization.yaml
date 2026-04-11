@@ -24,9 +24,7 @@ patches:
                   - name: GOGC
                     value: "25"
                   - name: GOMEMLIMIT
-                    valueFrom:
-                      resourceFieldRef:
-                        resource: limits.memory
+                    value: 256MiB
 
   - target:
       kind: DaemonSet
@@ -43,6 +41,15 @@ patches:
                 emptyDir: null
                 hostPath:
                   path: /var/lib/garage/weedfs/cache
+            containers:
+              - name: csi-seaweedfs-plugin
+                env:
+                  - name: GOGC
+                    value: "25"
+                  - name: GOMEMLIMIT
+                    valueFrom:
+                      resourceFieldRef:
+                        resource: limits.memory
 
   - target:
       kind: DaemonSet

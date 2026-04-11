@@ -1,1 +1,3 @@
 generated/
+# TODO: rename to kustomizer.yaml
+resources.yaml

@@ -4,6 +4,7 @@ metadata:
   name: grafana
   namespace: monitoring-system
 spec:
+  serviceMonitor: {}
   dns:
     externalDNS:
       kind:
@@ -32,9 +33,12 @@ spec:
         operator: Exists
   containerOverrides:
     name: cloudflared
+    env:
+      - name: GOGC
+        value: "50"
     resources:
       requests:
         cpu: 25m
         memory: 32Mi
       limits:
-        memory: 32Mi
+        memory: 64Mi

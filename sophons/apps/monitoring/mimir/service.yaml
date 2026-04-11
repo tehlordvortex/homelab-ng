@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-mirage
+  namespace: monitoring-system
+spec:
+  ports:
+    - name: prometheus
+      protocol: TCP
+      port: 9009
+      targetPort: prometheus
+  selector: {}

@@ -24,15 +24,14 @@ spec:
         - key: caeneus.sophons.cloud
           operator: Exists
 
-      # securityContext:
-      #   sysctls:
-      #     # allows icmp traffic (ping, traceroute) to resources behind cloudflared.
-      #     # TODO: apply this at the node level?
-      #     - name: net.ipv4.ping_group_range
-      #       value: "65532 65532"
+      securityContext:
+        sysctls:
+          # allows icmp traffic (ping, traceroute) to resources behind cloudflared.
+          - name: net.ipv4.ping_group_range
+            value: "65532 65532"
 
-      hostNetwork: true # use host network to avoid issue with mtu linked below
-      dnsPolicy: ClusterFirstWithHostNet
+      # hostNetwork: true # use host network to avoid issue with mtu linked below
+      # dnsPolicy: ClusterFirstWithHostNet
       hostAliases:
         - ip: 10.43.0.10
           hostnames:
@@ -42,20 +41,22 @@ spec:
             - traefik.traefik.svc.cluster.local
       containers:
         # https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/deployment-guides/kubernetes/
-        - image: cloudflare/cloudflared:2026.2.0
+        - image: docker.io/cloudflare/cloudflared:latest
+          imagePullPolicy: Always
           name: cloudflared
           env:
+            - name: GOGC
+              value: "10"
             - name: GOMEMLIMIT
               valueFrom:
                 resourceFieldRef:
                   resource: limits.memory
           resources:
             requests:
-              cpu: 10m
+              cpu: 50m
               memory: 32Mi
             limits:
-              cpu: 100m
-              memory: 64Mi
+              memory: 72Mi
           command:
             - cloudflared
             - tunnel

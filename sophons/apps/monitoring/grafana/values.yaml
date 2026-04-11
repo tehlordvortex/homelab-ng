@@ -4,6 +4,8 @@ initChownData:
 tolerations:
   - key: caeneus.sophons.cloud
     operator: Exists
+nodeSelector:
+  topology.kubernetes.io/region: ng
 
 resources:
   requests:

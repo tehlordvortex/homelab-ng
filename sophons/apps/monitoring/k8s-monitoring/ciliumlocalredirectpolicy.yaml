@@ -1,0 +1,29 @@
+apiVersion: cilium.io/v2
+kind: CiliumLocalRedirectPolicy
+metadata:
+  name: zero-order-alloy
+  namespace: monitoring-system
+spec:
+  redirectFrontend:
+    serviceMatcher:
+      serviceName: zero-order-alloy
+      namespace: monitoring-system
+      toPorts:
+        - name: otlp-grpc
+          protocol: TCP
+          port: "4317"
+        - name: otlp-http
+          protocol: TCP
+          port: "4318"
+  redirectBackend:
+    localEndpointSelector:
+      matchLabels:
+        app.kubernetes.io/name: alloy
+        app.kubernetes.io/instance: zero-order-alloy
+    toPorts:
+      - name: otlp-grpc
+        protocol: TCP
+        port: "4317"
+      - name: otlp-http
+        protocol: TCP
+        port: "4318"

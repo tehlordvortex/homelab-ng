@@ -292,16 +292,24 @@ readinessProbe:
   initialDelaySeconds: 10
   failureThreshold: 2
   timeoutSeconds: 4
+startupProbe:
+  httpGet:
+    path: /ping
+    port: 8080
+  initialDelaySeconds: 10
+  failureThreshold: 15
+  timeoutSeconds: 5
+  periodSeconds: 10
+
 env:
   - name: GOGC
     value: "50"
 resources:
   requests:
-    cpu: "100m"
+    cpu: "250m"
     memory: "256Mi"
   limits:
-    cpu: "750m"
-    memory: "768Mi"
+    memory: "512Mi"
 
 volumes:
   - type: secret
@@ -385,3 +393,11 @@ metrics:
           annotations:
             summary: "Traefik Down"
             description: "{{ $labels.pod }} on {{ $labels.nodename }} is down"
+
+tracing:
+  otlp:
+    enabled: true
+    grpc:
+      enabled: true
+      endpoint: zero-order-alloy.monitoring-system:4317
+      insecure: true
