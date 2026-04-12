@@ -1,0 +1,48 @@
+crds:
+  enabled: false
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: false
+    prometheus: false
+    prometheusOperator: false
+
+prometheusOperator:
+  enabled: false
+prometheus:
+  enabled: false
+alertmanager:
+  enabled: false
+  forceDeployDashboards: true
+nodeExporter:
+  enabled: false
+  forceDeployDashboards: true
+kubeStateMetrics:
+  enabled: false
+
+kubernetesServiceMonitors:
+  enabled: false
+kubeApiServer:
+  enabled: true # needed for dashboard deployment
+kubelet:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+windowsMonitoring:
+  enabled: false
+
+grafana:
+  enabled: false
+  forceDeployDashboards: true
+  defaultDashboardsEnabled: true

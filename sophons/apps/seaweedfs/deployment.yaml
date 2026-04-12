@@ -51,6 +51,7 @@ spec:
 
               put_config() {
                 curl -fsS -X PUT --upload-file $filename "$FILER$filename"
+                echo "reloaded"
               }
 
               watch_config() {

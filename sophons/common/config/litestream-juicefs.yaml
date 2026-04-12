@@ -3,9 +3,8 @@ addr: ${LITESTREAM_PROMETHEUS_ADDRESS}
 logging:
   level: ${LITESTREAM_LOGGING_LEVEL}
 
-endpoint: http://s3-global.garage.svc.cluster.local:3900
-region: global
-bucket: juicestream
+endpoint: ${LITESTREAM_ENDPOINT}
+bucket: ${LITESTREAM_BUCKET}
 force-path-style: true
 
 sync-interval: ${LITESTREAM_SYNC_INTERVAL}
@@ -16,8 +15,8 @@ snapshot:
   interval: ${LITESTREAM_SNAPSHOT_INTERVAL}
 
 dbs:
-  - path: /fs/meta.db
+  - path: ${META_PATH}
     truncate-page-n: 32768 # about 128MiB
     replica:
       type: s3
-      path: ng/${VOLUME_NAME}.meta.db
+      path: .meta/${VOLUME_NAME}.meta.db

@@ -5,6 +5,14 @@
       "locationPrefix": "/buckets/monitoring",
       "ttl": "7d",
       "replication": "000"
+    },
+    {
+      "locationPrefix": "/buckets/juicestream/.meta",
+      "ttl": "2d"
+    },
+    {
+      "locationPrefix": "/buckets/juicestream/mimir-mirage",
+      "replication": "000"
     }
   ]
 }

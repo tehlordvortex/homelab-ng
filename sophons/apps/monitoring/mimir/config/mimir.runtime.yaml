@@ -1,0 +1,7 @@
+overrides:
+  anonymous:
+    ingestion_rate: 50000
+    ingestion_burst_size: 500000
+    ruler_max_rules_per_rule_group: 30
+    ruler_max_rule_groups_per_tenant: 100
+    max_global_series_per_user: 500000

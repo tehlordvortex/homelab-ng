@@ -10,6 +10,11 @@ datasources:
     uid: prometheus
     access: proxy
     url: http://mimir-mirage:9009/prometheus
+  - name: Mimir Mirage (Alerts)
+    type: alertmanager
+    uid: alertmanager
+    access: proxy
+    url: http://mimir-mirage:9009/alertmanager
   - name: Tempo Temporium
     type: tempo
     uid: tempo

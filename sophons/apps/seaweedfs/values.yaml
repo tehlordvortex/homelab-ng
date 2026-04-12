@@ -168,17 +168,14 @@ volume:
 
   resources:
     requests:
-      cpu: 100m
+      cpu: 150m
       memory: 128Mi
     limits:
-      cpu: 750m
       memory: 512Mi
 
   extraEnvironmentVars:
     GOGC: "30"
-    GOMEMLIMIT:
-      resourceFieldRef:
-        resource: limits.memory
+    GOMEMLIMIT: 500MiB
     DATA_CENTER:
       fieldRef:
         fieldPath: metadata.labels['topology.kubernetes.io/region']
@@ -270,20 +267,18 @@ filer:
 
     createBuckets:
       - name: monitoring
+      - name: juicestream
 
   resources:
     requests:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 300m
+      memory: 172Mi
     limits:
-      cpu: 350m
-      memory: 256Mi
+      memory: 512Mi
 
   extraEnvironmentVars:
-    GOGC: "40"
-    GOMEMLIMIT:
-      resourceFieldRef:
-        resource: limits.memory
+    GOGC: "25"
+    GOMEMLIMIT: 500MiB
     DATA_CENTER:
       fieldRef:
         fieldPath: metadata.labels['topology.kubernetes.io/region']

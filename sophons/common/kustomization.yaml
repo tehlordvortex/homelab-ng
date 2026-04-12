@@ -10,7 +10,24 @@ configMapGenerator:
         reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
         reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
         reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: |
-          juicefs-system, victoriametrics-system
+          juicefs-system, victoriametrics-system, monitoring-system
     files:
       - litestream.yaml=config/litestream-juicefs.yaml
       - litestream-legacy.yaml=config/litestream-legacy-juicefs.yaml
+  - name: litestream-env-juicefs
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+        reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+        reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: |
+          juicefs-system, victoriametrics-system, monitoring-system
+    literals:
+      - LITESTREAM_ENDPOINT=https://ps3-weed.sphns.run
+      - LITESTREAM_BUCKET=juicestream
+      - LITESTREAM_RETENTION=12h
+      - LITESTREAM_SYNC_INTERVAL=0.1s
+      - LITESTREAM_SNAPSHOT_INTERVAL=30m
+      - LITESTREAM_VALIDATION_INTERVAL=4h
+      - LITESTREAM_LOGGING_LEVEL=info
+      - LITESTREAM_PROMETHEUS_ADDRESS=:9090

@@ -24,5 +24,7 @@ secretGenerator:
 
 configMapGenerator:
   - name: weed-filer
+    options:
+      disableNameSuffixHash: true
     files:
       - filer.conf=config/filer.json

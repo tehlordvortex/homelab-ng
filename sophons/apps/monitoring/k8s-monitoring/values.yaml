@@ -32,7 +32,6 @@ nodeLogs:
 
 applicationObservability:
   enabled: true
-  # collector: alloy-logsntraces
   receivers:
     otlp:
       grpc:
@@ -42,21 +41,47 @@ applicationObservability:
 
 clusterMetrics:
   enabled: true
-  # collector: alloy-metrics
   controlPlane:
     enabled: true
 
+  kubelet:
+    jobLabel: kubelet
+  kubeletResource:
+    jobLabel: kubelet
+    extraMetricProcessingRules: |-
+      rule {
+        target_label  = "metrics_path"
+        replacement   = "/metrics/resources"
+      }
+  cadvisor:
+    jobLabel: kubelet
+    extraMetricProcessingRules: |-
+      rule {
+        target_label  = "metrics_path"
+        replacement   = "/metrics/cadvisor"
+      }
+
+  apiServer:
+    jobLabel: apiserver
+
+  kubeDNS:
+    jobLabel: kube-dns
+
+  kube-state-metrics:
+    jobLabel: kube-state-metrics
+
 clusterEvents:
   enabled: true
-  # collector: alloy-metrics
 
 hostMetrics:
   enabled: true
-  # collector: alloy-metrics
+
+  linuxHosts:
+    enabled: true
+    jobLabel: "node-exporter"
 
 prometheusOperatorObjects:
   enabled: true
-  # collector: alloy-metrics
 
 telemetryServices:
   node-exporter:
@@ -79,10 +104,6 @@ integrations:
         namespaces: [monitoring-system]
         labelSelectors:
           app.kubernetes.io/instance: zero-order-alloy
-      # - name: alloy-metrics
-      #   namespaces: [monitoring-system]
-      #   labelSelectors:
-      #     app.kubernetes.io/instance: zero-order-alloy-metrics
 
   etcd:
     instances:
@@ -97,6 +118,13 @@ integrations:
         namespaces: [cert-manager]
         labelSelectors:
           app.kubernetes.io/name: cert-manager
+
+  grafana:
+    instances:
+      - name: grafana
+        namespaces: [monitoring-system]
+        labelSelectors:
+          app.kubernetes.io/name: grafana
 
 collectors:
   alloy:
@@ -115,13 +143,21 @@ collectors:
           memory: 256Mi
         limits:
           cpu: 1250m
-          memory: 768Mi
+          memory: 512Mi
       extraEnv:
         - name: GOGC
           value: "10"
         - name: GOMEMLIMIT
-          value: 700MiB
+          value: 500MiB
 
+      livenessProbe:
+        httpGet:
+          path: /metrics
+          port: 12345
+          scheme: HTTP
+        initialDelaySeconds: 15
+        failureThreshold: 5
+        timeoutSeconds: 5
       timeoutSeconds: 5 # readiness probe
       enableReporting: false
 
@@ -179,8 +215,8 @@ collectors:
         forward_to = [loki.write.lady_loki.receiver]
       }
 
-      mimir.rules.kubernetes "default" {
-        address   = "http://mimir-mirage:9009"
+      mimir.rules.kubernetes "cluster_rules" {
+        address = "http://mimir-mirage:9009"
       }
 
   # alloy-metrics:

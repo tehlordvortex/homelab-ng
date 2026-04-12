@@ -1,5 +1,3 @@
-# Do not use this configuration in production. (lol)
-# It is for demonstration purposes only.
 # Run Mimir in single process mode, with all components running in 1 process.
 target: all,alertmanager,overrides-exporter
 multitenancy_enabled: false
@@ -7,10 +5,7 @@ runtime_config:
   file: /etc/mimir/runtime/mimir.yaml
 limits:
   compactor_blocks_retention_period: 5d
-  # max_global_series_per_user: 250000
-  # ingestion_rate: 25000
-  # ruler_alertmanager_client_config:
-  #   alertmanager_url: ""
+  query_ingesters_within: 3h
 
 server:
   log_level: info
@@ -18,7 +13,6 @@ server:
   grpc_server_num_workers: 16
   grpc_server_max_concurrent_streams: 25
 
-# Configure Mimir to use Minio as object storage backend.
 common:
   storage:
     backend: s3
@@ -27,19 +21,26 @@ common:
       bucket_name: monitoring
       trace:
         enabled: true
+      http:
+        tls_handshake_timeout: 30s
+        expect_continue_timeout: 30s
 
 # Blocks storage requires a prefix when using a common object storage bucket.
 blocks_storage:
   storage_prefix: mimirblocks
   tsdb:
     dir: /data/ingester
+    retention_period: 3h
+    close_idle_tsdb_timeout: 3h
     stripe_size: 512
     wal_compression_enabled: true
     wal_segment_size_bytes: 16777216 # 16MiB
     wal_replay_concurrency: 8
+    ship_interval: 10s
     ship_concurrency: 4
+    head_compaction_interval: 15s
     head_chunks_write_buffer_size_bytes: 524288 # 512KiB
-    flush_blocks_on_shutdown: true
+    # flush_blocks_on_shutdown: true
   bucket_store:
     sync_dir: /tmp/tsdb-sync
     index_cache:
@@ -50,6 +51,10 @@ blocks_storage:
       lazy_loading_idle_timeout: 10m
       lazy_loading_concurrency: 4
     max_concurrent: 8
+    ignore_blocks_within: 1h
+
+querier:
+  query_store_after: 2h
 
 ruler:
   rule_path: /tmp/data-ruler
@@ -65,6 +70,8 @@ alertmanager_storage:
 
 compactor:
   data_dir: /tmp/data-compactor
+  cleanup_interval: 5m
+  deletion_delay: 4h
 distributor:
   reusable_ingester_push_workers: 16
   ring:
