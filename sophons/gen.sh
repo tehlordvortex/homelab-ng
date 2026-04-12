@@ -13,7 +13,7 @@ kubernetes_version=v1.35.2
 
 vm_image=af87088cf1b22437863dea5433e70768e92cd109a7b115161490f2abf15c26ab
 pi_image=c37ef14b65c7f5cb5d59ca8c4e4d724b046d26792822f121cdf06f1e237b947b
-prime_image=31f689a89d04e3f459a4e9fff089a5e9f2cf2d1ba119488c6dad9d6f9dee8a8b
+prime_image=be6b54b45267ef38608da53e992b784c53036a7217819b343d4f472e99a442c2
 
 gen_controlplane() {
   local host_name=$1
