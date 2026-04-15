@@ -1,0 +1,22 @@
+{
+  "docker.io": {
+    "username": "ENC[AES256_GCM,data:YngkXYlhE+IY,iv:/vpJLfdWmy5WN2g6hbZ1qdG78Z0mCbOloh6T2nG8ZuM=,tag:3bSs+p28MZ6MzdzngY1nlQ==,type:str]",
+    "password": "ENC[AES256_GCM,data:skTrz9wx+7hpLXBRe6aFnpoWNB1/+No6m0OqgOrGno63Ec3d,iv:/t5b0q1pio3XZtcdQf3lvRczH+Lh72hJEwTrf3RCryo=,tag:Nv3F44dpQvd8OPoIhhevNw==,type:str]"
+  },
+  "sops": {
+    "age": [
+      {
+        "recipient": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos",
+        "enc": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBPZnBk\nMGdDazgzdUVyN0NRenN0OWxQUDdTWDNyMnYzWDh1dnFKZGRVQ0FNCnNiYUl2NlV2\nV09qMWhmUHBORHhIcytTQnM4dWU1RHVNOGNFWndKckZVOEEKLS0tIG9TUDY5Q3gw\nMldEZFR5dHR0MWVTeWU5YzY1SkVBeWRsL2JPZGJaR1VtblUKe0dGAgxNzZdOqQ59\nYOyCQfy8k1dk7YHszjBNtqmPKITTsaQOYyGcNEruTSt8ErznGlfE9971KAkSiuH4\naD0M/A==\n-----END AGE ENCRYPTED FILE-----\n"
+      },
+      {
+        "recipient": "age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t",
+        "enc": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBsL1NDUjlyY0M0TzBxRW1G\nSG0zTHpEN1lnVzFaWktTYW9MUmhOSjQvR0ZnCkZ6Q1lqekRIZlo0WG5lWVltSVc2\nN0pVWVVmTEtnNUwrckd2c3JFcHdvNGcKLS0tIEV1cm5ML095bFZ3bHZJeGtubk1p\nd00wQ0NtQnMrSHk3SjUwZU5KcjZxdDgK4C49XwmLjIhBuYQcmxWEPpTcSkPLdzPL\nXcEsPFC59r19gTrg32CszJmNPRdszT7QYiKy8kbT8dw1nieC/TmSMg==\n-----END AGE ENCRYPTED FILE-----\n"
+      }
+    ],
+    "lastmodified": "2026-04-15T19:29:16Z",
+    "mac": "ENC[AES256_GCM,data:1/PYT+rMXJ9IUyW4OPdTa/oJt08VqnBvpuNu22LSdLYGEjvjmqfswGEj6NWtofSQ9y7h/uFsK9yc4u803XDxq4O8M4dptpt8u4cL1oj3FOO0uKXFlBqJvXcl+W6lBVvO0CCtl967JtGH9jmcJ5eBVqdDyby5I5ggLD6CdXMEIp0=,iv:HQwLMZxYbJRdpmpVSwUoHsQwpGbjsJwPMjD4vYBF/DU=,tag:QNsoz5RIiXcH3MoI7Ymzbw==,type:str]",
+    "unencrypted_suffix": "_unencrypted",
+    "version": "3.11.0"
+  }
+}

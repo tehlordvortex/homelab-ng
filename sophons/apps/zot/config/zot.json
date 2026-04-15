@@ -99,6 +99,7 @@
     },
     "sync": {
       "enable": true,
+      "credentialsFile": "/secrets/z3/sync-auth.json",
       "DownloadDir": "/tmp/zot/sync",
       "registries": [
         {
@@ -112,7 +113,7 @@
             }
           ],
           "onDemand": true,
-          "tlsVerify": true
+          "preserveDigest": false
         },
         {
           "urls": [
@@ -125,7 +126,7 @@
             }
           ],
           "onDemand": true,
-          "tlsVerify": true
+          "preserveDigest": false
         }
       ]
     },

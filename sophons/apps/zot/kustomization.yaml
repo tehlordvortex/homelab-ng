@@ -19,6 +19,7 @@ secretGenerator:
     files:
       - oidc.json=config/oidc.sops.json
       - session.json=config/session.sops.json
+      - sync-auth.json=config/sync-auth.sops.json
     env: .env
   - name: z3-kluzter-pull-cred
     type: kubernetes.io/dockerconfigjson
