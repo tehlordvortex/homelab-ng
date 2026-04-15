@@ -8,7 +8,7 @@ deschedulerPolicy:
     - source: KubernetesMetrics
     - source: Prometheus
       prometheus:
-        url: http://vmsingle-klusterstalker.victoriametrics-system.svc.cluster.local:8428/prometheus
+        url: http://mimir-mirage.monitoring-system:9009/prometheus
   profiles:
     - name: default
       pluginConfig:
@@ -38,8 +38,8 @@ deschedulerPolicy:
               memory: 40
               pods: 50
             targetThresholds:
-              cpu: 95
-              memory: 80
+              cpu: 90
+              memory: 75
               pods: 80
       plugins:
         balance:

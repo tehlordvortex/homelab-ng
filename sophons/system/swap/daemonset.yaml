@@ -23,6 +23,7 @@ spec:
       tolerations:
         - key: orunmila.sophons.cloud/ase-orun
           operator: Exists
+      hostNetwork: true # no need to waste pod ips on this
       containers:
         - name: debian
           image: docker.io/library/debian:trixie-slim
