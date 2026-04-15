@@ -31,3 +31,18 @@ configMapGenerator:
       - LITESTREAM_VALIDATION_INTERVAL=4h
       - LITESTREAM_LOGGING_LEVEL=info
       - LITESTREAM_PROMETHEUS_ADDRESS=:9090
+  - name: litestream-env
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+        reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+        reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: |
+          forgejo
+    literals:
+      - LITESTREAM_RETENTION=168h # 7d
+      - LITESTREAM_SYNC_INTERVAL=1s
+      - LITESTREAM_SNAPSHOT_INTERVAL=1h
+      - LITESTREAM_VALIDATION_INTERVAL=12
+      - LITESTREAM_LOGGING_LEVEL=info
+      - LITESTREAM_PROMETHEUS_ADDRESS=:9090

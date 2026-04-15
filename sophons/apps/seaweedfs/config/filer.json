@@ -11,8 +11,21 @@
       "ttl": "2d"
     },
     {
+      "locationPrefix": "/buckets/juicestream/.meta/forge-of-creation.meta.db",
+      "ttl": "2d",
+      "replication": "200"
+    },
+    {
       "locationPrefix": "/buckets/juicestream/mimir-mirage",
       "replication": "000"
+    },
+    {
+      "locationPrefix": "/buckets/juicestream/forge-of-creation",
+      "replication": "200"
+    },
+    {
+      "locationPrefix": "/buckets/forge-of-creation",
+      "replication": "200"
     }
   ]
 }

@@ -55,8 +55,8 @@ spec:
               }
 
               watch_config() {
-                inotifywait -q -m -e close_write $filename |
-                  while read -r filename event; do put_config; done
+                inotifywait -q -m $(dirname $filename) |
+                  while read -r; do put_config; done
               }
 
               put_config

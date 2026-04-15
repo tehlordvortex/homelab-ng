@@ -1,0 +1,18 @@
+addr: ${LITESTREAM_PROMETHEUS_ADDRESS}
+logging:
+  level: ${LITESTREAM_LOGGING_LEVEL}
+
+sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+validation:
+  interval: ${LITESTREAM_VALIDATION_INTERVAL}
+snapshot:
+  retention: ${LITESTREAM_RETENTION}
+  interval: ${LITESTREAM_SNAPSHOT_INTERVAL}
+
+dbs:
+  - dir: ${LITESTREAM_DBS_DIR}
+    pattern: "${LITESTREAM_DBS_PATTERN}"
+    watch: true
+    recursive: ${LITESTREAM_WATCH_RECURSIVE}
+    replica:
+      url: ${LITESTREAM_REPLICA_URL}

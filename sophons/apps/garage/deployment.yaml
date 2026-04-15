@@ -27,8 +27,6 @@ spec:
         - name: webui
           image: docker.io/khairul169/garage-webui:1.1.0
           env:
-            - name: BASE_PATH
-              value: /ui
             - name: S3_REGION
               value: global
             - name: S3_ENDPOINT_URL

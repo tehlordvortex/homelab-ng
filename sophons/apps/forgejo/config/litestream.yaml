@@ -1,0 +1,21 @@
+addr: ${LITESTREAM_PROMETHEUS_ADDRESS}
+logging:
+  level: ${LITESTREAM_LOGGING_LEVEL}
+
+endpoint: ${LITESTREAM_ENDPOINT}
+bucket: ${LITESTREAM_BUCKET}
+force-path-style: true
+
+sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+validation:
+  interval: ${LITESTREAM_VALIDATION_INTERVAL}
+snapshot:
+  retention: ${LITESTREAM_RETENTION}
+  interval: ${LITESTREAM_SNAPSHOT_INTERVAL}
+
+dbs:
+  - path: ${LITESTREAM_DB_PATH}
+    replica:
+      type: ${LITESTREAM_REPLICA_TYPE}
+      url: ${LITESTREAM_REPLICA_URL}
+      path: ${LITESTREAM_REPLICA_PATH}

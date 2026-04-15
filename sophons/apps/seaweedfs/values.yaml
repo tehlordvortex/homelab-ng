@@ -157,7 +157,7 @@ volume:
       type: persistentVolumeClaim
       storageClass: local-path
       size: 32Gi
-      maxVolumes: 48
+      maxVolumes: 64
 
   idx:
     type: persistentVolumeClaim
@@ -268,6 +268,7 @@ filer:
     createBuckets:
       - name: monitoring
       - name: juicestream
+      - name: forge-of-creation
 
   resources:
     requests:

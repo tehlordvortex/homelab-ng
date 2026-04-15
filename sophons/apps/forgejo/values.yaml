@@ -1,0 +1,201 @@
+valkey-cluster:
+  enabled: false
+valkey:
+  enabled: false
+postgresql:
+  enabled: false
+postgresql-ha:
+  enabled: false
+
+image:
+  rootless: true
+
+nodeSelector:
+  kubernetes.io/hostname: sophons-alpha
+
+# affinity:
+#   nodeAffinity:
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#       - preference:
+#           matchExpressions:
+#             - key: kubernetes.io/hostname
+#               operator: NotIn
+#               values: [sophons-alpha, sophons-beta]
+#         weight: 100
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+persistence:
+  enabled: false
+  subPath: fs
+
+extraVolumes:
+  - name: litestream-config
+    configMap:
+      name: litestream-config
+  - name: seaweedfs-cache
+    hostPath:
+      path: /var/lib/garage/weedfs/cache
+  - name: juicefs-cache
+    hostPath:
+      path: /var/lib/garage/juicefs/cache
+  - name: gitea-dr-1
+    persistentVolumeClaim:
+      claimName: gitea-dr-1
+
+extraContainerVolumeMounts:
+  - name: data
+    subPath: db
+    mountPath: /db
+  - name: gitea-dr-1
+    mountPath: /gitea
+
+extraInitVolumeMounts:
+  - name: data
+    subPath: db
+    mountPath: /db
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  fsGroupChangePolicy: "OnRootMismatch"
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+replicaCount: 1
+strategy:
+  type: Recreate
+deployment:
+  env:
+    - name: GOMEMLIMIT
+      value: 500MiB
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: weed-s3-access-key
+          key: AWS_ACCESS_KEY_ID
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: weed-s3-access-key
+          key: AWS_SECRET_ACCESS_KEY
+
+# Prevent the services from being headless
+service:
+  http:
+    clusterIP: null
+    ipFamilyPolicy: RequireDualStack
+    ipFamilies:
+      - IPv4
+      - IPv6
+  ssh:
+    clusterIP: null
+    ipFamilyPolicy: RequireDualStack
+    ipFamilies:
+      - IPv4
+      - IPv6
+
+httpRoute:
+  enabled: true
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - tig.vrtx.sh
+
+tcpRoute:
+  enabled: true
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: ssh
+
+gitea:
+  admin:
+    username: vrtx
+    email: me@vrtx.sh
+    passwordMode: initialOnlyRequireReset
+
+  config:
+    log:
+      LEVEL: info
+
+    server:
+      DOMAIN: tig.vrtx.sh
+      SSH_DOMAIN: ssh.tig.vrtx.sh
+      ROOT_URL: https://tig.vrtx.sh/
+      OFFLINE_MODE: true
+      LFS_START_SERVER: true
+
+    service:
+      NO_REPLY_ADDRESS: noreply.tig.vrtx.sh
+      DISABLE_REGISTRATION: true
+
+    openid:
+      WHITELISTED_URIS: "auth.sophons.cloud"
+
+    cache:
+      ADAPTER: redis
+    queue:
+      TYPE: redis
+    session:
+      PROVIDER: db
+
+    database:
+      DB_TYPE: sqlite3
+      SQLITE_TIMEOUT: 15000
+      SQLITE_JOURNAL_MODE: wal
+      PATH: /db/gitea.db
+
+    storage:
+      STORAGE_TYPE: minio
+      MINIO_ENDPOINT: ps3-weed.sphns.run
+      MINIO_USE_SSL: true
+      MINIO_BUCKET: forge-of-creation
+    "storage.attachments":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/attachments/
+    "storage.lfs":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/lfs/
+    "storage.avatars":
+      MINIO_BASE_PATH: gitea/avatars/
+    "storage.repo-avatars":
+      MINIO_BASE_PATH: gitea/repo-avatars/
+    "storage.repo-archive":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/repo-archive/
+    "storage.packages":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/packages/
+    "storage.actions_log":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/actions_log/
+    "storage.actions_artifacts":
+      SERVE_DIRECT: true
+      MINIO_BASE_PATH: gitea/actions_artifacts/
+
+    actions:
+      ENABLED: false
+
+    security:
+      REVERSE_PROXY_TRUSTED_PROXIES: 10.41.0.0/16,2001:cafe:41::/56
+
+  additionalConfigSources:
+    - secret:
+        secretName: forge-of-creation-config

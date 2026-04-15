@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: infinity-and-beyond-access-key
+    env: .env

@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: weed-s3-access-key
+    env: .env
