@@ -1,6 +1,7 @@
 namespace: backup-system
 resources:
   - cronjob.yaml
+  - ../restic-password
 
 configMapGenerator:
   - name: rclone-garage-config

@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: restic-password
+    env: .env

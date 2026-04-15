@@ -92,7 +92,7 @@ spec:
                 - --keep-within-daily=30d
               envFrom:
                 - secretRef:
-                    name: global-garage-access-key
+                    name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
                   value: rest:http://rclone-backup:8081/garage/
@@ -134,7 +134,7 @@ spec:
                 - /garage
               envFrom:
                 - secretRef:
-                    name: global-garage-access-key
+                    name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
                   value: rest:http://rclone-backup:8081/garage/
@@ -282,7 +282,7 @@ spec:
                 - --keep-within-daily=30d
               envFrom:
                 - secretRef:
-                    name: global-garage-access-key
+                    name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
                   value: rest:http://rclone-crypt-b2:8081/garage/
@@ -324,7 +324,7 @@ spec:
                 - /garage
               envFrom:
                 - secretRef:
-                    name: global-garage-access-key
+                    name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
                   value: rest:http://rclone-crypt-b2:8081/garage/

@@ -2,7 +2,9 @@
 # read credentials doc at https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 # default loads credentials from the shared credentials file (~/.aws/credentials).
 enabled = true
-bucket = "sss"                           # an existing bucket
-directory = "/weedfs/data"               # destination directory
-endpoint = "http://rclone-crypt-b2:8080"
+bucket = "sss"                        # an existing bucket
+directory = "/weedfs/data"            # destination directory
+endpoint = "https://ps3-b2.sphns.run"
 is_incremental = true
+# uploader_max_upload_parts = 0
+# uploader_part_size_mb = 1

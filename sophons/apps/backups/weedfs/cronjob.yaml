@@ -40,45 +40,151 @@ spec:
             - key: caeneus.sophons.cloud
               operator: Exists
 
-          containers:
-            - name: backup
-              image: docker.io/chrislusf/seaweedfs:4.17
-              restartPolicy: OnFailure
-              args:
-                - filer.backup
-                - -filer=weedfs-seaweedfs-filer-client.weed-system:8888
-                - -retentionDays=30
+          initContainers:
+            - name: weed-mount
+              image: docker.io/chrislusf/seaweedfs:4.19
+              restartPolicy: Always
 
               env:
-                - name: AWS_ACCESS_KEY_ID
+                - name: DATA_CENTER
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.labels['topology.kubernetes.io/region']
+                - name: GOGC
+                  value: "10"
+                - name: GOMEMLIMIT
+                  value: 300MiB
+
+              command:
+                - sh
+                - -c
+                - |
+                  set -xeuo pipefail
+                  if mountpoint -q /tmp/weedfs; then
+                    umount /tmp/weedfs || umount -f /tmp/weedfs
+                  fi
+
+                  exec weed -logtostderr=true mount -umask=000 -asyncDio \
+                    -dir=/tmp/weedfs -dirAutoCreate -readOnly -cacheMetaTtlSec=60 -cacheSymlink \
+                    -filer=weedfs-seaweedfs-filer-client.weed-system:8888 -filer.path=/ \
+                    -concurrentReaders=16 -concurrentWriters=1 -dataCenter=$DATA_CENTER \
+                    -volumeServerAccess=publicUrl
+
+              startupProbe:
+                exec:
+                  command: [mountpoint, -q, /tmp/weedfs]
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                failureThreshold: 5
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  mountPropagation: Bidirectional
+
+              resources:
+                requests:
+                  cpu: 150m
+                  memory: 300Mi
+                limits:
+                  memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
+                  # prob mem leak
+
+              securityContext:
+                runAsUser: 0
+                runAsGroup: 0
+                runAsNonRoot: false
+                privileged: true
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+                  add: [SYS_ADMIN]
+
+            - name: restic-forget
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - forget
+                - -v
+                - --host=weedfs
+                - --group-by=host
+                - --prune
+                - --keep-within-daily=30d
+              envFrom:
+                - secretRef:
+                    name: restic-password
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-backup:8081/weedfs/
+                - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
                       name: trisolaris-access-key
                       key: AWS_ACCESS_KEY_ID
-                - name: AWS_SECRET_ACCESS_KEY
+                - name: RESTIC_REST_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: trisolaris-access-key
                       key: AWS_SECRET_ACCESS_KEY
 
-              ports:
-                - containerPort: 9327
-                  protocol: TCP
-                  name: metrics
-
-              livenessProbe:
-                httpGet:
-                  path: /metrics
-                  port: metrics
-
               volumeMounts:
                 - mountPath: /tmp
                   name: tmp
-                - mountPath: /etc/seaweedfs/replication.toml
-                  name: config
-                  subPath: s3.replication.toml
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
 
               securityContext:
+                privileged: false
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: restic-backup
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - backup
+                - -vv
+                - --host=weedfs
+                - --read-concurrency=16
+                - /weedfs
+              envFrom:
+                - secretRef:
+                    name: restic-password
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-backup:8081/weedfs/
+                - name: RESTIC_REST_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_ACCESS_KEY_ID
+                - name: RESTIC_REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_SECRET_ACCESS_KEY
+
+              volumeMounts:
+                - mountPath: /weedfs
+                  name: tmp
+                  subPath: weedfs
+                  mountPropagation: HostToContainer
+                - mountPath: /tmp
+                  name: tmp
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
+
+              securityContext:
+                runAsUser: 0
+                runAsGroup: 0
+                runAsNonRoot: false
                 privileged: false
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true
@@ -88,9 +194,6 @@ spec:
           volumes:
             - name: tmp
               emptyDir: {}
-            - name: config
-              configMap:
-                name: weed-backup
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
 apiVersion: batch/v1
@@ -150,45 +253,151 @@ spec:
                         values: [ng]
                   weight: 100
 
-          containers:
-            - name: backup
-              image: docker.io/chrislusf/seaweedfs:4.17
-              restartPolicy: OnFailure
-              args:
-                - filer.backup
-                - -filer=weedfs-seaweedfs-filer-client.weed-system:8888
-                - -retentionDays=30
+          initContainers:
+            - name: weed-mount
+              image: docker.io/chrislusf/seaweedfs:4.19
+              restartPolicy: Always
 
               env:
-                - name: AWS_ACCESS_KEY_ID
+                - name: DATA_CENTER
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.labels['topology.kubernetes.io/region']
+                - name: GOGC
+                  value: "10"
+                - name: GOMEMLIMIT
+                  value: 300MiB
+
+              command:
+                - sh
+                - -c
+                - |
+                  set -xeuo pipefail
+                  if mountpoint -q /tmp/weedfs; then
+                    umount /tmp/weedfs || umount -f /tmp/weedfs
+                  fi
+
+                  exec weed -logtostderr=true mount -umask=000 -asyncDio \
+                    -dir=/tmp/weedfs -dirAutoCreate -readOnly -cacheMetaTtlSec=60 -cacheSymlink \
+                    -filer=weedfs-seaweedfs-filer-client.weed-system:8888 -filer.path=/ \
+                    -concurrentReaders=16 -concurrentWriters=1 -dataCenter=$DATA_CENTER \
+                    -volumeServerAccess=publicUrl
+
+              startupProbe:
+                exec:
+                  command: [mountpoint, -q, /tmp/weedfs]
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                failureThreshold: 5
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  mountPropagation: Bidirectional
+
+              resources:
+                requests:
+                  cpu: 150m
+                  memory: 300Mi
+                limits:
+                  memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
+                  # prob mem leak
+
+              securityContext:
+                runAsUser: 0
+                runAsGroup: 0
+                runAsNonRoot: false
+                privileged: true
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+                  add: [SYS_ADMIN]
+
+            - name: restic-forget
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - forget
+                - -v
+                - --host=weedfs
+                - --group-by=host
+                - --prune
+                - --keep-within-daily=30d
+              envFrom:
+                - secretRef:
+                    name: restic-password
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-crypt-b2:8081/weedfs/
+                - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
                       name: trisolaris-access-key
                       key: AWS_ACCESS_KEY_ID
-                - name: AWS_SECRET_ACCESS_KEY
+                - name: RESTIC_REST_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: trisolaris-access-key
                       key: AWS_SECRET_ACCESS_KEY
 
-              ports:
-                - containerPort: 9327
-                  protocol: TCP
-                  name: metrics
-
-              livenessProbe:
-                httpGet:
-                  path: /metrics
-                  port: metrics
-
               volumeMounts:
                 - mountPath: /tmp
                   name: tmp
-                - mountPath: /etc/seaweedfs/replication.toml
-                  name: config
-                  subPath: b2.replication.toml
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
 
               securityContext:
+                privileged: false
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: restic-backup
+              image: ghcr.io/restic/restic:0.18.1
+              restartPolicy: OnFailure
+              args:
+                - backup
+                - -vv
+                - --host=weedfs
+                - --read-concurrency=16
+                - /weedfs
+              envFrom:
+                - secretRef:
+                    name: restic-password
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: rest:http://rclone-crypt-b2:8081/weedfs/
+                - name: RESTIC_REST_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_ACCESS_KEY_ID
+                - name: RESTIC_REST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: trisolaris-access-key
+                      key: AWS_SECRET_ACCESS_KEY
+
+              volumeMounts:
+                - mountPath: /weedfs
+                  name: tmp
+                  subPath: weedfs
+                  mountPropagation: HostToContainer
+                - mountPath: /tmp
+                  name: tmp
+                  subPath: backup-tmp
+                - mountPath: /.cache
+                  name: tmp
+                  subPath: backup-cache
+
+              securityContext:
+                runAsUser: 0
+                runAsGroup: 0
+                runAsNonRoot: false
                 privileged: false
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true
@@ -198,6 +407,3 @@ spec:
           volumes:
             - name: tmp
               emptyDir: {}
-            - name: config
-              configMap:
-                name: weed-backup

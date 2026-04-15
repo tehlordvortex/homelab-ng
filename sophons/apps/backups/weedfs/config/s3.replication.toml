@@ -2,7 +2,18 @@
 # read credentials doc at https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 # default loads credentials from the shared credentials file (~/.aws/credentials).
 enabled = true
-bucket = "sss"                         # an existing bucket
-directory = "/weedfs/data"             # destination directory
-endpoint = "http://rclone-backup:8080"
+bucket = "sss"                            # an existing bucket
+directory = "/weedfs/data"                # destination directory
+endpoint = "https://ps3-backup.sphns.run"
 is_incremental = true
+# uploader_max_upload_parts = 1
+# uploader_part_size_mb = 1
+# Value is in MB. 5120 = 5GB (S3 single-object max).
+uploader_part_size = 5120
+
+# Reduce concurrency to 1 so the SDK doesn't try to read
+# the stream from multiple goroutines simultaneously.
+uploader_concurrency = 1
+
+# Also disable keepPartSize so it doesn't override your part size
+keep_part_size = false
