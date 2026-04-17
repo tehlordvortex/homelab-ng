@@ -38,10 +38,8 @@ spec:
           preferredDuringSchedulingIgnoredDuringExecution:
             - preference:
                 matchExpressions:
-                  # control plane nodes do not need to be able to reach an external
-                  # api-server/scheduler
                   - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
+                    operator: DoesNotExist
               weight: 100
 
       securityContext:
@@ -381,10 +379,13 @@ spec:
             - ash
             - -euc
             - |
+              apk add --no-cache curl
               while :; do
-                wget -qS -O /dev/null --post-data "" \
-                  --header "authorization: bearer $CLOUDFLARE_API_TOKEN" \
+                curl -fsSL -XPOST -H "authorization: bearer $CLOUDFLARE_API_TOKEN" \
                   https://neckhook.sphns.workers.dev/trigger
+                # wget -qS -O /dev/null --post-data "" \
+                #   --header "authorization: bearer $CLOUDFLARE_API_TOKEN" \
+                #   https://neckhook.sphns.workers.dev/trigger
                 sleep 90 & # 1.5 minutes
                 wait $!
               done
