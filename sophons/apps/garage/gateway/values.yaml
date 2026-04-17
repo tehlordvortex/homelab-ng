@@ -57,3 +57,5 @@ monitoring:
     enabled: true
     serviceMonitor:
       enabled: true
+  tracing:
+    sink: "http://zero-order-alloy.monitoring-system:4317"

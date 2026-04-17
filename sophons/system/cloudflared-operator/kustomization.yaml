@@ -14,6 +14,16 @@ patches:
       name: cloudflared-operator
     patch: |
       - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: RUST_LOG
+          value: operator=trace
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://zero-order-alloy.monitoring-system:4317
+      - op: add
         path: /spec/template/spec/containers/0/imagePullPolicy
         value: Always
       - op: add

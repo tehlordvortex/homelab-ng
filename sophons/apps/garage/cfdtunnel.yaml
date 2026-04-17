@@ -55,7 +55,7 @@ spec:
       kind:
         generated:
           endpoints:
-            - dnsName: s3ui-global.sphns.run
+            - dnsName: s3ui-global.sophons.cloud
 
   accountId: 93814820f122031e8f5004eb893430f0
   apiToken:

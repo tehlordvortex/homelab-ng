@@ -23,9 +23,9 @@ datasources:
     jsonData:
       serviceMap:
         datasourceUid: prometheus
-      # streamingEnabled:
-      #   search: true
-      #   metrics: true
+      streamingEnabled:
+        search: true
+        metrics: true
   # - name: klusterstalker-prometheus
   #   type: prometheus
   #   access: proxy

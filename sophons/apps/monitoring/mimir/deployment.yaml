@@ -71,7 +71,7 @@ spec:
             - name: GOGC
               value: "10"
             - name: GOMEMLIMIT
-              value: 120MiB
+              value: 116MiB
             - name: META_PATH
               value: /fs/meta.db
             - name: VOLUME_NAME
@@ -86,12 +86,8 @@ spec:
               path: /metrics
               port: ls-metrics
             initialDelaySeconds: 10
-            failureThreshold: 6
-
-          livenessProbe:
-            httpGet:
-              path: /metrics
-              port: ls-metrics
+            periodSeconds: 10
+            failureThreshold: 12
 
           volumeMounts:
             - name: tmp
@@ -254,7 +250,8 @@ spec:
 
       containers:
         - name: mimir
-          image: docker.io/grafana/mimir
+          # image: docker.io/grafana/mimir
+          image: registry.k8s.io/pause:3.9
           args: [-config.file=/etc/mimir/mimir.yaml]
           env:
             - name: GOGC

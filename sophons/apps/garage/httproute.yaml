@@ -44,7 +44,7 @@ spec:
       sectionName: websecure
 
   hostnames:
-    - s3ui-global.sphns.run
+    - s3ui-global.sophons.cloud
   rules:
     - filters:
         # - type: ExtensionRef
