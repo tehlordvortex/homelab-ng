@@ -66,6 +66,7 @@ replicaCount: 1
 strategy:
   type: Recreate
 deployment:
+  terminationGracePeriodSeconds: 120
   env:
     - name: GOMEMLIMIT
       value: 500MiB
