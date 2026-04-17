@@ -250,6 +250,9 @@ gitea:
     security:
       REVERSE_PROXY_TRUSTED_PROXIES: 10.41.0.0/16,2001:cafe:41::/56
 
+    metrics:
+      ENABLED: true
+
   additionalConfigSources:
     - secret:
         secretName: gitea-config
