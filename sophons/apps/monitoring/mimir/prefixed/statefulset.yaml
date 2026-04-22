@@ -1,13 +1,11 @@
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/deployment-apps-v1.json
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/statefulset-apps-v1.json
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: mimir-mirage
+  name: mimir
   namespace: monitoring-system
 spec:
   replicas: 1
-  strategy:
-    type: Recreate
   selector: {}
   template:
     spec:
@@ -27,13 +25,13 @@ spec:
         #     path: /var/lib/garage/weedfs/cache
         - name: config
           configMap:
-            name: mimir-mirage-config
+            name: mimir-config
         - name: runtime-config
           configMap:
-            name: mimir-mirage-runtime-config
+            name: mimir-runtime-config
         - name: litestream-config
           configMap:
-            name: litestream-juicefs
+            name: litestream-config
         - name: juicefs-cache
           hostPath:
             path: /var/lib/garage/juicefs/cache
@@ -49,64 +47,64 @@ spec:
       initContainers:
         - name: litestream-replicate
           restartPolicy: Always
-          image: docker.io/litestream/litestream:0.5.11
-          command:
-            - sh
-            - -c
-            - |-
-              set -xeu
-
-              rm -f $META_PATH
-              LITESTREAM_LOGGING_LEVEL=debug litestream restore \
-                -config=/etc/litestream/litestream.yaml -if-replica-exists \
-                $META_PATH
-
-              exec litestream replicate -config=/etc/litestream/litestream.yaml
+          image: docker.io/litestream/litestream
+          command: [bash, /etc/litestream/entrypoint.sh]
           envFrom:
             - configMapRef:
-                name: litestream-env-juicefs
+                name: litestream-env
             - secretRef:
                 name: weed-s3-access-key
           env:
             - name: GOGC
               value: "10"
             - name: GOMEMLIMIT
-              value: 116MiB
-            - name: META_PATH
-              value: /fs/meta.db
-            - name: VOLUME_NAME
-              value: mimir-mirage
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: LITESTREAM_DBS
+              value: "mimir-mirage.v3.meta.db"
+            - name: LITESTREAM_DBS_DIR
+              value: /fs
+            - name: LITESTREAM_DBS_PATTERN
+              value: "*.meta.db"
+            - name: LITESTREAM_REPLICA_PATH
+              value: $(LITESTREAM_REPLICA_PATH_PREFIX)
 
           ports:
             - name: ls-metrics
               containerPort: 9090
 
           startupProbe:
+            exec:
+              command: [bash, /etc/litestream/restore-probe.sh]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 12
+
+          livenessProbe:
             httpGet:
               path: /metrics
               port: ls-metrics
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            failureThreshold: 12
+            timeoutSeconds: 2
+            failureThreshold: 5
+            periodSeconds: 5
 
           volumeMounts:
             - name: tmp
               subPath: fs
               mountPath: /fs
+            - name: tmp
+              subPath: litestream
+              mountPath: /tmp
             - name: litestream-config
               mountPath: /etc/litestream
               readOnly: true
 
           securityContext:
-            runAsUser: 0
-            runAsGroup: 0
-            runAsNonRoot: false
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
-            seccompProfile:
-              type: RuntimeDefault
 
           resources:
             requests:
@@ -122,21 +120,21 @@ spec:
           # this image is pinned to a commit including the fix
           image: pz3.sphns.run/library/juicedata/mount:ce-6541bca
           command:
-            - sh
+            - bash
             - -c
             - |-
-              set -xeu
+              set -xeuo pipefail
               juicefs format --no-update \
-                --storage=s3 --bucket=$LITESTREAM_ENDPOINT/$LITESTREAM_BUCKET \
-                sqlite3://$META_PATH $VOLUME_NAME
+                --storage=s3 --bucket="$LITESTREAM_ENDPOINT/$LITESTREAM_BUCKET" \
+                "sqlite3://$META_PATH" "$VOLUME_NAME"
               juicefs config --capacity=4 --dir-stats=true --trash-days=0 \
-                sqlite3://$META_PATH
+                "sqlite3://$META_PATH"
 
-              exec juicefs mount -o async_dio,allow_other --buffer-size=64M \
-                --backup-meta=12h --metrics 0.0.0.0:9567 \
+              exec juicefs mount --metrics 0.0.0.0:9567 --no-usage-report \
+                -o async_dio,allow_other --buffer-size=64M --backup-meta=6h \
                 --cache-large-write --cache-expire 1d --free-space-ratio 0.05 \
                 --get-timeout 120s --put-timeout 120s --max-uploads 6 --max-downloads 10 \
-                sqlite3://$META_PATH /fs/mnt
+                --fast-statfs "sqlite3://$META_PATH" /fs/mnt
 
           env:
             - name: GOGC
@@ -144,7 +142,7 @@ spec:
             - name: GOMEMLIMIT
               value: "350MiB"
             - name: META_PATH
-              value: /fs/meta.db
+              value: /fs/mimir-mirage.v3.meta.db
             - name: VOLUME_NAME
               value: mimir-mirage
           envFrom:
@@ -168,7 +166,8 @@ spec:
           startupProbe:
             exec:
               command: [mountpoint, -q, /fs/mnt]
-            initialDelaySeconds: 10
+            initialDelaySeconds: 5
+            periodSeconds: 5
             failureThreshold: 6
 
           securityContext:
@@ -250,8 +249,8 @@ spec:
 
       containers:
         - name: mimir
-          # image: docker.io/grafana/mimir
-          image: registry.k8s.io/pause:3.9
+          image: docker.io/grafana/mimir
+          # image: registry.k8s.io/pause:3.9
           args: [-config.file=/etc/mimir/mimir.yaml]
           env:
             - name: GOGC
@@ -273,7 +272,7 @@ spec:
               port: prometheus
             timeoutSeconds: 5
             initialDelaySeconds: 15
-            failureThreshold: 10
+            failureThreshold: 30
 
           readinessProbe:
             httpGet:
@@ -301,7 +300,7 @@ spec:
               mountPropagation: HostToContainer
             - name: tmp
               mountPath: /tmp
-              subPath: mimir-tmp
+              subPath: mimir
 
           resources:
             requests:

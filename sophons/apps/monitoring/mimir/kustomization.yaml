@@ -2,6 +2,8 @@ namespace: monitoring-system
 
 labels:
   - pairs:
+      app.kubernetes.io/managed-by: Kustomize
+  - pairs:
       app.kubernetes.io/instance: mirage
       app.kubernetes.io/name: mimir
     includeSelectors: true
@@ -12,18 +14,8 @@ labels:
 
 images:
   - name: docker.io/grafana/mimir
-    newTag: 2.17.9
+    newTag: 3.0.6
 
 resources:
-  - deployment.yaml
   - service.yaml
-
-configMapGenerator:
-  - name: mimir-mirage-config
-    files:
-      - config/mimir.yaml
-  - name: mimir-mirage-runtime-config
-    options:
-      disableNameSuffixHash: true
-    files:
-      - mimir.yaml=config/mimir.runtime.yaml
+  - prefixed

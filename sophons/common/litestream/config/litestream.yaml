@@ -11,5 +11,7 @@ snapshot:
 
 dbs:
   - path: ${LITESTREAM_DB_PATH}
+    truncate-page-n: ${LITESTREAM_TRUNCATE_PAGE_N}
     replica:
       url: ${LITESTREAM_REPLICA_URL}
+      auto-recover: true

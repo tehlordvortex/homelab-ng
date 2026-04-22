@@ -1,5 +1,0 @@
-configMapGenerator:
-  - name: litestream-config
-    files:
-      - litestream.yaml
-      - entrypoint.sh

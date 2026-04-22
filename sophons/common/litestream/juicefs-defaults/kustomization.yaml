@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: litestream-env
+      data:
+        LITESTREAM_ENDPOINT: https://ps3-weed.sphns.run
+        LITESTREAM_BUCKET: juicestream
+        LITESTREAM_RETENTION: 12h
+        LITESTREAM_SYNC_INTERVAL: 0.1s
+        LITESTREAM_SNAPSHOT_INTERVAL: 30m
+        LITESTREAM_VALIDATION_INTERVAL: 4h
+        LITESTREAM_REPLICA_PATH_PREFIX: .meta/

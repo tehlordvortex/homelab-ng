@@ -1,9 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+images:
+  - name: docker.io/litestream/litestream
+    newTag: 0.5.11
+
 configMapGenerator:
   - name: litestream-env
     literals:
+      - LITESTREAM_TRUNCATE_PAGE_N=32768 # about 128MiB
       - LITESTREAM_RETENTION=168h # 7d
       - LITESTREAM_SYNC_INTERVAL=1s
       - LITESTREAM_SNAPSHOT_INTERVAL=1h
       - LITESTREAM_VALIDATION_INTERVAL=12
       - LITESTREAM_LOGGING_LEVEL=info
       - LITESTREAM_PROMETHEUS_ADDRESS=:9090
+  - name: litestream-config
+    files:
+      - config/common.sh
+      - config/entrypoint.sh
+      - config/restore-probe.sh
+      - config/litestream.yaml

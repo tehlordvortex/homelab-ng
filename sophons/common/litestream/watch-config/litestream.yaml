@@ -14,5 +14,7 @@ dbs:
     pattern: "${LITESTREAM_DBS_PATTERN}"
     watch: true
     recursive: ${LITESTREAM_WATCH_RECURSIVE}
+    truncate-page-n: ${LITESTREAM_TRUNCATE_PAGE_N}
     replica:
       url: ${LITESTREAM_REPLICA_URL}
+      auto-recover: true

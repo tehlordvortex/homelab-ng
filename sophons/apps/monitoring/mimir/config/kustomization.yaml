@@ -1,0 +1,9 @@
+configMapGenerator:
+  - name: mimir-config
+    files:
+      - mimir.yaml
+  - name: mimir-runtime-config
+    options:
+      disableNameSuffixHash: true
+    files:
+      - mimir.yaml=mimir.runtime.yaml

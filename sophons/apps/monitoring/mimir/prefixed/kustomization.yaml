@@ -1,0 +1,10 @@
+namePrefix: mimir-mirage-
+
+resources:
+  - statefulset.yaml
+  - ../config
+  - ../../../seaweedfs/access-key
+components:
+  - ../../../../common/litestream
+  - ../../../../common/litestream/juicefs-defaults
+  - ../../../../common/litestream/watch-config

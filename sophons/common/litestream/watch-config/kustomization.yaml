@@ -1,5 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
 configMapGenerator:
-  - name: litestream-config
+  - name: litestream-watch-config
+    options:
+      annotations:
+        config.kubernetes.io/local-config: "true"
     files:
-      - litestream.yaml
       - entrypoint.sh
+      - restore-probe.sh
+      - litestream.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: litestream-watch-config
+      fieldPath: data.[entrypoint.sh]
+    targets:
+      - select:
+          kind: ConfigMap
+          name: litestream-config
+        fieldPaths:
+          - data.[entrypoint.sh]
+  - source:
+      kind: ConfigMap
+      name: litestream-watch-config
+      fieldPath: data.[restore-probe.sh]
+    targets:
+      - select:
+          kind: ConfigMap
+          name: litestream-config
+        fieldPaths:
+          - data.[restore-probe.sh]
+  - source:
+      kind: ConfigMap
+      name: litestream-watch-config
+      fieldPath: data.[litestream.yaml]
+    targets:
+      - select:
+          kind: ConfigMap
+          name: litestream-config
+        fieldPaths:
+          - data.[litestream-watch.yaml]
+        options:
+          create: true
