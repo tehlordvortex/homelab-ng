@@ -23,3 +23,6 @@ spec:
       - name: websecure
         port: "443"
         protocol: TCP
+      - name: websecure-http3
+        port: "443"
+        protocol: UDP

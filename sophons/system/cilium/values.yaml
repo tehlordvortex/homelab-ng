@@ -6,6 +6,14 @@ cgroup:
 cluster:
   name: sophons
 
+dashboards:
+  enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: null
+
 resources:
   requests:
     cpu: 250m
@@ -14,7 +22,7 @@ resources:
     memory: 768Mi # higher limit for bpf compilations and stuff
 initResources:
   requests:
-    cpu: 50m
+    cpu: 10m
     memory: 10Mi
   limits:
     memory: 64Mi
@@ -23,12 +31,12 @@ cni:
   customConf: false
   uninstall: false
 
-gatewayAPI:
-  enableAlpn: true
-  enableAppProtocol: true
-  enabled: true
-  hostNetwork:
-    enabled: true
+# gatewayAPI:
+#   enableAlpn: true
+#   enableAppProtocol: true
+#   enabled: true
+#   hostNetwork:
+#     enabled: true
 
 ipv6:
   enabled: true
@@ -43,7 +51,9 @@ routingMode: native
 ipv4NativeRoutingCIDR: 10.41.0.0/16
 ipv6NativeRoutingCIDR: 2001:cafe:41::/56
 
+installNoConntrackIptablesRules: true
 # bpf:
+#   lbExternalClusterIP: true
 #   masquerade: true
 #   hostLegacyRouting: true
 #   lbModeAnnotation: true
@@ -57,14 +67,18 @@ loadBalancer:
 #   mode: dsr
 #   acceleration: best-effort
 #   dsrDispatch: geneve
-# bandwidthManager:
-#   enabled: false
+bandwidthManager:
+  enabled: true
 
 envoy:
   enabled: true
+  extraEnv:
+    - name: GOMEMLIMIT
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
   resources:
     requests:
-      cpu: 100m
       memory: 32Mi
     limits:
       memory: 128Mi
@@ -85,17 +99,42 @@ envoy:
         - BPF
         # Bind to ports < 1023
         - NET_BIND_SERVICE
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: null
 
 hubble:
   ui:
     enabled: true
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
   relay:
     enabled: true
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+  metrics:
+    enabled: [drop, tcp, udp, flow, icmp]
+    dashboards:
+      enabled: true
+    serviceMonitor:
+      enabled: true
 
 operator:
   replicas: 3
   unmanagedPodWatcher:
     restart: true
+  dashboards:
+    enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 
 policyEnforcementMode: default
 securityContext:

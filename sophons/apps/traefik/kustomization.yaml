@@ -9,11 +9,26 @@ resources:
   - dnsendpoint.sops.yaml
   - ciliumlocalredirectpolicy.yaml
 
+images:
+  # - name: docker.io/rancher/klipper-lb
+  #   newTag: v0.4.16
+  # - name: docker.io/alpine/socat
+  #   newTag: 1.8.0.3
+  - name: docker.io/library/haproxy
+    newTag: 3.3.6
+
 secretGenerator:
   - name: cloudflared
     files:
       - 163f32fb-e910-4a18-9ef0-9c5bfe635f33.json=config/163f32fb-e910-4a18-9ef0-9c5bfe635f33.sops.json
       - config/config.yaml
+configMapGenerator:
+  - name: traefik-haproxy
+    files:
+      - config/haproxy.cfg
+#   - name: traefik-klipper-lb
+#     files:
+#       - config/klipper-lb.sh
 
 patches:
   - patch: |

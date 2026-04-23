@@ -16,7 +16,7 @@ patches:
               - name: cilium-agent
                 env:
                   - name: GOGC
-                    value: "25"
+                    value: "10"
                   - name: GOMEMLIMIT
-                    value: 350MiB # lower limit for cilium itself inside the container
+                    value: 400MiB # lower limit for cilium itself inside the container
                     valueFrom: null

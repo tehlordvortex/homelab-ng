@@ -2,12 +2,17 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: cloudflared
+  name: traefik-cloudflared
   namespace: traefik
   labels:
     app.kubernetes.io/name: cloudflared
     app.kubernetes.io/instance: traefik
 spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: cloudflared
@@ -92,3 +97,125 @@ spec:
         - name: cloudflared
           secret:
             secretName: cloudflared
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/daemonset-apps-v1.json
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: traefik-haproxy
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: haproxy
+    app.kubernetes.io/instance: traefik
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: haproxy
+      app.kubernetes.io/instance: traefik
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: haproxy
+        app.kubernetes.io/instance: traefik
+    spec:
+      priorityClassName: system-node-critical
+      securityContext:
+        sysctls:
+          - name: net.ipv4.ip_forward
+            value: "1"
+          - name: net.ipv6.conf.all.forwarding
+            value: "1"
+
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+
+      hostAliases:
+        - ip: 10.43.0.10
+          hostnames:
+            - traefik.traefik.svc.cluster.local
+        - ip: 2001:cafe:43::69
+          hostnames:
+            - traefik.traefik.svc.cluster.local
+
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - key: caeneus.sophons.cloud
+          operator: Exists
+
+      volumes:
+        - name: haproxy
+          configMap:
+            name: traefik-haproxy
+        - name: certs
+          secret:
+            secretName: gateway-tls
+
+      containers:
+        - name: haproxy
+          image: docker.io/library/haproxy
+          args: [-V, -f, /usr/local/etc/haproxy/haproxy.cfg]
+          ports:
+            - name: tcp-ssh
+              containerPort: 22
+              hostPort: 22
+              protocol: TCP
+            - name: tcp-http
+              containerPort: 80
+              hostPort: 80
+              protocol: TCP
+            - name: tcp-https
+              containerPort: 443
+              hostPort: 443
+              protocol: TCP
+            - name: udp-https
+              containerPort: 443
+              hostPort: 443
+              protocol: UDP
+            - name: metrics
+              containerPort: 9069
+              protocol: TCP
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+
+          volumeMounts:
+            - mountPath: /usr/local/etc/haproxy
+              name: haproxy
+              readOnly: true
+            - mountPath: /usr/local/etc/haproxy/certs
+              name: certs
+              readOnly: true
+
+          resources:
+            requests:
+              cpu: 75m
+              memory: 32Mi
+            limits:
+              memory: 72Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+              add: [NET_BIND_SERVICE]

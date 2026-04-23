@@ -1,7 +1,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: cloudflared
+  name: traefik-cloudflared
   namespace: traefik
 spec:
   selector:
@@ -10,3 +10,16 @@ spec:
       app.kubernetes.io/instance: traefik
   endpoints:
     - port: cfd-metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: traefik-haproxy
+  namespace: traefik
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: haproxy
+      app.kubernetes.io/instance: traefik
+  endpoints:
+    - port: metrics

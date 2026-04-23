@@ -28,18 +28,25 @@ cfIPs: &cfIPs
   - 2a06:98c0::/29
   - 2c0f:f248::/32
 
+image:
+  tag: v3.7.0-rc.1
+
 logs:
   general:
     # TODO: prob just scan git logs for ssh attempts
     # TCP/UDP connection logs only happen at the debug level
     level: INFO
-    noColor: true
+    # noColor: true
   access:
     enabled: true
 
 ingressRoute:
   dashboard:
     enabled: true
+
+additionalArguments:
+  - --serversTransport.maxIdleConnsPerHost=512
+  - --serversTransport.forwardingTimeouts.idleConnTimeout=180s
 
 ports:
   traefik:
@@ -51,11 +58,9 @@ ports:
 
   web:
     port: 80
-    hostPort: 80
     expose:
       internal: true
       kaos: true
-      starlink: true
       theta: true
     http:
       redirections:
@@ -65,8 +70,7 @@ ports:
           permanent: true
       middlewares:
         - default-compression@file
-    # middlewares: []
-    # - crowdsec-crowdsec-bouncer@kubernetescrd
+        - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -76,19 +80,21 @@ ports:
 
   websecure:
     port: 443
-    hostPort: 443
     expose:
       internal: true
       kaos: true
-      starlink: true
       theta: true
+    http3:
+      enabled: true
     transport:
       respondingTimeouts:
         # uploading blobs to gitea etc can take a while
         # thanks [fuck-all]mbps upload internet.
         readTimeout: 300
-    # middlewares: []
-    # - crowdsec-crowdsec-bouncer@kubernetescrd
+    http:
+      middlewares:
+        - default-compression@file
+        - crowdsec-crowdsec-bouncer@kubernetescrd
 
     proxyProtocol:
       trustedIPs: *cfIPs
@@ -98,12 +104,10 @@ ports:
 
   ssh:
     port: 22
-    hostPort: 22
     expose:
       default: true
       internal: true
       kaos: true
-      starlink: true
       theta: true
 
 service:
@@ -131,6 +135,7 @@ service:
       spec:
         # trafficDistribution: PreferSameNode
         externalTrafficPolicy: Local
+
     kaos:
       single: true
       type: LoadBalancer
@@ -142,19 +147,7 @@ service:
       spec:
         # trafficDistribution: PreferSameNode
         externalTrafficPolicy: Local
-    starlink:
-      single: true
-      type: LoadBalancer
-      annotations:
-        metallb.io/address-pool: starlink
-        external-dns.alpha.kubernetes.io/hostname: >
-          traefik-starlink.sophons.cloud,
-          traefik-star-theta.sophons.cloud,
-          traefik-sango-star-theta.sophons.cloud
-      spec:
-        # trafficDistribution: PreferSameNode
-        ipFamilies: ["IPv6"]
-        externalTrafficPolicy: Local
+
     theta:
       single: true
       type: LoadBalancer
@@ -162,8 +155,7 @@ service:
         metallb.io/address-pool: theta
         external-dns.alpha.kubernetes.io/hostname: >
           traefik-theta.sophons.cloud,
-          traefik-star-theta.sophons.cloud,
-          traefik-sango-star-theta.sophons.cloud
+          traefik-sango-theta.sophons.cloud
       spec:
         # trafficDistribution: PreferSameNode
         ipFamilies: ["IPv6"]
@@ -279,8 +271,8 @@ priorityClassName: system-node-critical
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
-    maxUnavailable: 1
-    maxSurge: 0
+    maxUnavailable: 0
+    maxSurge: 1
 deployment:
   kind: DaemonSet
 
@@ -303,13 +295,13 @@ startupProbe:
 
 env:
   - name: GOGC
-    value: "50"
+    value: "30"
 resources:
   requests:
-    cpu: "250m"
-    memory: "256Mi"
+    cpu: 250m
+    memory: 256Mi
   limits:
-    memory: "512Mi"
+    memory: 512Mi
 
 volumes:
   - type: secret
@@ -345,15 +337,6 @@ podSecurityContext:
     # allows icmp traffic (ping, traceroute) to resources behind cloudflared.
     - name: net.ipv4.ping_group_range
       value: "65532 65532"
-
-affinity:
-  podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchLabels:
-            app.kubernetes.io/name: '{{ template "traefik.name" . }}'
-            app.kubernetes.io/instance: '{{ .Release.Name }}-{{ include "traefik.namespace" . }}'
-        topologyKey: kubernetes.io/hostname
 
 metrics:
   prometheus:
