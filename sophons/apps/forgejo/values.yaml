@@ -14,8 +14,10 @@ affinity:
   nodeAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
       - preference:
-          matchLabels:
-            cluster.garage.sophons.cloud/global: "true"
+          matchExpressions:
+            - key: cluster.garage.sophons.cloud/global
+              operator: In
+              values: ["true"]
         weight: 100
 
 resources:
@@ -63,8 +65,6 @@ containerSecurityContext:
       - ALL
 
 replicaCount: 1
-strategy:
-  type: Recreate
 deployment:
   terminationGracePeriodSeconds: 120
   env:
@@ -119,6 +119,17 @@ gitea:
     email: me@vrtx.sh
     passwordMode: initialOnlyRequireReset
 
+  oauth:
+    - name: authelia
+      provider: openidConnect
+      existingSecret: forge-of-creation-forgejo-authelia-config
+      iconUrl: https://auth.sophons.cloud/favicon.ico
+      autoDiscoverUrl: https://auth.sophons.cloud/.well-known/openid-configuration
+      skipLocal-2fa: true
+      scopes: email profile groups sshpubkey
+      attributeSshPublicKey: sshpubkey
+      groupClaimName: groups
+
   config:
     log:
       LEVEL: info
@@ -148,12 +159,12 @@ gitea:
       DB_TYPE: sqlite3
       SQLITE_TIMEOUT: 15000
       SQLITE_JOURNAL_MODE: wal
-      PATH: /db/gitea.db
+      PATH: /db/gitea.v2.db
 
     storage:
       STORAGE_TYPE: minio
-      MINIO_ENDPOINT: ps3-global.sphns.run
-      MINIO_USE_SSL: true
+      MINIO_ENDPOINT: s3-global.garage.svc.cluster.local:3900
+      MINIO_USE_SSL: false
       MINIO_BUCKET: forge-of-creation
     "storage.attachments":
       SERVE_DIRECT: true
@@ -191,4 +202,4 @@ gitea:
 
   additionalConfigSources:
     - secret:
-        secretName: forge-of-creation-config
+        secretName: forge-of-creation-forgejo-config
