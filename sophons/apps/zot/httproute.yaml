@@ -21,9 +21,12 @@ spec:
       sectionName: websecure
 
   hostnames:
+    - oci.sophons.cloud
     - zenlesszonezot.sophons.cloud
     - z3.sphns.run
     - pz3.sphns.run
+    - oci.sphns.run
+    - poci.sphns.run
 
   rules:
     - backendRefs:

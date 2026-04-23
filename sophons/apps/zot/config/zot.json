@@ -29,6 +29,10 @@
     "compat": [
       "docker2s2"
     ],
+    "tls": {
+      "cert": "/secrets/tls/tls.crt",
+      "key": "/secrets/tls/tls.key"
+    },
     "externalUrl": "https://zenlesszonezot.sophons.cloud",
     "auth": {
       "sessionKeysFile": "/secrets/z3/session.json",

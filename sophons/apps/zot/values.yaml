@@ -1,17 +1,17 @@
 replicaCount: 3
 affinity:
-  podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchLabels:
-            app.kubernetes.io/name: zot
-            app.kubernetes.io/instance: zenlesszonezot
-        matchLabelKeys: [pod-template-hash]
-        topologyKey: "kubernetes.io/hostname"
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+            - key: cluster.garage.sophons.cloud/global
+              operator: In
+              values: ["true"]
+        weight: 100
 
   podAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
+      - weight: 50
         podAffinityTerm:
           labelSelector:
             matchLabels:
@@ -21,6 +21,12 @@ affinity:
 service:
   type: ClusterIP
   trafficDistribution: PreferClose
+  port: 443
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
 
 persistence: false
 resources:
@@ -30,6 +36,8 @@ resources:
   limits:
     cpu: 250m
     memory: 300Mi
+httpGet:
+  scheme: HTTPS
 startupProbe:
   initialDelaySeconds: 15
   failureThreshold: 60
@@ -65,6 +73,8 @@ env:
 externalSecrets:
   - secretName: z3
     mountPath: /secrets/z3
+  - secretName: gateway-tls
+    mountPath: /secrets/tls
 extraVolumeMounts:
   - name: config
     mountPath: /etc/zot

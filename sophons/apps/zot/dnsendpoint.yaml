@@ -5,10 +5,6 @@ metadata:
   namespace: zzzot
 spec:
   endpoints:
-    - dnsName: zenlesszonezot.sophons.cloud
-      recordType: CNAME
-      targets:
-        - 163f32fb-e910-4a18-9ef0-9c5bfe635f33.cfargotunnel.com
     - dnsName: z3.sphns.run
       recordType: CNAME
       targets:
@@ -16,17 +12,10 @@ spec:
       providerSpecific:
         - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
           value: "false"
-    - dnsName: pz3.sphns.run
-      recordType: A
+    - dnsName: oci.sphns.run
+      recordType: CNAME
       targets:
-        - 10.43.0.69
-      providerSpecific:
-        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
-          value: "false"
-    - dnsName: pz3.sphns.run
-      recordType: AAAA
-      targets:
-        - 2001:cafe:43::69
+        - traefik-sango-noproxy.sophons.cloud
       providerSpecific:
         - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
           value: "false"
