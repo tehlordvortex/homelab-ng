@@ -7,6 +7,7 @@ resources:
   - deployment.yaml
   - middleware.yaml
   - secret.sops.yaml
+  - poddisruptionbudget.yaml
   - ciliumlocalredirectpolicy.yaml
 
 patches:
