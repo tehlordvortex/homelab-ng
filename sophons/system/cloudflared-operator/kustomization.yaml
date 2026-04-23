@@ -17,7 +17,7 @@ patches:
         path: /spec/template/spec/containers/0/env/-
         value:
           name: RUST_LOG
-          value: operator=trace
+          value: operator=debug
       - op: add
         path: /spec/template/spec/containers/0/env/-
         value:
@@ -30,8 +30,7 @@ patches:
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
             cpu: 50m
             memory: 32Mi
+          limits:
+            memory: 48Mi
