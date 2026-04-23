@@ -9,10 +9,8 @@ ingress:
     disableIngressRoute: true
 
 pod:
-  kind: Deployment
+  kind: StatefulSet
   replicas: 1
-  strategy:
-    type: Recreate
 
   securityContext:
     pod:
@@ -32,8 +30,8 @@ pod:
   initContainers:
     - name: litestream-replicate
       restartPolicy: Always
-      image: docker.io/litestream/litestream:0.5.11
-      command: [sh, /etc/litestream/entrypoint.sh]
+      image: docker.io/litestream/litestream
+      command: [bash, /etc/litestream/entrypoint.sh]
       envFrom:
         - configMapRef:
             name: litestream-env
@@ -64,12 +62,11 @@ pod:
           containerPort: 9090
 
       startupProbe:
-        httpGet:
-          path: /metrics
-          port: ls-metrics
-        initialDelaySeconds: 10
-        periodSeconds: 10
-        failureThreshold: 50
+        exec:
+          command: [bash, /etc/litestream/restore-probe.sh]
+        initialDelaySeconds: 15
+        periodSeconds: 5
+        failureThreshold: 30
 
       volumeMounts:
         - name: tmp

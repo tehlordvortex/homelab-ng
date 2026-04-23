@@ -5,9 +5,10 @@ resources:
   - httproute.yaml
   - middleware.yaml
   - secret.sops.yaml
+  - ../garage/access-keys/infinity-and-beyond
+components:
   - ../../common/litestream
   - ../../common/litestream/watch-config
-  - ../garage/access-keys/infinity-and-beyond
 
 configMapGenerator:
   - name: authelia-users
