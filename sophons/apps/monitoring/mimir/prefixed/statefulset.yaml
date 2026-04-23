@@ -16,6 +16,15 @@ spec:
       nodeSelector:
         topology.kubernetes.io/region: ng
       terminationGracePeriodSeconds: 900 # 15 minutes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - sophons-oduduwa
 
       volumes:
         - name: tmp
@@ -256,7 +265,7 @@ spec:
             - name: GOGC
               value: "10"
             - name: GOMEMLIMIT
-              value: 1200MiB
+              value: 3072MiB
           envFrom:
             - secretRef:
                 name: weed-s3-access-key
@@ -305,6 +314,6 @@ spec:
           resources:
             requests:
               cpu: 500m
-              memory: 1Gi
+              memory: 1.5Gi
             limits:
-              memory: 1.25Gi
+              memory: 4Gi
