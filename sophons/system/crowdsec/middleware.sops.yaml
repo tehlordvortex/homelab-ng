@@ -8,17 +8,21 @@ spec:
     crowdsec-bouncer-traefik-plugin:
       enabled: true
       updateMaxFailure: -1
-      httpTimeoutSeconds: 15
+      httpTimeoutSeconds: 30
+      logLevel: DEBUG
       crowdsecMode: stream
-      crowdsecLapiScheme: https
+      crowdsecLapiScheme: http
       crowdsecLapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
-      crowdsecLapiTlsInsecureVerify: true
+      # crowdsecLapiTlsInsecureVerify: true
       # enc!
-      crowdsecLapiKey: ENC[AES256_GCM,data:KsQh3OVjTEQpVqeOgKhS/grQC2DgaKcIHosClIeVxR6KNywOjzMcVcqqjjb2UCh9cw0+vUqaJrBfqSET13XAJYegIQtpAFV+lPtFu+6oamvB8+7ZF0A6NrG50/AnF46nQhD1w0Jnlrb7cHDw3KvXaQjgYI0EAL/PrXcDYd34NBk=,iv:Mt/eg+qJ5e7PvHN7qm0u4rm3DdQj4X6VrLLg7id2UDE=,tag:EDET4efbpOXSNHbPIkQwLA==,type:str]
+      crowdsecLapiKey: ENC[AES256_GCM,data:91BE1k0ej/eQTOzKP3nyPjG6IZ77MaXhb7owd6Fp5IyOoTcJmjjMB1BySFP5sMoyp6o10RK5aj56wV3hKvoQfENVJY0T8k25ZYRqS/EM6nQEvwJ6BPoNK67FMWE9t/wlDQJepZYxWCRwn1ORy9XoW00G41QboKtT/8MZ/Hl0Ki4=,iv:qMf65/rkwYg76QWS0WmASGXY9cpw80XH2tRXymurtQw=,tag:l9ioXGP9OmIFMTF7SrlLng==,type:str]
       forwardedHeadersTrustedIPs:
-        # tailscale
-        - 100.64.0.0/10
-        - fd7a:115c:a1e0::/48
+        # lokalhost
+        - 127.0.0.0/8
+        - ::1/128
+        # kluster
+        - 10.41.0.0/16
+        - 2001:cafe:41::/56
         # Cloudflare
         - 173.245.48.0/20
         - 103.21.244.0/22
@@ -47,23 +51,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBZekFV
-        T2NsVkgvMkZRVTUwcG1XYlF3Rlc4MVFmQ09yakZiK0hGNGtTcjM0Cm5RV2dVUzY1
-        eDZxd3EzQUtmRzh2WXpRemtHSWNRVVByNGgyMjlkK2ZoSTQKLS0tIHBremowNGxU
-        SmRsVDlrbWJOZVlRSXZSWEhEbzVPMldPTDVvWnZNYXZCTHMKvtubJL+DGUZ8Rofh
-        SPl7dy7PZZynDvVfghLa3UrJJel9BDheGgq9JFupQobAIaRlmJ7iuYS5DQUKULph
-        kQiXGg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyA5ejNy
+        RFJXbDJYNlZBcWdsdzFjNHB3RUFUOVZFRWg4U0pUaFdBRUZZTkhvCnRoV25ZeDlI
+        SjdRNzc0U1BsTlM3T01xODNCRWRiL0xuSTl0QlFSakxBVFkKLS0tIEhoUXJPOUkz
+        UndoVk1rUE53cWJGajhpM2tkdmx5eXRCTjRxeXZ3QlJxcHcKDr1mbwF5t2xRPjFe
+        sk8xHN3T6efsPB8nNsOHR0kb//1YiV3kXCs97+w/Uo65s5ta329j7bvePrkY3oFY
+        JXtOhA==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA3ZEhYSDQxUmNhTVUyZEh5
-        dEdBM2VxRXZYU0RjWE01UTJjUy9mcE0xcjFZCkhYZnJTcWZxbEF1ZXNsUjZVdUhn
-        RWhnZ2ppb25NdXcyK29NMkpuVURpanMKLS0tIGdlWGhRNXlxWVdVRk1YS0pUdnFn
-        ZFkwWk5hRTduTVFVREwzY2lTWmxiNUkKciDLpmxpT2CItYr93d6Uc2cS+2jgcA5J
-        Ze6yMzHG502eIRjVui8ZCA6fs9u/SFXl4isqJXuuYnDRbEVWlhTE9g==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBiT1ZieW1EVktxbTlHSDlu
+        TXd4UkdjTDlBcWZyRWFuU3lyMVdCVlEyRkhFClRVNjhYVmRieUQ4dXdNSUVMNTAr
+        OW1VWHRPNVhzWXI2YUJGZ3d0MkJJcUUKLS0tIHVYSWZVL0ZUTG1wQW50cy9mZ2VU
+        U2Ezdnc0TkpWV0d5Tlk2T0RJZ0x2V1kKhS/1ZP8AmMP2mtfYBmI3ro1e/bv9gsgJ
+        QBE2hivEd6dJBIXz3vlnmCpjoJB+nG1QqjIDcvN3IQ6EUWSnviJgsw==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2025-12-01T19:53:22Z"
-  mac: ENC[AES256_GCM,data:ybOfY8JSueS1gQ5MmUY/plNsu8ZSvBG6aSAusfDyAKfl9DIzzpimMOshwsTjGGyzlcOqn8gS9QcqMqO9nyKndhWiopMu7SyWvWScfxNgFRh3iRT1eG19lMeU0e02quHCAAyhKaMpgs+s4mfS4Q6yawOOFzYDA78oW/lUaWwDU8k=,iv:fPCPiU7AWk0tc7gO4xb+4CzS6xszaUWZMicJ1/3f+84=,tag:AtIV9ViltLWyQfjDyc7E2w==,type:str]
+  lastmodified: "2026-04-23T20:02:48Z"
+  mac: ENC[AES256_GCM,data:lU3stonjQ/G2IW+2LGc/KtFb57gzx1ZclVXYr5r4KPCdvNZz3e0RQCmd0F0hmoPWf060cnQWJ/OjtQihqStQRoHwnp0GBr7hc1UeEY+IBca2zO3rH3eqonIHSb0zIQPFNugiuCEnMc6LAxyq9gO9C0TdFnboNZlo09JMGlz6F/A=,iv:RoxMQQqXBHEu3xhuqhvEh4qTOnzt0iGRvPKmbx1X0rA=,tag:2dYgeeMFZjGPdnUYSFxtUg==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0

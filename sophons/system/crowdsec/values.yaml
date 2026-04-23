@@ -1,48 +1,66 @@
+# yaml-language-server: $schema=https://github.com/crowdsecurity/helm-charts/raw/refs/tags/crowdsec-0.23.0/charts/crowdsec/values.schema.json
+image:
+  repository: docker.io/crowdsecurity/crowdsec
+  pullPolicy: IfNotPresent
+
 container_runtime: containerd
 
 tls:
-  enabled: true
+  enabled: false
   agent:
-    tlsClientAuth: true
+    tlsClientAuth: false
     reflector:
       namespaces: [logging-system]
 
 config:
+  # parsers:
+  #   s01-parse:
+  #     traefik-tcpudp.yaml: |
+  #       onsuccess: next_stage
+  #       debug: true
+  #       # original: aidalinfo/tcpudp-flood-traefik
+  #       name: vrtx/tcpudp-flood-traefik
+  #       description: "Parse TCP/UDP traefik logs"
+  #       filter: "evt.Parsed.program == 'tcpudp-traefik'"
+  #       nodes:
+  #       ## TCP GROK
+  #         - grok:
+  #         ## Grok pattern for extract IP SOURCE and other informations on this message structure
+  #             pattern: 'Handling TCP connection address=%{IP:destination_ip}:%{NUMBER:destination_port} remoteAddr=%{IP:source_ip}:%{NUMBER:source_port}'
+  #             ## Apply pattern on for all message in logs
+  #             apply_on: message
+  #             statics:
+  #             ## Add meta value, this type is used by scenario
+  #               - meta: log_type
+  #                 value: traefik_tcpudp
+  #       ## UDP GROK pattern for extract IP SOURCE and other informations on this message structure
+  #         - grok:
+  #             pattern: 'Handling UDP stream from %{IP:source_ip}:%{NUMBER:source_port} to %{IP:destination_ip}:%{NUMBER:destination_port}'
+  #           ## Apply pattern on for all message in logs
+  #             apply_on: message
+  #             statics:
+  #             ## Add meta value, this type is used by scenario
+  #               - meta: log_type
+  #                 value: traefik_tcpudp
+  #       statics:
+  #       ## Pass Time and Source IP to other stages and scenarios.
+  #           - meta: source_ip
+  #             expression: "evt.Parsed.source_ip"
+  #           # - target: evt.StrTime
+  #           #   expression: evt.Parsed.time
   parsers:
-    s01-parse:
-      traefik-tcpudp.yaml: |
-        onsuccess: next_stage
-        debug: true
-        # original: aidalinfo/tcpudp-flood-traefik
-        name: vrtx/tcpudp-flood-traefik
-        description: "Parse TCP/UDP traefik logs"
-        filter: "evt.Parsed.program == 'tcpudp-traefik'"
-        nodes:
-        ## TCP GROK
-          - grok:
-          ## Grok pattern for extract IP SOURCE and other informations on this message structure
-              pattern: 'Handling TCP connection address=%{IP:destination_ip}:%{NUMBER:destination_port} remoteAddr=%{IP:source_ip}:%{NUMBER:source_port}'
-              ## Apply pattern on for all message in logs
-              apply_on: message
-              statics:
-              ## Add meta value, this type is used by scenario
-                - meta: log_type
-                  value: traefik_tcpudp
-        ## UDP GROK pattern for extract IP SOURCE and other informations on this message structure
-          - grok:
-              pattern: 'Handling UDP stream from %{IP:source_ip}:%{NUMBER:source_port} to %{IP:destination_ip}:%{NUMBER:destination_port}'
-            ## Apply pattern on for all message in logs
-              apply_on: message
-              statics:
-              ## Add meta value, this type is used by scenario
-                - meta: log_type
-                  value: traefik_tcpudp
-        statics:
-        ## Pass Time and Source IP to other stages and scenarios.
-            - meta: source_ip
-              expression: "evt.Parsed.source_ip"
-            # - target: evt.StrTime
-            #   expression: evt.Parsed.time
+    s02-enrich:
+      whitelist.yaml: |
+        name: sophons/whitelist
+        description: "Whitelist private IP ranges"
+        whitelist:
+          reason: "Private/internal IP ranges"
+          cidr:
+            - 100.64.0.0/10
+            - 2001:cafe:41::/56
+            - 2001:cafe:43::/112
+            - fdf6:9420:fade::/48
+            - fd7a:115c:a1e0::/48
   config.yaml.local: |
     db_config:
       flush:
@@ -57,25 +75,37 @@ config:
           enabled: true
           token: "${REGISTRATION_TOKEN}" # /!\ Do not modify this variable (auto-generated and handled by the chart)
           allowed_ranges:
-            - "127.0.0.1/32"
-            - "192.168.0.0/16"
-            - "10.0.0.0/8"
-            - "172.16.0.0/12"
-            - "10.41.0.0/16"
-            - "2001:cafe:41::/56"
+            - 127.0.0.0/8
+            - ::1/128
+            - 192.168.0.0/16
+            - 10.0.0.0/8
+            - 172.16.0.0/12
+            - 100.64.0.0/10
+            - 2001:cafe:41::/56
+            - fdf6:9420:fade::/48
+            - fd7a:115c:a1e0::/48
 
 secrets:
   externalSecret:
     name: crowdsec
 
 lapi:
+  priorityClassName: system-node-critical
   resources:
     requests:
-      cpu: 150m
-      memory: 128Mi
+      cpu: 100m
+      memory: 64Mi
     limits:
       cpu: null
-      memory: 384Mi
+      memory: 256Mi
+
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
 
   persistentVolume:
     config:
@@ -83,6 +113,8 @@ lapi:
     data:
       enabled: false
   env:
+    - name: USE_WAL
+      value: "true"
     - name: ENROLL_KEY
       valueFrom:
         secretKeyRef:
@@ -97,28 +129,148 @@ lapi:
       value: "sophons"
     - name: ENROLL_TAGS
       value: "k8s linux"
+    - name: GOGC
+      value: "25"
+    - name: GOMEMLIMIT
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+
+  extraVolumes:
+    - name: tmp
+      emptyDir: {}
+    - name: litestream-config
+      configMap:
+        name: litestream-config
+  extraVolumeMounts:
+    - mountPath: /var/lib/crowdsec/data
+      name: tmp
+      subPath: db
+    - mountPath: /tmp
+      name: tmp
+      subPath: lapi
+
+  extraInitContainers:
+    - name: litestream-replicate
+      restartPolicy: Always
+      image: docker.io/litestream/litestream
+      command: [bash, /etc/litestream/entrypoint.sh]
+      envFrom:
+        - configMapRef:
+            name: litestream-env
+        - secretRef:
+            name: infinity-and-beyond-access-key
+      env:
+        - name: GOGC
+          value: "10"
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+        - name: LITESTREAM_DB_PATH
+          value: /db/crowdsec.db
+        - name: LITESTREAM_ENDPOINT
+          value: http://s3-global.garage.svc.cluster.local:3900
+        - name: LITESTREAM_BUCKET
+          value: litestream-ad-infinitum
+        - name: LITESTREAM_REPLICA_PATH
+          value: ng/crowdsec-lapi/crowdsec.db
+
+      ports:
+        - name: ls-metrics
+          containerPort: 9090
+
+      startupProbe:
+        exec:
+          command: [bash, /etc/litestream/restore-probe.sh]
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureThreshold: 30
+
+      volumeMounts:
+        - name: tmp
+          subPath: db
+          mountPath: /db
+        - name: litestream-config
+          mountPath: /etc/litestream
+          readOnly: true
+        - name: tmp
+          subPath: litestream
+          mountPath: /tmp
+
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+
+      resources:
+        requests:
+          cpu: 50m
+          memory: 48Mi
+        limits:
+          memory: 100Mi
+
+  metrics:
+    serviceMonitor:
+      enabled: true
 
 agent:
+  priorityClassName: system-node-critical
   hostVarLog: false
-  # isDeployment: true
-  # replicas: 1
-  # strategy:
-  #   type: RollingUpdate
+  isDeployment: true
+  replicas: 1
+  tolerations:
+    - key: caeneus.sophons.cloud
+      operator: Exists
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: loki
+                app.kubernetes.io/instance: lady-loki
+            topologyKey: topology.kubernetes.io/region
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  wait_for_lapi:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+
+  extraVolumes:
+    - name: tmp
+      emptyDir: {}
+  extraVolumeMounts:
+    - mountPath: /tmp
+      name: tmp
+      subPath: agent
 
   env:
-    - name: GOMEMLIMIT
-      value: 128MiB
     - name: COLLECTIONS
-      value: "crowdsecurity/traefik crowdsecurity/linux"
-    # - name: PARSERS
-    #   value: "aidalinfo/tcpudp-flood-traefik"
-    - name: LEVEL_DEBUG
-      value: "true"
+      value: "crowdsecurity/traefik crowdsecurity/haproxy crowdsecurity/linux LePresidente/gitea"
+    - name: PARSERS
+      value: "crowdsecurity/whitelists"
+    - name: GOGC
+      value: "25"
+    - name: GOMEMLIMIT
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
 
   resources:
     requests:
-      cpu: 50m
-      memory: 32Mi
+      cpu: 75m
+      memory: 48Mi
     limits:
       cpu: null
       memory: 128Mi
@@ -127,62 +279,34 @@ agent:
     config:
       enabled: false
 
-  # this is ignored for daemonset, but cant use deployment
-  # cuz that's broken too :)
-  ports:
-    - name: syslog
-      containerPort: 6900
-      protocol: UDP
-    - name: http-traefik
-      containerPort: 6969
-      protocol: TCP
-    - name: http-tu-traefik
-      containerPort: 6970
-      protocol: TCP
-
-  service:
-    ports:
-      - name: syslog
-        protocol: UDP
-        port: 6900
-      - name: http-traefik
-        protocol: TCP
-        port: 6969
-      - name: http-tu-traefik
-        protocol: TCP
-        port: 6970
+  acquisition: []
 
   additionalAcquisition:
-    - source: syslog
-      listen_addr: 0.0.0.0
-      listen_port: 6900
-      # undocumented but exists
-      # https://github.com/crowdsecurity/crowdsec/pull/3435
-      # disable_rfc_parser: true
-      labels:
-        type: syslog
-        program: traefik
-
-    - source: http
-      listen_addr: 0.0.0.0:6969
-      path: /v1/logs/traefik
-      timeout: 30s
-      auth_type: mtls
-      tls:
-        ca_cert: /etc/ssl/crowdsec-agent/ca.crt
-        server_key: /etc/ssl/crowdsec-agent/tls.key
-        server_cert: /etc/ssl/crowdsec-agent/tls.crt
+    - source: loki
+      log_level: debug
+      url: http://lady-loki.monitoring-system:3100/
+      limit: 1000
+      query: |
+        {job="traefik/traefik"}
       labels:
         type: traefik
-
-    - source: http
-      listen_addr: 0.0.0.0:6970
-      path: /v1/logs/tcpudp-traefik
-      timeout: 30s
-      auth_type: mtls
-      tls:
-        ca_cert: /etc/ssl/crowdsec-agent/ca.crt
-        server_key: /etc/ssl/crowdsec-agent/tls.key
-        server_cert: /etc/ssl/crowdsec-agent/tls.crt
+    - source: loki
+      log_level: debug
+      url: http://lady-loki.monitoring-system:3100/
+      limit: 1000
+      query: |
+        {job="traefik/haproxy"}
       labels:
-        type: tcpudp-traefik
+        type: haproxy
+    - source: loki
+      log_level: debug
+      url: http://lady-loki.monitoring-system:3100/
+      limit: 1000
+      query: |
+        {job="forgejo/forgejo"}
+      labels:
+        type: gitea
+
+  metrics:
+    serviceMonitor:
+      enabled: true
