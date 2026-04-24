@@ -11,7 +11,7 @@ affinity:
 
   podAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 50
+      - weight: 25
         podAffinityTerm:
           labelSelector:
             matchLabels:
@@ -21,7 +21,6 @@ affinity:
 service:
   type: ClusterIP
   trafficDistribution: PreferClose
-  port: 443
 strategy:
   type: RollingUpdate
   rollingUpdate:
@@ -36,8 +35,6 @@ resources:
   limits:
     cpu: 250m
     memory: 300Mi
-httpGet:
-  scheme: HTTPS
 startupProbe:
   initialDelaySeconds: 15
   failureThreshold: 60
@@ -73,8 +70,6 @@ env:
 externalSecrets:
   - secretName: z3
     mountPath: /secrets/z3
-  - secretName: gateway-tls
-    mountPath: /secrets/tls
 extraVolumeMounts:
   - name: config
     mountPath: /etc/zot

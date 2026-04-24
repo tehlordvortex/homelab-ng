@@ -34,11 +34,6 @@ secretGenerator:
         reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "zzzot, homepage"
     files:
       - .dockerconfigjson=config/dockerconfig.sops.json
-  - name: gateway-tls
-    options:
-      disableNameSuffixHash: true
-      annotations:
-        reflector.v1.k8s.emberstack.com/reflects: "default/gateway-tls"
 
 patches:
   - patch: |

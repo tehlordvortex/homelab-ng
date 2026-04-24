@@ -10,5 +10,3 @@ spec:
         port: zot
         strategy: leasttime
         nativeLB: false
-        scheme: https
-        serversTransport: zenlesszonezot

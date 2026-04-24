@@ -235,10 +235,6 @@ providers:
               certFile: /etc/traefik/gateway-tls/tls.crt
               keyFile: /etc/traefik/gateway-tls/tls.key
 
-        certificates:
-          - certFile: /etc/traefik/gateway-tls/tls.crt
-            keyFile: /etc/traefik/gateway-tls/tls.key
-
 gateway:
   listeners:
     traefik: # HTTP listener that matches entryPoint `traefik`
