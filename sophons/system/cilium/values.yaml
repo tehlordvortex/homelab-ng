@@ -51,7 +51,7 @@ routingMode: native
 ipv4NativeRoutingCIDR: 10.41.0.0/16
 ipv6NativeRoutingCIDR: 2001:cafe:41::/56
 
-installNoConntrackIptablesRules: true
+# installNoConntrackIptablesRules: true
 # bpf:
 #   lbExternalClusterIP: true
 #   masquerade: true
@@ -108,22 +108,22 @@ envoy:
 hubble:
   ui:
     enabled: true
-    prometheus:
-      enabled: true
-      serviceMonitor:
-        enabled: true
+    # prometheus:
+    #   enabled: true
+    #   serviceMonitor:
+    #     enabled: true
   relay:
     enabled: true
-    prometheus:
-      enabled: true
-      serviceMonitor:
-        enabled: true
-  metrics:
-    enabled: [drop, tcp, udp, flow, icmp]
-    dashboards:
-      enabled: true
-    serviceMonitor:
-      enabled: true
+    # prometheus:
+    #   enabled: true
+    #   serviceMonitor:
+    #     enabled: true
+  # metrics:
+  #   enabled: [drop, tcp, udp, flow, icmp]
+  #   dashboards:
+  #     enabled: true
+  #   serviceMonitor:
+  #     enabled: true
 
 operator:
   replicas: 3
