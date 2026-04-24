@@ -24,6 +24,27 @@ spec:
     - auth.kaos.nexus
 
   rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /.well-known/openid-configuration
+        - path:
+            type: Exact
+            value: /jwks.json
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: oidc-enable-response-caching
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: oidc-cache
+      backendRefs:
+        - name: authelia
+          port: 80
     - backendRefs:
         - name: authelia
           port: 80
