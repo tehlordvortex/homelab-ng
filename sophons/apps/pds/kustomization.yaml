@@ -7,15 +7,19 @@ labels:
 
 resources:
   - service.yaml
+  - cfdtunnel.yaml
   - httproute.yaml
-  - deployment.yaml
   - middleware.yaml
-  - dnsendpoint.yaml
-  - secret.sops.yaml
+  - statefulset.yaml
   - serviceaccount.yaml
-  - persistentvolumeclaim.yaml
+  - ../garage/access-keys/infinity-and-beyond
+components:
+  - ../../common/litestream
+  - ../../common/litestream/watch-config
 
-configMapGenerator:
-  - name: litestream
+secretGenerator:
+  - name: pds-config
+    env: .env
+  - name: pds-actor-keys
     files:
-      - config/litestream-legacy.yaml
+      - vrtx.key=config/vrtx.sops.key

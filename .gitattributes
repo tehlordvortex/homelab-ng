@@ -1,6 +1,7 @@
 *.sops.yaml filter=sops
 *.sops.json filter=sops
 *.sops.conf filter=sops
+*.sops.key filter=sops
 sops.htpasswd filter=sops
 .sops.yaml -filter
 

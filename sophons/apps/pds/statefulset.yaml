@@ -1,0 +1,234 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/statefulset-apps-v1.json
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bluesky-pds
+  namespace: bluesky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bluesky-pds
+      app.kubernetes.io/instance: pds
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bluesky-pds
+        app.kubernetes.io/instance: pds
+    spec:
+      serviceAccountName: bluesky-pds
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        - name: litestream-replicate
+          restartPolicy: Always
+          image: docker.io/litestream/litestream
+          command: [bash, /etc/litestream/entrypoint.sh]
+          envFrom:
+            - configMapRef:
+                name: litestream-env
+            - secretRef:
+                name: infinity-and-beyond-access-key
+          env:
+            - name: GOGC
+              value: "25"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: LITESTREAM_DBS
+              value: |-
+                account.sqlite,did_cache.sqlite,sequencer.sqlite,actors/54/did:plc:6gr352ee33a4o6s4ivatzo2u/store.sqlite
+            - name: LITESTREAM_DBS_DIR
+              value: /pds
+            - name: LITESTREAM_DBS_PATTERN
+              value: "*.sqlite"
+            - name: LITESTREAM_WATCH_RECURSIVE
+              value: "true"
+            - name: LITESTREAM_ENDPOINT
+              value: http://s3-global.garage.svc.cluster.local:3900
+            - name: LITESTREAM_BUCKET
+              value: litestream-ad-infinitum
+            - name: LITESTREAM_REPLICA_PATH
+              value: ng/pds
+
+          ports:
+            - name: ls-metrics
+              containerPort: 9090
+
+          startupProbe:
+            exec:
+              command: [bash, /etc/litestream/restore-probe.sh]
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 30
+
+          volumeMounts:
+            - name: tmp
+              subPath: pds
+              mountPath: /pds
+            - name: litestream-config
+              mountPath: /etc/litestream
+              readOnly: true
+            - name: tmp
+              subPath: litestream
+              mountPath: /tmp
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 48Mi
+            limits:
+              memory: 100Mi
+
+        - name: copy-actor-keys
+          image: docker.io/library/busybox:1.37
+          command:
+            - sh
+            - -c
+            - |
+              set -xe
+
+              # mkdir -p /pds/actors/54/did:plc:6gr352ee33a4o6s4ivatzo2u
+              cp /keys/vrtx.key /pds/actors/54/did:plc:6gr352ee33a4o6s4ivatzo2u/key
+
+              chmod -w /pds/actors
+
+          volumeMounts:
+            - name: actor-keys
+              mountPath: /keys
+              readOnly: true
+            - name: tmp
+              subPath: pds
+              mountPath: /pds
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              memory: 10Mi
+            limits:
+              memory: 32Mi
+
+      containers:
+        - name: bluesky-pds
+          image: ghcr.io/bluesky-social/pds:0.4.219
+          env:
+            - name: PDS_HOSTNAME
+              value: pds.vrtx.sh
+            - name: PDS_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: pds-config
+                  key: jwtSecret
+            - name: PDS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pds-config
+                  key: adminPassword
+            - name: PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: pds-config
+                  key: plcRotationKey
+            - name: PDS_EMAIL_SMTP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pds-config
+                  key: emailSmtpUrl
+            - name: PDS_BLOBSTORE_S3_BUCKET
+              value: pds
+            - name: PDS_BLOBSTORE_S3_REGION
+              value: global
+            - name: PDS_BLOBSTORE_S3_ENDPOINT
+              value: http://s3-global.garage.svc.cluster.local:3900
+            - name: PDS_BLOBSTORE_S3_UPLOAD_TIMEOUT_MS
+              value: "60000"
+            - name: PDS_BLOBSTORE_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pds-config
+                  key: s3AccessKey
+            - name: PDS_BLOBSTORE_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pds-config
+                  key: s3SecretKey
+            - name: PDS_BLOBSTORE_S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: PDS_DATA_DIRECTORY
+              value: "/pds"
+            - name: PDS_DID_PLC_URL
+              value: "https://plc.directory"
+            - name: PDS_BSKY_APP_VIEW_URL
+              value: "https://api.bsky.app"
+            - name: PDS_BSKY_APP_VIEW_DID
+              value: "did:web:api.bsky.app"
+            - name: PDS_REPORT_SERVICE_URL
+              value: "https://mod.bsky.app"
+            - name: PDS_REPORT_SERVICE_DID
+              value: "did:plc:ar7c4by46qjdydhdevvrndac"
+            - name: PDS_CRAWLERS
+              value: "https://bsky.network"
+            - name: LOG_ENABLED
+              value: "true"
+            - name: PDS_EMAIL_FROM_ADDRESS
+              value: "bsky@vrtx.sh"
+
+          ports:
+            - name: pds-port
+              containerPort: 3000
+              protocol: TCP
+
+          volumeMounts:
+            - name: tmp
+              subPath: pds
+              mountPath: /pds
+            - name: tmp
+              subPath: tmp
+              mountPath: /tmp
+
+          livenessProbe:
+            httpGet:
+              path: /xrpc/_health
+              port: pds-port
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: litestream-config
+          configMap:
+            name: litestream-config
+        - name: actor-keys
+          secret:
+            secretName: pds-actor-keys
