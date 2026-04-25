@@ -1,0 +1,37 @@
+apiVersion: cloudflared-operator.vrtx.sh/v1alpha1
+kind: CfdTunnel
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  serviceMonitor: {}
+  dns:
+    externalDNS:
+      kind:
+        generated:
+          endpoints:
+            - dnsName: home.sophons.cloud
+
+  accountId: 93814820f122031e8f5004eb893430f0
+  apiToken:
+    secretRef:
+      name: cf-dns-api-token
+      namespace: default
+    key: api-token
+
+  serviceRef:
+    name: homepage
+  ingress:
+    - service: https://traefik.traefik.svc.cluster.local
+  originRequestConfig: |
+    matchSNItoHost: true
+    http2Origin: true
+
+  containerOverrides:
+    name: cloudflared
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        memory: 48Mi

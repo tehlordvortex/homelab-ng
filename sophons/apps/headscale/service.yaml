@@ -2,65 +2,6 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: headscale
-  namespace: headscale
-spec:
-  type: ClusterIP
-  ports:
-    - port: 8080
-      targetPort: hs-http
-      protocol: TCP
-      name: http
-    - port: 8081
-      targetPort: hs-metrics
-      protocol: TCP
-      name: metrics
-    - port: 50051
-      targetPort: hs-grpc
-      protocol: TCP
-      name: grpc
----
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
-apiVersion: v1
-kind: Service
-metadata:
-  name: headplane
-  namespace: headscale
-spec:
-  type: ClusterIP
-  ports:
-    - port: 3000
-      targetPort: hp-http
-      protocol: TCP
-      name: http
----
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
-apiVersion: v1
-kind: Service
-metadata:
-  name: headscale-proxy
-  namespace: headscale
-spec:
-  type: ClusterIP
-  ipFamilyPolicy: RequireDualStack
-  clusterIP: 10.43.0.42
-  clusterIPs:
-    - 10.43.0.42
-    - 2001:cafe:43::42
-  ports:
-    - port: 80
-      targetPort: http
-      protocol: TCP
-      name: http
-    - port: 443
-      targetPort: https
-      protocol: TCP
-      name: https
----
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
-apiVersion: v1
-kind: Service
-metadata:
   name: headscale-proxy-headless
   namespace: headscale
 spec:
@@ -68,59 +9,19 @@ spec:
   ipFamilyPolicy: PreferDualStack
   clusterIP: None
   ports:
-    - port: 80
-      targetPort: http
+    - port: 3000
+      targetPort: hp-http
       protocol: TCP
-      name: http
-    - port: 443
-      targetPort: https
+      name: hp-http
+    - port: 8080
+      targetPort: hs-http
       protocol: TCP
-      name: https
----
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
-apiVersion: v1
-kind: Service
-metadata:
-  name: headscale-theta
-  namespace: headscale
-  annotations:
-    metallb.io/address-pool: theta
-    external-dns.alpha.kubernetes.io/hostname: hs.vrtx.sh
-    # external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
-spec:
-  type: LoadBalancer
-  ipFamilies: ["IPv6"]
-  ports:
-    - port: 80
-      targetPort: http
+      name: hs-http
+    - port: 8081
+      targetPort: hs-metrics
       protocol: TCP
-      name: http
-    - port: 443
-      targetPort: https
+      name: hs-metrics
+    - port: 50051
+      targetPort: hs-grpc
       protocol: TCP
-      name: https
-  selector:
-    app.kubernetes.io/name: headscale
----
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
-apiVersion: v1
-kind: Service
-metadata:
-  name: headscale-starlink
-  namespace: headscale
-  annotations:
-    metallb.io/address-pool: starlink
-    external-dns.alpha.kubernetes.io/hostname: hs.vrtx.sh
-    # external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
-spec:
-  type: LoadBalancer
-  ipFamilies: ["IPv6"]
-  ports:
-    - port: 80
-      targetPort: http
-      protocol: TCP
-      name: http
-    - port: 443
-      targetPort: https
-      protocol: TCP
-      name: https
+      name: hs-grpc

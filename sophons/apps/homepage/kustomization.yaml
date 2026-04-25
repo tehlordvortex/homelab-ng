@@ -1,17 +1,15 @@
 namespace: homepage
 resources:
   - service.yaml
+  - cfdtunnel.yaml
   - httproute.yaml
   - deployment.yaml
-  - dnsendpoint.yaml
   - clusterrole.yaml
   - serviceaccount.yaml
   - traefikservice.yaml
 
 configMapGenerator:
   - name: homepage
-    options:
-      disableNameSuffixHash: true
     files:
       - config/widgets.yaml
       - config/settings.yaml
