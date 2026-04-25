@@ -6,13 +6,13 @@ cgroup:
 cluster:
   name: sophons
 
-dashboards:
-  enabled: true
-prometheus:
-  enabled: true
-  serviceMonitor:
-    enabled: true
-    interval: null
+# dashboards:
+#   enabled: true
+# prometheus:
+#   enabled: true
+#   serviceMonitor:
+#     enabled: true
+#     interval: null
 
 resources:
   requests:
@@ -99,11 +99,11 @@ envoy:
         - BPF
         # Bind to ports < 1023
         - NET_BIND_SERVICE
-  prometheus:
-    enabled: true
-    serviceMonitor:
-      enabled: true
-      interval: null
+  # prometheus:
+  #   enabled: true
+  #   serviceMonitor:
+  #     enabled: true
+  #     interval: null
 
 hubble:
   ui:
