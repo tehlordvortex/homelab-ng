@@ -13,8 +13,6 @@ spec:
       tolerations:
         - key: caeneus.sophons.cloud
           operator: Exists
-      nodeSelector:
-        topology.kubernetes.io/region: ng
       terminationGracePeriodSeconds: 900 # 15 minutes
       affinity:
         nodeAffinity:
@@ -22,9 +20,10 @@ spec:
             nodeSelectorTerms:
               - matchExpressions:
                   - key: kubernetes.io/hostname
-                    operator: NotIn
+                    operator: In
                     values:
-                      - sophons-oduduwa
+                      - sophons-caeneus
+                      - sophons-voltzahl
 
       volumes:
         - name: tmp
@@ -265,7 +264,7 @@ spec:
             - name: GOGC
               value: "10"
             - name: GOMEMLIMIT
-              value: 3072MiB
+              value: 2048MiB
           envFrom:
             - secretRef:
                 name: weed-s3-access-key
@@ -316,4 +315,4 @@ spec:
               cpu: 500m
               memory: 1.5Gi
             limits:
-              memory: 4Gi
+              memory: 3Gi
