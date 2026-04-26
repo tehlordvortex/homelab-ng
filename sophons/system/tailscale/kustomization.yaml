@@ -1,0 +1,18 @@
+namespace: kube-system
+namePrefix: klusterscale-
+resources:
+  - daemonset.yaml
+components:
+  - ../../common/tailscale
+  - ../../common/tailscale/state-path
+
+secretGenerator:
+  - name: tailscale-auth
+    env: .env
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: tailscale
+      app.kubernetes.io/instance: klusterscale
+    includeTemplates: true
+    includeSelectors: true

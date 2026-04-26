@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+images:
+  - name: ghcr.io/tailscale/tailscale
+    newTag: v1.96.5
+
+configMapGenerator:
+  - name: tailscale-config
+    literals:
+      - TS_BASE_ARGS="--login-server https://hs.vrtx.sh"
+      - TSD_BASE_ARGS=""
+      - TS_ENABLE_HEALTH_CHECK="true"
+      - TS_ENABLE_METRICS="true"
+      - TS_AUTH_ONCE="true"

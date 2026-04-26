@@ -1,0 +1,130 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/daemonset-apps-v1.json
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tailscale
+  namespace: kube-system
+spec:
+  selector: {}
+  template:
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+        - key: orunmila.sophons.cloud/ase-orun
+          operator: Exists
+        - key: caeneus.sophons.cloud
+          operator: Exists
+        - key: prime.sophons.cloud
+          operator: Exists
+        - key: node.cilium.io/agent-not-ready
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/not-ready
+          operator: Exists
+          effect: NoExecute
+        - key: node.kubernetes.io/unreachable
+          operator: Exists
+          effect: NoExecute
+        - key: node.kubernetes.io/disk-pressure
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/memory-pressure
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/pid-pressure
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/unschedulable
+          operator: Exists
+          effect: NoSchedule
+
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      hostAliases:
+        - ip: 10.43.0.69
+          hostnames:
+            - hs.vrtx.sh
+        - ip: 2001:cafe:43::69
+          hostnames:
+            - hs.vrtx.sh
+
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: dev-net
+          hostPath:
+            path: /dev/net
+        - name: tailscale
+          hostPath:
+            path: /var/lib/garage/tailscale
+
+      containers:
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale
+
+          ports:
+            - containerPort: 9002
+              name: ts-metrics
+
+          envFrom:
+            - configMapRef:
+                name: tailscale-config
+            - secretRef:
+                name: tailscale-auth
+
+          env:
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: TS_EXTRA_ARGS
+              value: $(TS_BASE_ARGS)
+            - name: TS_TAILSCALED_EXTRA_ARGS
+              value: $(TSD_BASE_ARGS)
+            - name: TS_AUTH_ONCE
+              value: "true"
+            - name: TS_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: TS_USERSPACE
+              value: "false"
+
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /dev/net
+              name: dev-net
+            - mountPath: /var/lib/tailscale
+              name: tailscale
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            privileged: false
+            capabilities:
+              drop: [ALL]
+              add: [NET_ADMIN]
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: ts-metrics
+            failureThreshold: 15
+            initialDelaySeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: ts-metrics
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              memory: 128Mi
