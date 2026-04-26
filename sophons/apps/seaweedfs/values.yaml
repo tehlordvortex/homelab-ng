@@ -275,11 +275,11 @@ filer:
       cpu: 300m
       memory: 172Mi
     limits:
-      memory: 512Mi
+      memory: 564Mi
 
   extraEnvironmentVars:
-    GOGC: "25"
-    GOMEMLIMIT: 500MiB
+    GOGC: "10"
+    GOMEMLIMIT: 550MiB
     DATA_CENTER:
       fieldRef:
         fieldPath: metadata.labels['topology.kubernetes.io/region']
@@ -366,6 +366,16 @@ s3:
 worker:
   enabled: true
 
+  affinity: |
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: In
+                values: [de, nl]
+          weight: 100
+
   jobType: all
   resources:
     requests:
@@ -376,7 +386,7 @@ worker:
       memory: 512Mi
 
   extraEnvironmentVars:
-    GOGC: "50"
+    GOGC: "25"
     GOMEMLIMIT:
       resourceFieldRef:
         resource: limits.memory
