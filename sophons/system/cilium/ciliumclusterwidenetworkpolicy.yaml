@@ -22,7 +22,7 @@ spec:
         - 10.67.0.0/16 # technically already covered but eh
         - fdf6:9420:fade::/48
 
-    # Cloudflare, Sep 28, 2023
+    # Cloudflare IPs, Sep 28, 2023
     - fromCIDR:
         - 173.245.48.0/20
         - 103.21.244.0/22

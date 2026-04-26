@@ -17,6 +17,7 @@ configMapGenerator:
   - name: traefik-haproxy
     files:
       - config/haproxy.cfg
+      - config/cloudflare-ips.txt
 
 patches:
   - patch: |
