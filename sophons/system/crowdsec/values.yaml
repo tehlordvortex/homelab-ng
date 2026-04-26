@@ -13,44 +13,43 @@ tls:
       namespaces: [logging-system]
 
 config:
-  # parsers:
-  #   s01-parse:
-  #     traefik-tcpudp.yaml: |
-  #       onsuccess: next_stage
-  #       debug: true
-  #       # original: aidalinfo/tcpudp-flood-traefik
-  #       name: vrtx/tcpudp-flood-traefik
-  #       description: "Parse TCP/UDP traefik logs"
-  #       filter: "evt.Parsed.program == 'tcpudp-traefik'"
-  #       nodes:
-  #       ## TCP GROK
-  #         - grok:
-  #         ## Grok pattern for extract IP SOURCE and other informations on this message structure
-  #             pattern: 'Handling TCP connection address=%{IP:destination_ip}:%{NUMBER:destination_port} remoteAddr=%{IP:source_ip}:%{NUMBER:source_port}'
-  #             ## Apply pattern on for all message in logs
-  #             apply_on: message
-  #             statics:
-  #             ## Add meta value, this type is used by scenario
-  #               - meta: log_type
-  #                 value: traefik_tcpudp
-  #       ## UDP GROK pattern for extract IP SOURCE and other informations on this message structure
-  #         - grok:
-  #             pattern: 'Handling UDP stream from %{IP:source_ip}:%{NUMBER:source_port} to %{IP:destination_ip}:%{NUMBER:destination_port}'
-  #           ## Apply pattern on for all message in logs
-  #             apply_on: message
-  #             statics:
-  #             ## Add meta value, this type is used by scenario
-  #               - meta: log_type
-  #                 value: traefik_tcpudp
-  #       statics:
-  #       ## Pass Time and Source IP to other stages and scenarios.
-  #           - meta: source_ip
-  #             expression: "evt.Parsed.source_ip"
-  #           # - target: evt.StrTime
-  #           #   expression: evt.Parsed.time
   parsers:
+    #   s01-parse:
+    #     traefik-tcpudp.yaml: |
+    #       onsuccess: next_stage
+    #       debug: true
+    #       # original: aidalinfo/tcpudp-flood-traefik
+    #       name: vrtx/tcpudp-flood-traefik
+    #       description: "Parse TCP/UDP traefik logs"
+    #       filter: "evt.Parsed.program == 'tcpudp-traefik'"
+    #       nodes:
+    #       ## TCP GROK
+    #         - grok:
+    #         ## Grok pattern for extract IP SOURCE and other informations on this message structure
+    #             pattern: 'Handling TCP connection address=%{IP:destination_ip}:%{NUMBER:destination_port} remoteAddr=%{IP:source_ip}:%{NUMBER:source_port}'
+    #             ## Apply pattern on for all message in logs
+    #             apply_on: message
+    #             statics:
+    #             ## Add meta value, this type is used by scenario
+    #               - meta: log_type
+    #                 value: traefik_tcpudp
+    #       ## UDP GROK pattern for extract IP SOURCE and other informations on this message structure
+    #         - grok:
+    #             pattern: 'Handling UDP stream from %{IP:source_ip}:%{NUMBER:source_port} to %{IP:destination_ip}:%{NUMBER:destination_port}'
+    #           ## Apply pattern on for all message in logs
+    #             apply_on: message
+    #             statics:
+    #             ## Add meta value, this type is used by scenario
+    #               - meta: log_type
+    #                 value: traefik_tcpudp
+    #       statics:
+    #       ## Pass Time and Source IP to other stages and scenarios.
+    #           - meta: source_ip
+    #             expression: "evt.Parsed.source_ip"
+    #           # - target: evt.StrTime
+    #           #   expression: evt.Parsed.time
     s02-enrich:
-      whitelist.yaml: |
+      sophons-whitelist.yaml: |
         name: sophons/whitelist
         description: "Whitelist private IP ranges"
         whitelist:
@@ -283,26 +282,23 @@ agent:
 
   additionalAcquisition:
     - source: loki
-      log_level: debug
       url: http://lady-loki.monitoring-system:3100/
       limit: 1000
-      query: |
+      query: |-
         {job="traefik/traefik"}
       labels:
         type: traefik
     - source: loki
-      log_level: debug
       url: http://lady-loki.monitoring-system:3100/
       limit: 1000
-      query: |
+      query: |-
         {job="traefik/haproxy"}
       labels:
         type: haproxy
     - source: loki
-      log_level: debug
       url: http://lady-loki.monitoring-system:3100/
       limit: 1000
-      query: |
+      query: |-
         {job="forgejo/forgejo"}
       labels:
         type: gitea
