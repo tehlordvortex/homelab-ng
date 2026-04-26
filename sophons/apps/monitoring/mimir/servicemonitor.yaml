@@ -1,0 +1,9 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mimir-mirage
+  namespace: monitoring-system
+spec:
+  selector: {}
+  endpoints:
+    - port: prometheus

@@ -1,4 +1,6 @@
 namespace: monitoring-system
+configurations:
+  - kustomizeconfig.yaml
 
 labels:
   - pairs:
@@ -17,5 +19,6 @@ images:
     newTag: 3.0.6
 
 resources:
-  - service.yaml
   - prefixed
+  - service.yaml
+  - servicemonitor.yaml
