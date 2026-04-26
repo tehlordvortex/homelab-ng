@@ -12,7 +12,7 @@ talos_version=$TALOS_VERSION
 kubernetes_version=v1.35.2
 
 vm_image=af87088cf1b22437863dea5433e70768e92cd109a7b115161490f2abf15c26ab
-pi_image=c37ef14b65c7f5cb5d59ca8c4e4d724b046d26792822f121cdf06f1e237b947b
+pi_image=5776775752261925bcf9a6d66f025daeb6de13abcbcac81015c2ffced642ccec
 prime_image=be6b54b45267ef38608da53e992b784c53036a7217819b343d4f472e99a442c2
 
 gen_controlplane() {
