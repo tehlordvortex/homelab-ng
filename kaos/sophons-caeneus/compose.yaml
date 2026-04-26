@@ -55,7 +55,7 @@ services:
     networks:
       lab:
         ipv4_address: 10.42.42.5
-        ipv6_address: ${V6_ADDR}
+        # ipv6_address: ${V6_ADDR}
     # network_mode: service:tailscale
 
   # tailscale:
@@ -99,9 +99,9 @@ networks:
     driver: ipvlan
     driver_opts:
       parent: lab1
-    enable_ipv6: true
+    enable_ipv6: false
     ipam:
       config:
         - subnet: 10.42.0.0/16
-        - subnet: ${V6_SUBNET}
-          gateway: ${V6_GATEWAY}
+        # - subnet: ${V6_SUBNET}
+        #   gateway: ${V6_GATEWAY}

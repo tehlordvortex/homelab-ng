@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/sh
 
 set -xeuo pipefail
 
@@ -19,6 +19,7 @@ gen_controlplane() {
   local host_name=$1
   local image=$2
 
+  gen_wgcf $host_name "$patch_dir/wg.cf.sops.yaml"
   gen_wg $host_name "$patch_dir/wg.kluster.sops.yaml"
 
   talosctl gen config $cluster $endpoint \
@@ -31,6 +32,7 @@ gen_controlplane() {
     --config-patch "@$patch_dir/chrome.seccomp.yaml" \
     --config-patch "@$patch_dir/controlplane.sops.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
+    --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml" \
     --config-patch "@$self_dir/generated/wg.kluster.$host_name.yaml" \
     --output-types controlplane \
     --output "$self_dir/generated/controlplane.$host_name.yaml"
@@ -45,6 +47,7 @@ gen_worker() {
   local host_name=$1
   local image=$2
 
+  gen_wgcf $host_name "$patch_dir/wg.cf.sops.yaml"
   gen_wg $host_name "$patch_dir/wg.kluster.sops.yaml"
 
   talosctl gen config $cluster $endpoint \
@@ -56,6 +59,7 @@ gen_worker() {
     --config-patch "@$patch_dir/common.sops.yaml" \
     --config-patch "@$patch_dir/chrome.seccomp.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
+    --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml" \
     --config-patch "@$self_dir/generated/wg.kluster.$host_name.yaml" \
     --output-types worker \
     --output "$self_dir/generated/worker.$host_name.yaml"
@@ -106,6 +110,40 @@ gen_wg() {
       "routes": [$peers[].value | (.addresses + .allowedIPs + (.routes // []))[] | {"destination": .}]
     }
   ' "$enriched" >"$self_dir/generated/$interface.$host_name.yaml"
+}
+
+gen_wgcf() {
+  local host_name="$1"
+  local config="$2"
+  local interface="$(basename "$config" | sed s/.sops.yaml$//)"
+  local has_interface="$(HOST_NAME="$host_name" yq '.nodes[env(HOST_NAME)] != null' "$config")"
+
+  HOST_NAME="$host_name" INTERFACE="$interface" yq '
+    .wireguard as $wg |
+    .nodes[env(HOST_NAME)] as $self |
+    {
+      "apiVersion": "v1alpha1",
+      "kind": "WireguardConfig",
+      "name": env(INTERFACE),
+      "up": false,
+      "mtu": $wg.mtu,
+      "listenPort": $wg.listenPort,
+      "privateKey": $wg.placeholderPrivateKey,
+      "peers": [{
+        "publicKey": $wg.publicKey,
+        "allowedIPs": ["0.0.0.0/0", "::/0"],
+        "endpoint": $wg.endpoint
+      } |
+      with(select($self.persistentKeepaliveInterval != null);
+        .persistentKeepaliveInterval = $self.persistentKeepaliveInterval
+      )]
+    } * ((select($self != null) | {
+      "up": true,
+      "privateKey": $self.privateKey,
+      "addresses": [$self.addresses[] | {"address": .}],
+      "routes": [{"gateway":  "fe80::1", "metric": 256}]
+    }))
+  ' "$config" >"$self_dir/generated/$interface.$host_name.yaml"
 }
 
 rm -r $self_dir/generated
