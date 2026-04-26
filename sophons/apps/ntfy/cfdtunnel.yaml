@@ -20,6 +20,7 @@ spec:
 
   serviceRef:
     name: ntfy
+  protocol: http2
   ingress:
     - service: https://traefik.traefik.svc.cluster.local
   originRequestConfig: |

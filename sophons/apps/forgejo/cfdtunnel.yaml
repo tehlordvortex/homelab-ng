@@ -21,6 +21,7 @@ spec:
 
   serviceRef:
     name: forge-of-creation-forgejo-http
+  protocol: http2
   ingress:
     - service: https://traefik.traefik.svc.cluster.local
   originRequestConfig: |

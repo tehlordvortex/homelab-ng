@@ -23,6 +23,7 @@ spec:
 
   serviceRef:
     name: global-garage
+  protocol: http2
   ingress:
     - service: https://traefik.traefik.svc.cluster.local
   originRequestConfig: |
@@ -66,6 +67,7 @@ spec:
 
   serviceRef:
     name: global-webui
+  protocol: http2
   ingress:
     - service: https://traefik.traefik.svc.cluster.local
   originRequestConfig: |

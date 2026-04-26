@@ -20,6 +20,7 @@ spec:
 
   serviceRef:
     name: weedfs-seaweedfs-admin
+  protocol: http2
   ingress:
     - service: https://traefik.traefik.svc.cluster.local
   originRequestConfig: |
@@ -57,7 +58,8 @@ spec:
     key: api-token
 
   serviceRef:
-    name: weedfs-seaweedfs-filer # we only need to run on nodes with a filer
+    name: weedfs-seaweedfs-filer-client # we only need to run on nodes with a filer
+  protocol: http2
   ingress:
     - service: https://traefik.traefik.svc.cluster.local
   originRequestConfig: |

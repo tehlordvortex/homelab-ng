@@ -22,6 +22,7 @@ spec:
 
   serviceRef:
     name: zenlesszonezot
+  protocol: http2
   ingress:
     - service: https://traefik.traefik.svc.cluster.local
   originRequestConfig: |

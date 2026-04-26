@@ -89,7 +89,7 @@ run = "talosctl upgrade --preserve"
 [tasks.'destructive:reset']
 run = "talosctl reset --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL"
 
-[tasks.'apply']
+[tasks.'apply:all']
 depends = ["gen"]
 dir = "{{config_root}}"
 run = [

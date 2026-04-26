@@ -88,6 +88,7 @@ gen_wg() {
       "kind": "WireguardConfig",
       "name": env(INTERFACE),
       "up": true,
+      "mtu": $wg.mtu,
       "privateKey": $wg.privateKeys[$selfName],
       "listenPort": $wg.listenPort,
       "addresses": [$self.addresses[] | {"address": .}],

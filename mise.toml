@@ -31,6 +31,7 @@ mc = "RELEASE.2025-08-13T08-35-41Z"
 argocd = "3.3.2"
 regctl = "0.11.2"
 regsync = "0.11.2"
+"aqua:ViRb3/wgcf" = "2.2.30"
 
 
 [tools.zli]
