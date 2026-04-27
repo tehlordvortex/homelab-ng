@@ -18,10 +18,12 @@ spec:
           imagePullPolicy: Always
           args:
             - -i
-            - wg.kluster
+            - wg.cf
             # TODO: Less warning spam
             - -i
             - wg.dbg
+            - -i
+            - wg.kluster
           env:
             - name: RUST_LOG
               value: info
@@ -34,11 +36,10 @@ spec:
 
           resources:
             requests:
-              cpu: "10m"
-              memory: "8Mi"
+              cpu: "15m"
+              memory: "16Mi"
             limits:
-              cpu: "50m"
-              memory: "32Mi"
+              memory: "48Mi"
 
           securityContext:
             capabilities:

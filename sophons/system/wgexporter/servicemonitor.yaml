@@ -10,3 +10,4 @@ spec:
       app.kubernetes.io/instance: klusterexporter
   endpoints:
     - port: metrics
+      interval: 10s

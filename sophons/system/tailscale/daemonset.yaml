@@ -82,11 +82,11 @@ spec:
                 resourceFieldRef:
                   resource: limits.memory
             - name: TS_EXTRA_ARGS
-              value: $(TS_BASE_ARGS)
+              value: $(TS_BASE_ARGS) --advertise-exit-node
             - name: TS_TAILSCALED_EXTRA_ARGS
               value: $(TSD_BASE_ARGS)
             - name: TS_AUTH_ONCE
-              value: "true"
+              value: "false"
             - name: TS_HOSTNAME
               valueFrom:
                 fieldRef:
