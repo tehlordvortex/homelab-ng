@@ -6,7 +6,7 @@ images:
     newTag: dev
 
 resources:
-  - https://github.com/tehlordvortex/cloudflared-operator/yaml/kustomize?ref=main
+  - https://tig.vrtx.sh/vrtx/cloudflared-operator/yaml/kustomize?ref=main
 
 patches:
   - target:

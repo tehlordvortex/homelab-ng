@@ -10,3 +10,12 @@ resources:
   - service.yaml
   - daemonset.yaml
   - servicemonitor.yaml
+
+configMapGenerator:
+  - name: wgexporter-dashboard
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "true"
+    files:
+      - wgexporter.json=https://tig.vrtx.sh/vrtx/wgexporter/raw/branch/main/grafana/wgexporter.json
