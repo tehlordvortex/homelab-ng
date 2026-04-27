@@ -15,7 +15,7 @@ spec:
       crowdsecLapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
       # crowdsecLapiTlsInsecureVerify: true
       # enc!
-      crowdsecLapiKey: ENC[AES256_GCM,data:enDyP2NzVGZt6LkhzSbKuKZlfzYGXnMasLB/+V71hbzy7YbJEARz9oKmxwGrqN1baQ57SwNbHiyg8jb7LdcnSJKXVMN22k4JsOZwkVkNcxXAF6aercy0UdvRN5KqFpjgpj2L4VxNdz/TO2cUnDf6exaiLvHQjav9pmSpKMzcqF4=,iv:r6PPWUmgwm9hbx9rb4H7OS6q6lgmQkM0vNqpL2y/tvQ=,tag:U4OjJxZStpWveBQJnIp74A==,type:str]
+      crowdsecLapiKey: ENC[AES256_GCM,data:5/4G83F6h+mEUHOdbh2b9YnJXzMtq1hfnpYvYqNXlX8Ge9duzPNeqZvKC9TSmnGGKOz9gESp03K40kpmj3CL0lvLsVMNUdikafZp0Tv1pZ2DF9lXdznXg6Edzs2dydNhqhJ00+sBzD7yAcY9sMtMEWiD0DYKiy5DKAImc0UNegw=,iv:k/kdafPksJ6B1Xv3FFPqP0KAAOIT3ClmYOeq1iO3bL0=,tag:ihJ9JySCInpf0lr2ySpRSA==,type:str]
       clientTrustedIPs:
         # lokalhost
         - 127.0.0.0/8
@@ -30,51 +30,28 @@ spec:
         # kluster
         - 10.41.0.0/16
         - 2001:cafe:41::/56
-        # Cloudflare
-        - 173.245.48.0/20
-        - 103.21.244.0/22
-        - 103.22.200.0/22
-        - 103.31.4.0/22
-        - 141.101.64.0/18
-        - 108.162.192.0/18
-        - 190.93.240.0/20
-        - 188.114.96.0/20
-        - 197.234.240.0/22
-        - 198.41.128.0/17
-        - 162.158.0.0/15
-        - 104.16.0.0/13
-        - 104.24.0.0/14
-        - 172.64.0.0/13
-        - 131.0.72.0/22
-        - 2400:cb00::/32
-        - 2606:4700::/32
-        - 2803:f800::/32
-        - 2405:b500::/32
-        - 2405:8100::/32
-        - 2a06:98c0::/29
-        - 2c0f:f248::/32
 sops:
   age:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyAvVllu
-        S29kRExzckRkMjhtNHpEWWQvalM5NnI4SThCcytoV1pWSUhZOGhZCjloQk52enBZ
-        SjVVL0lDbnF2M29ad1BVOUJrV2huelV4MDRDR3liclEvZm8KLS0tIEJ2Wmt5V3Jm
-        NWpNcW8rbGpKVzRtVGMyb2NVTFZZdHN1QnhqWGtyMTFjUjAKub1AbcP93KO/Gab4
-        BFGmcg3Kds/F7KIxwRKeFRg945VG45nRYtLzZ7dkDLLhQwXaGyXowc2tvDG4NNvt
-        p+Gipg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBUZE5k
+        RkQ2elltUmN5RUprUWRmNzNpSCtZZGp0cTdyZVdRTDBpRGxhS21RCjdhVGkvWGhV
+        RHV6c0gwcEIrNTkxbmVqYmlnMzF1MlUxQmxVNlJZdDArZ2cKLS0tIFE1dHBuT3Vl
+        QU5Fc3JQN2N0Tmo4b1VJazBmbVloeDZJcGw2dmdIdTM2eTgKU1sYJM5PUO1/8ekm
+        d4DmyrkN01RALA1MB7eUx4mhbUU0zqF6E4jan5UbppeJ4qjyJiMRt7vyPksTxeQf
+        AmPHUw==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzSlFHcEhxNTRtNDlpUkZ1
-        V1Z3ZzN3NnRXa2x6OUloYVNjdWpZRzRYQWpFCjhFT25kSkxZYVVZOElZbE9tSlNm
-        cFM0QXMwbEVMTERxK1lRMUFya000SEUKLS0tIEJ5LzdtNFJ6N0lVbDc0NkxNUHlQ
-        MFEwL1dYOE1xS2dZbFZyZ2lyd0FBak0Kd3AbJnqJCrw1msxQQjSK8g2XUdEItfGc
-        2MFtd2xqKRS7iD+TiY4Ewj9pGehJkk3C7Im1G+uBtWVCHDg4F2TaTw==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBMWlIxMm9aQ2diOHN3Tk1M
+        WmlKSjBzcTU1R0RaeXU3dEw2amhNc0YzV0h3ClVoVVRGSGRiTkxvd2JwRlAzVUY4
+        cHZDVXdqTnQxZC9RUk5na05iLzhmcWcKLS0tIEk0L2Y3U2xrUExPWCtyZWlObkZQ
+        UllTNXROYWNkTW9RVUNLZTY1M0MrY2sKyncoTmrNhEbJ2KAsgcRoqgsKJlM5kiwE
+        VYRJaXseaCQGg4truXG1zscceaTkGmOfe4rNmQEy3rAAcyMFeDaWZQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-04-26T14:18:01Z"
-  mac: ENC[AES256_GCM,data:Ry/XCoMImYWGNKF1k3FG5jG764ekhZ8ofRjaoBE1fMKcJVYg8xsBZFj/Wa5HsvI3cNNNTra2chT7nvMCu0MJ6EusZa9ssIXleaI4zTI9gp/tQDhlKHRmlnOwkxLw3rNcTu/hihzvOwVLgmF9wyYT+EsVJU40MLltAG7XIVtmBNY=,iv:D3406eWt0msnPC/oOWVKiFXpMgq+xEkt6I/nX6p4RUs=,tag:ANLqmU4HBRLoSuCRLV9HkA==,type:str]
+  lastmodified: "2026-04-27T06:59:01Z"
+  mac: ENC[AES256_GCM,data:GAtYs/SNMBYTMn2jnTqgnEofKw4IeldLA5VUdOKqsKOJqXDR3tdlNWXv/V980szTq28gSJC3THUCIOSSE6v2VIaamDfctm/k3QkGsyZFLiEcrsspgJ/8AwPpJgSKdin4xE9huSR0Thug+91tCkOFQsoemgsUv9hpXSl9AhI6VSo=,iv:j8f0LnUmpJrZgdYYcoIlwe8dwS/iUuAwDZ9HIXrmuLI=,tag:F6zRmeHHhIBhjwshZKXNFA==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0
