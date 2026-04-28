@@ -10,6 +10,10 @@ garage:
     api:
       region: global
 
+  additionalTopLevelConfig: |
+    block_ram_buffer_max = "512MiB"
+    block_max_concurrent_reads = 72
+
 persistence:
   meta:
     storageClass: local-path
