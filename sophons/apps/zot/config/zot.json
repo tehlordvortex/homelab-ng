@@ -1,6 +1,6 @@
 {
   "log": {
-    "level": "trace"
+    "level": "info"
   },
   "storage": {
     "rootDirectory": "/tmp/zot",
@@ -11,8 +11,7 @@
       "bucket": "zenlesszonezot",
       "secure": false,
       "forcepathstyle": true,
-      "regionendpoint": "s3-global.garage.svc.cluster.local:3900",
-      "loglevel": "trace"
+      "regionendpoint": "s3-global.garage.svc.cluster.local:3900"
     },
     "cacheDriver": {
       "name": "redis",
@@ -107,6 +106,13 @@
             "https://ghcr.io"
           ],
           "content": [
+            {
+              "prefix": "/immich-app/immich-machine-learning",
+              "tags": {
+                "excludeRegex": ".*-rocm$"
+              },
+              "destination": "/proxy-ghcr.io"
+            },
             {
               "prefix": "**",
               "destination": "/proxy-ghcr.io"

@@ -9,14 +9,14 @@ affinity:
               values: ["true"]
         weight: 100
 
-  podAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 25
-        podAffinityTerm:
-          labelSelector:
-            matchLabels:
-              app: redis-z3
-          topologyKey: topology.kubernetes.io/zone
+  # podAffinity:
+  #   preferredDuringSchedulingIgnoredDuringExecution:
+  #     - weight: 25
+  #       podAffinityTerm:
+  #         labelSelector:
+  #           matchLabels:
+  #             app: redis-z3
+  #         topologyKey: topology.kubernetes.io/zone
 
 service:
   type: ClusterIP
