@@ -73,6 +73,8 @@ spec:
             - -V
             - -f
             - /usr/local/etc/haproxy/haproxy.cfg
+            # - -dt
+            # - quic:developer:clean,qmux:developer:minimal,h3:developer:minimal
 
           ports:
             - name: tcp-ssh

@@ -163,8 +163,8 @@ gitea:
 
     storage:
       STORAGE_TYPE: minio
-      MINIO_ENDPOINT: s3-global.garage.svc.cluster.local:3900
-      MINIO_USE_SSL: false
+      MINIO_ENDPOINT: ps3-global.sphns.run
+      MINIO_USE_SSL: true
       MINIO_BUCKET: forge-of-creation
     "storage.attachments":
       SERVE_DIRECT: true

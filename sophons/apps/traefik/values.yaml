@@ -65,7 +65,8 @@ ports:
       respondingTimeouts:
         # uploading blobs to gitea etc can take a while
         # thanks [fuck-all]mbps upload internet.
-        readTimeout: 300
+        readTimeout: 600s
+        idleTimeout: 600s
     http:
       middlewares:
         - default-compression@file

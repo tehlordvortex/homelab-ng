@@ -86,7 +86,7 @@ patches:
             - -c
             - |-
               set -xeu
-              bucket=http://s3-global.garage.svc.cluster.local:3900/juiced-%d
+              bucket=https://ps3-global.sphns.run/juiced-%d
               juicefs format --no-update --compress=zstd --block-size=1M \
                 --storage=s3 --bucket=$bucket --shards=6 \
                 sqlite3://$META_PATH $VOLUME_NAME
@@ -172,7 +172,7 @@ patches:
             - name: LITESTREAM_DBS_PATTERN
               value: "*.db"
             - name: LITESTREAM_ENDPOINT
-              value: http://s3-global.garage.svc.cluster.local:3900
+              value: https://ps3-global.sphns.run
             - name: LITESTREAM_BUCKET
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
