@@ -1,1 +1,12 @@
-{}
+additionalEnv:
+  - name: GOMEMLIMIT
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.memory
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    memory: 64Mi

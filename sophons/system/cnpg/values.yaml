@@ -1,1 +1,19 @@
 fullnameOverride: cnpg-controller-manager
+
+env:
+  - name: GOMEMLIMIT
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.memory
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi
+  limits:
+    memory: 172Mi
+
+monitoring:
+  podMonitorEnabled: true
+  grafanaDashboard:
+    create: true

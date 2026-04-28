@@ -29,7 +29,6 @@ deschedulerPolicy:
           args:
             nodeAffinityType:
               - requiredDuringSchedulingIgnoredDuringExecution
-              - preferredDuringSchedulingIgnoredDuringExecution
         - name: RemovePodsViolatingNodeTaints
           args:
             excludedTaints:
