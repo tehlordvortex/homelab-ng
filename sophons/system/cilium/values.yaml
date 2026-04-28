@@ -46,6 +46,7 @@ ipam:
 k8sServiceHost: localhost
 k8sServicePort: 7445
 
+MTU: 1420
 routingMode: native
 # tunnelProtocol: vxlan
 ipv4NativeRoutingCIDR: 10.41.0.0/16
@@ -70,6 +71,8 @@ loadBalancer:
 bandwidthManager:
   enabled: true
 hostFirewall:
+  enabled: true
+pmtuDiscovery:
   enabled: true
 
 envoy:
