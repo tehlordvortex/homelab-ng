@@ -107,6 +107,13 @@
           ],
           "content": [
             {
+              "prefix": "/browserless/chromium",
+              "tags": {
+                "excludeRegex": ".*"
+              },
+              "destination": "/proxy-ghcr.io"
+            },
+            {
               "prefix": "/immich-app/immich-machine-learning",
               "tags": {
                 "excludeRegex": ".*-rocm$"

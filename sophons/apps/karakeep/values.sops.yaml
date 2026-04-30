@@ -7,9 +7,9 @@
 applicationProtocol: https
 applicationHost: hoarder.sophons.cloud
 # enc!
-applicationSecretKey: ENC[AES256_GCM,data:1MDXOj1gtgAeXTrPnaWvLT1ufjHvTB4e51eGjK5CrzvAonwpy+LtbN120k7WHsrX,iv:jA1EjS6M4aVw4xX57TrRERlSb8bqWMKhUHMXW+9LqQE=,tag:2xXvg4rWx7wiA+/aSNf+sw==,type:str]
+applicationSecretKey: ENC[AES256_GCM,data:DYlrEcS2vQ5COEVhea49yscrsEpqfaE/yl5Yw4iYmp/yTxU5NwhMWlUGvn41fVrj,iv:44n5vxUxOwpcx3DJwpyKngZIOLruEmR1OxegYKr3+HE=,tag:ihQAbdOpfqRzpx0G99oskg==,type:str]
 # enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:c0aTEHIDAqWcCJ/LUofuC1JJes1BcZ1WgN2PkIxg,iv:g4Pxixw0r5qmaiSX5YfnCTNkIGyIQlC/DGPyi6CP6Gw=,tag:E44yH2z1sYsgGQiBlwha/A==,type:str]
+meilisearchMasterKey: ENC[AES256_GCM,data:ydxIEMG8HyBEgt6tBf/FpYfRnZhF+yv/hU2lC1bz,iv:m0X47hLKAm6P3x1yqHsrNimNGaZZ2beDKlEkp55HKuA=,tag:lEYd4E2rsE3qJZlLkkipCg==,type:str]
 ingress:
   karakeep:
     enabled: false
@@ -229,7 +229,7 @@ controllers:
         # https://github.com/jlandure/alpine-chrome/issues/272#issuecomment-3536582057
         # Can't trust the alpine container :(
         image:
-          repository: ghcr.io/browserless/chromium
+          repository: ghcrd.sphns.run/browserless/chromium
           tag: v2.46.0
         args: null
         env:
@@ -357,23 +357,23 @@ sops:
     - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyB2QUYy
-        aWppajhKQVJPZStpTDhqN2dLcXFwOVhORlVBYS9aLzk0OVZhSUVRCm5xc3VNc3E5
-        VmxLc2IxbzN6K1hWb0JUei9aSHhBbW84YU9pcU1mdStiaWcKLS0tIHVSbkE2eE10
-        cncxSENtVUtwS2VQT1BzR1krY2dqRTBlSy9NWUxwUTVlUm8K7BTv1k6cWit7Xaj6
-        Dqe5f0HJKm3FtS9bFeBFg2Mmp87DJL4SUBNNB1az1mCh1NuoQFJ4kf14mY6Bbu4Y
-        0O959g==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBsOEI4
+        aFRTcmt3M3RkdU9QdVZtWDl0UHVnTUt6VnAwN2RBVjRlUkJ1UlVVCmFSNlBhaFAx
+        TFIrTUhDMkF1L3M0QStJcDBRdXNDU3F0UU9sTG5qV0FsRkEKLS0tIEVvU2xjZjdS
+        RjJ1d0VYOVBtMlA1cy95c2pkcGlENzFYNUVydnUvUFcrc0UKGfH5JWpawt7CZ0sx
+        Df/kI2IqVQwxpeKAOp7setSRFQBoYkJg2RmqKJCum0nGiQ8xGQZFGWRQ3UiG2QzE
+        33m79Q==
         -----END AGE ENCRYPTED FILE-----
     - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
       enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBBaXI1Q281RVZPaWZEN0wz
-        MU00WHpyVmYwVDRpcXdJSm16UkVwa2ZBSEYwCjREUEg3MFhNQUk2U295SjRPNzlF
-        S2pCdWpqbTA1aXpxTSs0bWVySjJORjAKLS0tIDBRelppTWMyTnpqYy81V2hia3BY
-        VmNTVE14K3BtOEFqVEZJZE8rUWpoT1UKwuqtQLxJyoR/vXbnRM4Ua/KMPaqJv7x8
-        MPJW1znZpHKwVoDVdkg8j/JrS4YWmLpmB6zsKB3Wytm/OGun0G2zcQ==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBWdHd0MHlFNnUvRjlxTVoy
+        SHVWRW9TZGpDQWhZdi9QTGZOZnpmc0NNTDM4ClFjUGRIYTNISUFNSGMyNHcydjQr
+        MXFYakdkYWFJOENWOW1XVkhTRVNEdU0KLS0tIGRQeGdaNG9URmJLRGpTK0JGUzFw
+        YlIrL1ZZOWxvOXpJb2FFdE5KeWMwcXcKp6l5/YNhQrjMH94dZKNXBf/bbyTTk16e
+        nkRZjQSKMp5Jnvg5tzeih+s41Yugxwaf7qxPzwZMFJi5epJZGEo1YQ==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-04-25T10:36:24Z"
-  mac: ENC[AES256_GCM,data:XzSAyqwLpL8H7R6a7HujXWjjjwblEMWVNUy1qXrW9Hc+8Nd/0b8ACaR2pPmOI6of/BaenfrkuBNQjEbPtBDdET2kskVDqisiJWdGnlQw/zREu5miyEEVVsQI0UE5U2WGmoHuMRlFJafw88XeIe3zItaB/ZUT2IJjE51bXNdUrd4=,iv:ETS8nUqvcKb/eF9yHNumzbzeGhjJMSVRzQV5uh6zt5E=,tag:ZSiIq6/hQPo70YVmMOTByg==,type:str]
+  lastmodified: "2026-04-30T22:46:56Z"
+  mac: ENC[AES256_GCM,data:mRu2FPulBnI47M1mLrHOoO4d2rApaLWXuNklOexwIIp1RZ1c+0J9Q4RrTB4v0V+ojiEmhx2Y+j0y4rOycCOGBHtcel2H9rkURRizqPqfNnEOJLyCz96nZfLI0jZF+77TrSKtPsbzaaYHNXmPdotlMyEuG1nw4pg4tbydrWE4ZaI=,iv:xTzQhIO0YnyHzH4XiBmagZmUwu7SCAEjCzNfJUZUTM8=,tag:D9SDlW9HScCaY5DVZIbRwQ==,type:str]
   encrypted_comment_regex: enc!
   version: 3.11.0
