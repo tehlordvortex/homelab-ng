@@ -2,6 +2,8 @@ namespace: backup-system
 resources:
   - cronjob.yaml
   - ../restic-password
+components:
+  - ../components/images
 
 configMapGenerator:
   - name: weed-backup

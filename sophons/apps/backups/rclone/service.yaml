@@ -27,6 +27,31 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: rclone-time-machine
+  namespace: backup-system
+  labels:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: time-machine
+spec:
+  ports:
+    - name: s3
+      protocol: TCP
+      port: 8080
+    - name: restic
+      protocol: TCP
+      port: 8081
+  selector:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: time-machine
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: RequireDualStack
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
   name: rclone-crypt-b2
   namespace: backup-system
   labels:

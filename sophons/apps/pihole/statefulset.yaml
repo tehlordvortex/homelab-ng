@@ -7,6 +7,7 @@ metadata:
     app.kubernetes.io/instance: necronomicon
 spec:
   replicas: 2
+  serviceName: necronomicon-cluster-dns
   selector:
     matchLabels:
       app.kubernetes.io/instance: necronomicon
@@ -17,24 +18,18 @@ spec:
     spec:
       hostUsers: false
       serviceAccountName: pihole
-      imagePullSecrets:
-        - name: harbor-pull-cred
+
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/instance: necronomicon
+          maxSkew: 1
+          minDomains: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
 
       affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: necronomicon
-              topologyKey: kubernetes.io/hostname
-              mismatchLabelKeys: [pod-template-hash]
         nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: NotIn
-                    values: [sophons-caeneus]
           preferredDuringSchedulingIgnoredDuringExecution:
             - preference:
                 matchExpressions:
@@ -47,10 +42,22 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
+      # dnsPolicy: None
+      # dnsConfig:
+      #   nameservers:
+      #     - 1.1.1.1
+      #     - 9.9.9.9
+      # hostAliases:
+      #   - ip: 10.43.0.69
+      #     hostnames:
+      #       - hs.vrtx.sh
+      #   - ip: 2001:cafe:43::69
+      #     hostnames:
+      #       - hs.vrtx.sh
+
       containers:
         - name: pihole
-          # image: poci.sphns.run/proxy-ghcr.io/pi-hole/pihole:2026.02.0
-          image: ghcr.io/pi-hole/pihole:2026.02.0
+          image: ghcr.io/pi-hole/pihole:2026.04.1
 
           ports:
             - containerPort: 53
@@ -76,6 +83,11 @@ spec:
               value: "ALL"
             - name: FTLCONF_dns_upstreams
               value: "1.1.1.1;1.0.0.1;9.9.9.9;149.112.112.112"
+            - name: FTLCONF_misc_dnsmasq_lines
+              valueFrom:
+                configMapKeyRef:
+                  key: dnsmasq.conf
+                  name: pihole
 
           volumeMounts:
             - mountPath: /etc/pihole
@@ -89,6 +101,17 @@ spec:
               subPath: blacklist.txt
               readOnly: true
 
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+            timeoutSeconds: 5
+            failureThreshold: 20
+            initialDelaySeconds: 30
+
           livenessProbe:
             exec:
               command:
@@ -98,7 +121,6 @@ spec:
                   dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
             timeoutSeconds: 5
             failureThreshold: 5
-            initialDelaySeconds: 60 # might download adlists on boot
 
           readinessProbe:
             exec:
@@ -113,15 +135,14 @@ spec:
 
           resources:
             requests:
-              cpu: 100m
+              cpu: 150m
               memory: 256Mi
             limits:
               memory: 256Mi
 
       initContainers:
         - name: tailscale
-          # image: poci.sphns.run/proxy-ghcr.io/tailscale/tailscale:v1.94.2
-          image: ghcr.io/tailscale/tailscale:v1.94.2
+          image: ghcr.io/tailscale/tailscale
           restartPolicy: Always
 
           ports:
@@ -129,8 +150,8 @@ spec:
               name: ts-metrics
 
           envFrom:
-            - secretRef:
-                name: tailscale-base-config
+            - configMapRef:
+                name: tailscale-config
             - secretRef:
                 name: tailscale-auth
 
@@ -153,6 +174,10 @@ spec:
                   fieldPath: metadata.name
             - name: TS_USERSPACE
               value: "false"
+            - name: TS_DEBUG_FIREWALL_MODE
+              value: nftables
+            # - name: TS_DEST_IP
+            #   value: "127.0.0.1"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -170,38 +195,44 @@ spec:
           securityContext:
             privileged: true
             readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+              add: [NET_ADMIN]
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: ts-metrics
+            failureThreshold: 15
+            initialDelaySeconds: 10
 
           livenessProbe:
             httpGet:
               path: /healthz
               port: ts-metrics
             failureThreshold: 5
-            initialDelaySeconds: 60
 
           readinessProbe:
             httpGet:
               path: /healthz
               port: ts-metrics
             failureThreshold: 5
-            initialDelaySeconds: 60
 
           resources:
             requests:
-              cpu: 25m
+              cpu: 75m
               memory: 64Mi
             limits:
               memory: 128Mi
 
       volumes:
         - name: pihole
-          emptyDir:
-            sizeLimit: 512Mi
+          emptyDir: {}
         - name: pihole-config
           configMap:
             name: pihole
         - name: tmp
-          emptyDir:
-            sizeLimit: 128Mi
+          emptyDir: {}
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/statefulset-apps-v1.json
 # TODO: For some reason, i can't LB to the necronomicon pods so these act as a proxy in my home network
@@ -268,7 +299,7 @@ spec:
               }
               trap "cleanup" SIGTERM
 
-              dns_name=necronomicon-cluster-dns.pihole.svc
+              dns_name="$(hostname | sed s/darkhold/necronomicon/).necronomicon-cluster-dns.pihole.svc"
               apk add --no-cache sed socat bind-tools
 
               socat_config=fork,reuseaddr
@@ -316,3 +347,8 @@ spec:
               memory: 32Mi
             limits:
               memory: 64Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]

@@ -1,0 +1,9 @@
+namereference:
+  - kind: Secret
+    fieldSpecs:
+      - kind: ObjectStore
+        path: spec/configuration/s3Credentials/region/name
+      - kind: ObjectStore
+        path: spec/configuration/s3Credentials/accessKeyId/name
+      - kind: ObjectStore
+        path: spec/configuration/s3Credentials/secretAccessKey/name

@@ -11,6 +11,16 @@ ingress:
 pod:
   kind: StatefulSet
   replicas: 1
+  selectors:
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+                - key: topology.kubernetes.io/region
+                  operator: In
+                  values: [de, nl]
+            weight: 100
 
   securityContext:
     pod:
@@ -255,6 +265,7 @@ configMap:
             path: "/secrets/authelia/oidc.client.karakeep.digest"
           redirect_uris:
             - https://holding.sophons.cloud/api/auth/callback/custom
+            - https://hoarder.sophons.cloud/api/auth/callback/custom
           # workaround because karakeep doesn't actually implement oidc correctly:
           # https://www.authelia.com/integration/openid-connect/clients/karakeep/#configuration-escape-hatch
           claims_policy: karakeep
@@ -266,6 +277,7 @@ configMap:
             - code
           grant_types:
             - authorization_code
+
         - client_name: Forgejo
           client_id: "sphns_cufg6XmWtrPDXfNi_lOfqr2pHP2wdVkF_OKNeIrKye"
           client_secret:
@@ -285,24 +297,7 @@ configMap:
             - code
           grant_types:
             - authorization_code
-        - client_name: Harbor
-          client_id: "sphns_RcLbPRn4w1MOETla2DzD3sYe3msk_oRvFHFl8WoPop"
-          client_secret:
-            path: "/secrets/authelia/oidc.client.harbor.digest"
-          redirect_uris:
-            - https://harbor.sophons.cloud/c/oidc/callback
-            - https://oci.sphns.run/c/oidc/callback
-          scopes:
-            - openid
-            - offline_access
-            - profile
-            - groups
-            - email
-          response_types:
-            - code
-          grant_types:
-            - authorization_code
-            - refresh_token
+
         - client_name: Headscale
           client_id: "sphns_NOVzB7ZaA_wjYbmD_GnTrX2SiUKFZmTL7zSEASd~tG"
           client_secret:
@@ -323,6 +318,7 @@ configMap:
             - code
           grant_types:
             - authorization_code
+
         - client_name: Grafana
           client_id: "sphns_8Y0WEhOcipKfGgjYQNF6x9imgEMZSrn1wZFPcBd-.4"
           client_secret:
@@ -344,6 +340,7 @@ configMap:
           grant_types:
             - authorization_code
             - refresh_token
+
         - client_name: Zot
           client_id: "sphns_gPmWD8eBveVFwKTcvK8R1.Q-QfoGqLBSpXSNeTVQ35"
           client_secret:
@@ -363,6 +360,25 @@ configMap:
             - authorization_code
             - refresh_token
 
+        - client_name: Immich
+          client_id: "sphns_1wobcPby2p5DszRCkyiWPEE9fqhPXDYyERcSPDpoxj"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.immich.digest"
+          redirect_uris:
+            - https://gimmich.sophons.cloud/auth/login
+            - https://gimmich.sophons.cloud/user-settings
+            - app.immich:///oauth-callback
+          scopes:
+            - openid
+            - profile
+            - groups
+            - email
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
+          token_endpoint_auth_method: client_secret_post
+
 secret:
   existingSecret: authelia
   additionalSecrets:
@@ -371,7 +387,7 @@ secret:
         - key: oidc.jwk.rs256.pem
         - key: oidc.client.karakeep.digest
         - key: oidc.client.gitea.digest
-        - key: oidc.client.harbor.digest
         - key: oidc.client.headscale.digest
         - key: oidc.client.grafana.digest
         - key: oidc.client.zot.digest
+        - key: oidc.client.immich.digest

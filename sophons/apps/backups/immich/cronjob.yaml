@@ -2,28 +2,28 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: global-garage-backup-to-rclone-backup
+  name: gimmich-backup-to-rclone-time-machine
   namespace: backup-system
   labels:
-    app.kubernetes.io/name: garage
-    app.kubernetes.io/instance: global
-    app.kubernetes.io/component: backup
+    app.kubernetes.io/name: immich
+    app.kubernetes.io/instance: gimmich
+    app.kubernetes.io/component: backup-time-machine
 spec:
   schedule: "0 3 * * *" # 3am daily
   concurrencyPolicy: Forbid
   jobTemplate:
     metadata:
       labels:
-        app.kubernetes.io/name: garage
-        app.kubernetes.io/instance: global
-        app.kubernetes.io/component: backup
+        app.kubernetes.io/name: immich
+        app.kubernetes.io/instance: gimmich
+        app.kubernetes.io/component: backup-time-machine
     spec:
       template:
         metadata:
           labels:
-            app.kubernetes.io/name: garage
-            app.kubernetes.io/instance: global
-            app.kubernetes.io/component: backup
+            app.kubernetes.io/name: immich
+            app.kubernetes.io/instance: gimmich
+            app.kubernetes.io/component: backup-time-machine
         spec:
           restartPolicy: OnFailure
           securityContext:
@@ -37,63 +37,15 @@ spec:
           tolerations:
             - key: caeneus.sophons.cloud
               operator: Exists
-          affinity:
-            nodeAffinity:
-              preferredDuringSchedulingIgnoredDuringExecution:
-                - preference:
-                    matchExpressions:
-                      - key: topology.kubernetes.io/region
-                        operator: In
-                        values: [de]
-                  weight: 100
 
           initContainers:
-            - name: rclone-mount
-              image: ghcr.io/rclone/rclone
-              restartPolicy: Always
-              command:
-                - sh
-                - -c
-                - |
-                  set -xeuo pipefail
-                  mkdir -p /tmp/garage
-                  exec rclone mount -v --vfs-read-chunk-size=2M --vfs-read-chunk-streams=16 \
-                    --read-only --uid 1000 --gid 1000 --allow-other garage: /tmp/garage
-
-              startupProbe:
-                exec:
-                  command: [mountpoint, -q, /tmp/garage]
-                initialDelaySeconds: 5
-                periodSeconds: 5
-                failureThreshold: 5
-
-              envFrom:
-                - secretRef:
-                    name: global-garage-access-key
-                - configMapRef:
-                    name: rclone-garage-config
-
-              volumeMounts:
-                - mountPath: /tmp
-                  name: tmp
-                  mountPropagation: Bidirectional
-
-              securityContext:
-                runAsUser: 0
-                runAsGroup: 0
-                runAsNonRoot: false
-                privileged: true
-                readOnlyRootFilesystem: true
-                capabilities:
-                  drop: [ALL]
-                  add: [SYS_ADMIN]
             - name: restic-forget
               image: ghcr.io/restic/restic
               restartPolicy: OnFailure
               args:
                 - forget
                 - -v
-                - --host=garage
+                - --host=gimmich
                 - --group-by=host
                 - --prune
                 - --keep-within-daily=30d
@@ -102,7 +54,7 @@ spec:
                     name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-backup:8081/garage/
+                  value: rest:http://rclone-time-machine:8081/gimmich/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -136,15 +88,17 @@ spec:
               args:
                 - backup
                 - -vv
-                - --host=garage
-                - --read-concurrency=16
-                - /garage
+                - --host=gimmich
+                - --read-concurrency=20
+                - /gimmich/library
+                - /gimmich/upload
+                - /gimmich/profile
               envFrom:
                 - secretRef:
                     name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-backup:8081/garage/
+                  value: rest:http://rclone-time-machine:8081/gimmich/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -157,10 +111,9 @@ spec:
                       key: AWS_SECRET_ACCESS_KEY
 
               volumeMounts:
-                - mountPath: /garage
-                  name: tmp
-                  subPath: garage
-                  mountPropagation: HostToContainer
+                - mountPath: /gimmich
+                  name: gimmich
+                  readOnly: true
                 - mountPath: /tmp
                   name: tmp
                   subPath: backup-tmp
@@ -178,16 +131,19 @@ spec:
           volumes:
             - name: tmp
               emptyDir: {}
+            - name: gimmich
+              persistentVolumeClaim:
+                claimName: backup-immich-media-less-big-boi
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: global-garage-backup-to-rclone-crypt-b2
+  name: gimmich-backup-to-rclone-crypt-b2
   namespace: backup-system
   labels:
-    app.kubernetes.io/name: garage
-    app.kubernetes.io/instance: global
+    app.kubernetes.io/name: immich
+    app.kubernetes.io/instance: gimmich
     app.kubernetes.io/component: backup-crypt-b2
 spec:
   schedule: "0 3 * * *" # 3am daily
@@ -195,15 +151,15 @@ spec:
   jobTemplate:
     metadata:
       labels:
-        app.kubernetes.io/name: garage
-        app.kubernetes.io/instance: global
+        app.kubernetes.io/name: immich
+        app.kubernetes.io/instance: gimmich
         app.kubernetes.io/component: backup-crypt-b2
     spec:
       template:
         metadata:
           labels:
-            app.kubernetes.io/name: garage
-            app.kubernetes.io/instance: global
+            app.kubernetes.io/name: immich
+            app.kubernetes.io/instance: gimmich
             app.kubernetes.io/component: backup-crypt-b2
         spec:
           restartPolicy: OnFailure
@@ -215,75 +171,18 @@ spec:
             seccompProfile:
               type: RuntimeDefault
 
-          affinity:
-            podAffinity:
-              preferredDuringSchedulingIgnoredDuringExecution:
-                - podAffinityTerm:
-                    labelSelector:
-                      matchLabels:
-                        app.kubernetes.io/name: rclone
-                        app.kubernetes.io/instance: crypt-b2
-                    namespaceSelector:
-                      matchLabels:
-                        kubernetes.io/metadata.name: default
-                    topologyKey: topology.kubernetes.io/zone
-                  weight: 100
-            nodeAffinity:
-              preferredDuringSchedulingIgnoredDuringExecution:
-                - preference:
-                    matchExpressions:
-                      - key: topology.kubernetes.io/region
-                        operator: NotIn
-                        values: [ng]
-                  weight: 100
+          tolerations:
+            - key: caeneus.sophons.cloud
+              operator: Exists
 
           initContainers:
-            - name: rclone-mount
-              image: ghcr.io/rclone/rclone
-              restartPolicy: Always
-              command:
-                - sh
-                - -c
-                - |
-                  set -xeuo pipefail
-                  mkdir -p /tmp/garage
-                  exec rclone mount -v --vfs-read-chunk-size=2M --vfs-read-chunk-streams=16 \
-                    --read-only --uid 1000 --gid 1000 --allow-other garage: /tmp/garage
-
-              startupProbe:
-                exec:
-                  command: [mountpoint, -q, /tmp/garage]
-                initialDelaySeconds: 5
-                periodSeconds: 5
-                failureThreshold: 5
-
-              envFrom:
-                - secretRef:
-                    name: global-garage-access-key
-                - configMapRef:
-                    name: rclone-garage-config
-
-              volumeMounts:
-                - mountPath: /tmp
-                  name: tmp
-                  mountPropagation: Bidirectional
-
-              securityContext:
-                runAsUser: 0
-                runAsGroup: 0
-                runAsNonRoot: false
-                privileged: true
-                readOnlyRootFilesystem: true
-                capabilities:
-                  drop: [ALL]
-                  add: [SYS_ADMIN]
             - name: restic-forget
               image: ghcr.io/restic/restic
               restartPolicy: OnFailure
               args:
                 - forget
                 - -v
-                - --host=garage
+                - --host=gimmich
                 - --group-by=host
                 - --prune
                 - --keep-within-daily=30d
@@ -292,7 +191,7 @@ spec:
                     name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-crypt-b2:8081/garage/
+                  value: rest:http://rclone-crypt-b2:8081/gimmich/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -326,15 +225,17 @@ spec:
               args:
                 - backup
                 - -vv
-                - --host=garage
-                - --read-concurrency=16
-                - /garage
+                - --host=gimmich
+                - --read-concurrency=6
+                - /gimmich/library
+                - /gimmich/upload
+                - /gimmich/profile
               envFrom:
                 - secretRef:
                     name: restic-password
               env:
                 - name: RESTIC_REPOSITORY
-                  value: rest:http://rclone-crypt-b2:8081/garage/
+                  value: rest:http://rclone-crypt-b2:8081/gimmich/
                 - name: RESTIC_REST_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -347,10 +248,9 @@ spec:
                       key: AWS_SECRET_ACCESS_KEY
 
               volumeMounts:
-                - mountPath: /garage
-                  name: tmp
-                  subPath: garage
-                  mountPropagation: HostToContainer
+                - mountPath: /gimmich
+                  name: gimmich
+                  readOnly: true
                 - mountPath: /tmp
                   name: tmp
                   subPath: backup-tmp
@@ -368,3 +268,6 @@ spec:
           volumes:
             - name: tmp
               emptyDir: {}
+            - name: gimmich
+              persistentVolumeClaim:
+                claimName: backup-immich-media-less-big-boi

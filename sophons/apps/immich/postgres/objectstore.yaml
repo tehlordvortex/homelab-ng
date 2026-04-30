@@ -1,0 +1,24 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: pgbooze
+  namespace: immich
+spec:
+  configuration:
+    destinationPath: s3://pgbooze/immich
+    endpointURL: https://ps3-global.sphns.run
+    s3Credentials:
+      region:
+        name: barman-access-key
+        key: AWS_REGION
+      accessKeyId:
+        name: barman-access-key
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: barman-access-key
+        key: AWS_SECRET_ACCESS_KEY
+    wal:
+      compression: zstd
+    data:
+      compression: bzip2
+  retentionPolicy: 7d

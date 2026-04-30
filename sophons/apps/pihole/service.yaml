@@ -6,6 +6,7 @@ metadata:
   namespace: pihole
 spec:
   type: ClusterIP
+  clusterIP: None
   ipFamilyPolicy: RequireDualStack
   ports:
     - name: dns-tcp
@@ -17,6 +18,7 @@ spec:
       protocol: UDP
       targetPort: dns-udp
   selector:
+    app.kubernetes.io/name: pihole
     app.kubernetes.io/instance: necronomicon
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
@@ -39,8 +41,9 @@ spec:
       protocol: UDP
       targetPort: dns-udp
   selector:
-    app.kubernetes.io/instance: darkhold
-    statefulset.kubernetes.io/pod-name: darkhold-0
+    app.kubernetes.io/name: pihole
+    app.kubernetes.io/instance: necronomicon
+    apps.kubernetes.io/pod-index: "0"
 ---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
 apiVersion: v1
@@ -62,5 +65,6 @@ spec:
       protocol: UDP
       targetPort: dns-udp
   selector:
-    app.kubernetes.io/instance: darkhold
-    statefulset.kubernetes.io/pod-name: darkhold-1
+    app.kubernetes.io/name: pihole
+    app.kubernetes.io/instance: necronomicon
+    apps.kubernetes.io/pod-index: "1"

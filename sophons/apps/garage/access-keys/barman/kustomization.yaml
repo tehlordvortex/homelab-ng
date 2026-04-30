@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: barman-access-key
+    env: .env

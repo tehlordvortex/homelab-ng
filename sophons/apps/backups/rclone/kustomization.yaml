@@ -4,6 +4,8 @@ resources:
   - httproute.yaml
   - deployment.yaml
   - persistentvolumeclaim.yaml
+components:
+  - ../components/images
 
 configMapGenerator:
   - name: rclone-b2-config

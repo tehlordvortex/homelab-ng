@@ -20,6 +20,7 @@
 services:
   talos:
     restart: always
+    stop_grace_period: 15m
     image: ghcr.io/siderolabs/talos:${TALOS_VERSION}
     privileged: true
     sysctls:
@@ -29,7 +30,7 @@ services:
     security_opt:
       - seccomp=unconfined
     cpus: 8
-    mem_limit: 8G
+    mem_limit: 12G
     read_only: true
     tmpfs:
       - /run
@@ -44,6 +45,7 @@ services:
       - opt:/opt
       - /run/media/vrtx/big-boi/backups/backups/garage:/var/lib/garage/backup/big-boi
       - /run/media/vrtx/less-big-boi/backups/garage:/var/lib/garage/backup/less-big-boi
+      - /run/media/vrtx/big-boi/time-machine:/mnt/big-boi/time-machine
       - /run/media/vrtx/big-boi/everything-else:/mnt/big-boi/everything-else
       - /run/media/vrtx/less-big-boi/media:/mnt/less-big-boi/media
     environment:
@@ -52,7 +54,9 @@ services:
     devices:
       - /dev/net/tun
       - /dev/dri
+      - /dev/kfd
     networks:
+      default: {}
       lab:
         ipv4_address: 10.42.42.5
         # ipv6_address: ${V6_ADDR}
@@ -95,11 +99,17 @@ volumes:
   opt:
 
 networks:
+  default:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 2001:dada:2::/64
+
   lab:
     driver: ipvlan
     driver_opts:
       parent: lab1
-    enable_ipv6: false
+    # enable_ipv6: false
     ipam:
       config:
         - subnet: 10.42.0.0/16

@@ -32,6 +32,7 @@ argocd = "3.3.2"
 regctl = "0.11.2"
 regsync = "0.11.2"
 "aqua:ViRb3/wgcf" = "2.2.30"
+"go:github.com/simulot/immich-go" = "0.31.0"
 
 
 [tools.zli]

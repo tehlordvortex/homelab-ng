@@ -1,0 +1,7 @@
+namespace: backup-system
+resources:
+  - cronjob.yaml
+  - persistentvolumeclaim.yaml
+  - ../restic-password
+components:
+  - ../components/images

@@ -34,15 +34,22 @@ spec:
             seccompProfile:
               type: RuntimeDefault
 
-          nodeSelector:
-            kubernetes.io/hostname: sophons-caeneus
           tolerations:
             - key: caeneus.sophons.cloud
               operator: Exists
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - preference:
+                    matchExpressions:
+                      - key: topology.kubernetes.io/region
+                        operator: In
+                        values: [de]
+                  weight: 100
 
           initContainers:
             - name: weed-mount
-              image: docker.io/chrislusf/seaweedfs:4.19
+              image: docker.io/chrislusf/seaweedfs
               restartPolicy: Always
 
               env:
@@ -101,7 +108,7 @@ spec:
                   add: [SYS_ADMIN]
 
             - name: restic-forget
-              image: ghcr.io/restic/restic:0.18.1
+              image: ghcr.io/restic/restic
               restartPolicy: OnFailure
               args:
                 - forget
@@ -144,7 +151,7 @@ spec:
 
           containers:
             - name: restic-backup
-              image: ghcr.io/restic/restic:0.18.1
+              image: ghcr.io/restic/restic
               restartPolicy: OnFailure
               args:
                 - backup
@@ -255,7 +262,7 @@ spec:
 
           initContainers:
             - name: weed-mount
-              image: docker.io/chrislusf/seaweedfs:4.19
+              image: docker.io/chrislusf/seaweedfs
               restartPolicy: Always
 
               env:
@@ -314,7 +321,7 @@ spec:
                   add: [SYS_ADMIN]
 
             - name: restic-forget
-              image: ghcr.io/restic/restic:0.18.1
+              image: ghcr.io/restic/restic
               restartPolicy: OnFailure
               args:
                 - forget
