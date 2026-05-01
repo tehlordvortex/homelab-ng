@@ -4,6 +4,8 @@ speaker:
   tolerations:
     - key: prime.sophons.cloud
       operator: Exists
+    - key: caeneus.sophons.cloud
+      operator: Exists
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -13,4 +15,3 @@ speaker:
                 operator: NotIn
                 values:
                   - sophons-oduduwa
-                  - sophons-caeneus

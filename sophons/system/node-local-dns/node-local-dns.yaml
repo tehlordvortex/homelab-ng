@@ -92,7 +92,8 @@ data:
             answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
             fallthrough
         }
-        forward . __PILLAR__UPSTREAM__SERVERS__
+        # forward . __PILLAR__UPSTREAM__SERVERS__
+        forward . __PILLAR__CLUSTER__DNS__
         prometheus :9253
         }
 ---

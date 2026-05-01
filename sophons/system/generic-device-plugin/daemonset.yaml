@@ -24,7 +24,7 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: generic-device-plugin
-          image: squat/generic-device-plugin@sha256:efa50af6e8919b71694909f763e06aa80f37dbc605bbbe4018aa0252a75c24a4
+          image: ghcr.io/squat/generic-device-plugin
           args:
             - --log-level
             - debug
@@ -32,11 +32,11 @@ spec:
             - devic.es
             - --device
             - |
-              name: vaccel
+              name: tun
               groups:
-                - count: 4
-                  paths:
-                    - path: /dev/dri/*
+                - paths:
+                    - path: /dev/net/tun
+                  count: 16
             - --device
             - |
               name: fuse

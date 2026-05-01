@@ -1,3 +1,7 @@
 namespace: kube-system
 resources:
   - daemonset.yaml
+
+images:
+  - name: ghcr.io/squat/generic-device-plugin
+    newTag: 0.2.0

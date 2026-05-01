@@ -26,9 +26,9 @@ spec:
     - kaos
   nodeSelectors:
     - matchLabels:
-        kubernetes.io/hostname: sophons-kaos
+        kubernetes.io/hostname: sophons-caeneus
   interfaces:
-    - enp1s0
+    - eth0
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

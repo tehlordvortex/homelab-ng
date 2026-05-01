@@ -169,7 +169,7 @@ lapi:
         - name: LITESTREAM_DB_PATH
           value: /db/crowdsec.db
         - name: LITESTREAM_ENDPOINT
-          value: http://s3-global.garage.svc.cluster.local:3900
+          value: https://ps3-global.sphns.run
         - name: LITESTREAM_BUCKET
           value: litestream-ad-infinitum
         - name: LITESTREAM_REPLICA_PATH

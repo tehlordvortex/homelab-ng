@@ -4,6 +4,7 @@ metadata:
   name: nodelocaldns
   namespace: kube-system
 spec:
+  skipRedirectFromBackend: true
   redirectFrontend:
     serviceMatcher:
       serviceName: kube-dns

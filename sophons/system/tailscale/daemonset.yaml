@@ -86,17 +86,23 @@ spec:
             - name: TS_TAILSCALED_EXTRA_ARGS
               value: $(TSD_BASE_ARGS)
             - name: TS_AUTH_ONCE
-              value: "false"
+              value: "true"
             - name: TS_HOSTNAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
             - name: TS_USERSPACE
               value: "false"
+            # WARN: WILL break cilium
+            # - name: TS_DEBUG_FIREWALL_MODE
+            #   value: nftables
 
           volumeMounts:
             - mountPath: /tmp
               name: tmp
+            - mountPath: /run
+              name: tmp
+              subPath: run
             - mountPath: /dev/net
               name: dev-net
             - mountPath: /var/lib/tailscale
