@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: default-cache
+  namespace: traefik
+spec:
+  plugin:
+    cacheify:
+      path: /cache
+      maxExpiry: 86400 # 1d
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: default-compression
+  namespace: traefik
+spec:
+  compress: {}
+    # encodings: [gzip, br, zstd] # Already the default order

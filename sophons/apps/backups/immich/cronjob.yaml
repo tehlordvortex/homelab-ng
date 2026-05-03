@@ -90,6 +90,7 @@ spec:
                 - -vv
                 - --host=gimmich
                 - --read-concurrency=20
+                - /gimmich/backups
                 - /gimmich/library
                 - /gimmich/upload
                 - /gimmich/profile
@@ -227,6 +228,7 @@ spec:
                 - -vv
                 - --host=gimmich
                 - --read-concurrency=6
+                - /gimmich/backups
                 - /gimmich/library
                 - /gimmich/upload
                 - /gimmich/profile

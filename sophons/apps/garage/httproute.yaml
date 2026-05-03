@@ -47,16 +47,21 @@ spec:
     - s3ui-global.sophons.cloud
   rules:
     - filters:
-        # - type: ExtensionRef
-        #   extensionRef:
-        #     group: traefik.io
-        #     kind: Middleware
-        #     name: cache
         - type: ExtensionRef
           extensionRef:
             group: traefik.io
             kind: Middleware
             name: forwardauth-authelia
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: enable-caching
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: cache
       backendRefs:
         - name: global-webui
           port: 3909
@@ -76,12 +81,17 @@ spec:
     - test-s3-web.sphns.run
 
   rules:
-    - filters: []
-        # - type: ExtensionRef
-        #   extensionRef:
-        #     group: traefik.io
-        #     kind: Middleware
-        #     name: cache
+    - filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: enable-caching
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: cache
       backendRefs:
         - name: s3-global
           port: 3902

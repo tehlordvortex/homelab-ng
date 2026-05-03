@@ -25,6 +25,7 @@ spec:
             app.kubernetes.io/instance: global
             app.kubernetes.io/component: backup
         spec:
+          terminationGracePeriodSeconds: 120
           restartPolicy: OnFailure
           securityContext:
             runAsNonRoot: true
@@ -57,7 +58,8 @@ spec:
                 - |
                   set -xeuo pipefail
                   mkdir -p /tmp/garage
-                  exec rclone mount -v --vfs-read-chunk-size=2M --vfs-read-chunk-streams=16 \
+                  trap "umount -f /tmp/garage" EXIT
+                  exec rclone mount -vv --vfs-read-chunk-size=2M --vfs-read-chunk-streams=16 \
                     --read-only --uid 1000 --gid 1000 --allow-other garage: /tmp/garage
 
               startupProbe:
@@ -161,6 +163,7 @@ spec:
                   name: tmp
                   subPath: garage
                   mountPropagation: HostToContainer
+                  readOnly: true
                 - mountPath: /tmp
                   name: tmp
                   subPath: backup-tmp
@@ -206,6 +209,7 @@ spec:
             app.kubernetes.io/instance: global
             app.kubernetes.io/component: backup-crypt-b2
         spec:
+          terminationGracePeriodSeconds: 120
           restartPolicy: OnFailure
           securityContext:
             runAsNonRoot: true
@@ -247,7 +251,8 @@ spec:
                 - |
                   set -xeuo pipefail
                   mkdir -p /tmp/garage
-                  exec rclone mount -v --vfs-read-chunk-size=2M --vfs-read-chunk-streams=16 \
+                  trap "umount -f /tmp/garage" EXIT
+                  exec rclone mount -vv --vfs-read-chunk-size=2M --vfs-read-chunk-streams=16 \
                     --read-only --uid 1000 --gid 1000 --allow-other garage: /tmp/garage
 
               startupProbe:
@@ -351,6 +356,7 @@ spec:
                   name: tmp
                   subPath: garage
                   mountPropagation: HostToContainer
+                  readOnly: true
                 - mountPath: /tmp
                   name: tmp
                   subPath: backup-tmp

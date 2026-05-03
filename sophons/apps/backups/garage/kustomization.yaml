@@ -9,7 +9,7 @@ configMapGenerator:
   - name: rclone-garage-config
     literals:
       - RCLONE_CONFIG_GARAGE_TYPE=s3
-      - RCLONE_CONFIG_GARAGE_ENDPOINT=http://s3-global.garage:3900
+      - RCLONE_CONFIG_GARAGE_ENDPOINT=https://ps3-global.sphns.run
       - RCLONE_CONFIG_GARAGE_REGION=global
       - RCLONE_CONFIG_GARAGE_ENV_AUTH=true
 

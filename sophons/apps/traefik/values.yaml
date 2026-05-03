@@ -47,8 +47,8 @@ ports:
           scheme: https
           permanent: true
       middlewares:
-        - default-compression@file
         - crowdsec-crowdsec-bouncer@kubernetescrd
+        - traefik-default-compression@kubernetescrd
 
     forwardedHeaders:
       trustedIPs: *trustedIPs
@@ -69,8 +69,8 @@ ports:
         idleTimeout: 600s
     http:
       middlewares:
-        - default-compression@file
         - crowdsec-crowdsec-bouncer@kubernetescrd
+        - traefik-default-compression@kubernetescrd
 
     forwardedHeaders:
       trustedIPs: *trustedIPs
@@ -153,22 +153,11 @@ providers:
     enabled: true
     content: |
       http:
-        middlewares:
-          redirect-to-https:
-            redirectScheme:
-              scheme: https
-              permanent: true
-          default-compression:
-            compress:
-              encodings: [br, zstd, gzip]
-              defaultEncoding: br
-
         routers:
           headplane:
             entryPoints: [web, websecure]
             service: headplane
             rule: Host(`hs.vrtx.sh`) && PathPrefix(`/admin`)
-            middlewares: [default-compression]
           headscale:
             entryPoints: [web, websecure]
             service: headscale
@@ -247,6 +236,16 @@ updateStrategy:
     maxSurge: 1
 deployment:
   kind: DaemonSet
+  additionalVolumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: traefik-data
+persistence:
+  enabled: false
+additionalVolumeMounts:
+  - name: data
+    mountPath: /cache
+    subPath: cache
 
 livenessProbe:
   initialDelaySeconds: 10
@@ -296,7 +295,10 @@ experimental:
       version: "v1.7.8"
     crowdsec-bouncer-traefik-plugin:
       moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
-      version: "v1.4.6"
+      version: "v1.6.0"
+    cacheify:
+      moduleName: "github.com/ciaranj/cacheify"
+      version: "v1.0.0"
   # Fun fact, there's a config to crash on failure to load them ya big dum
   abortOnPluginFailure: true
 

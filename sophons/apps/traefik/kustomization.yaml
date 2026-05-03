@@ -4,9 +4,11 @@ resources:
   - service.yaml
   - cfdtunnel.yaml
   - daemonset.yaml
+  - middleware.yaml
   - secrets.sops.yaml
   - servicemonitor.yaml
   - dnsendpoint.sops.yaml
+  - persistentvolumeclaim.yaml
   - ciliumlocalredirectpolicy.yaml
 
 images:

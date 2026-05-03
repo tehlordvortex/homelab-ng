@@ -32,7 +32,8 @@ metadata:
 spec:
   headers:
     customResponseHeaders:
-      Cache-Control: "public, max-age=604800, stale-while-revalidate=86400, stale-if-error=86400"
+      cache-control: "public, max-age=604800, stale-while-revalidate=86400, stale-if-error=86400"
+      pragma: ""
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -41,8 +42,6 @@ metadata:
   namespace: authelia
 spec:
   plugin:
-    souin:
-      default_cache:
-        mode: bypass_response
-        ttl: 604800s # 7d
-        stale: 86400s # 1d
+    cacheify:
+      path: /cache
+      maxExpiry: 604800 # 7d

@@ -37,13 +37,11 @@ spec:
             group: traefik.io
             kind: Middleware
             name: oidc-enable-response-caching
-        # TODO: Souin causes memory leak
-        # https://github.com/darkweak/souin/issues/640
-        # - type: ExtensionRef
-        #   extensionRef:
-        #     group: traefik.io
-        #     kind: Middleware
-        #     name: oidc-cache
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: oidc-cache
       backendRefs:
         - name: authelia
           port: 80
