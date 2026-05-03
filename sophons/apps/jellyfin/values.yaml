@@ -1,0 +1,79 @@
+httpRoute:
+  enabled: true
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Media Server
+    gethomepage.dev/group: Media
+    gethomepage.dev/icon: jellyfin.png
+    gethomepage.dev/name: Jellyfin
+
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - neptune.sophons.cloud
+
+nodeSelector:
+  kubernetes.io/hostname: sophons-caeneus
+tolerations:
+  - key: caeneus.sophons.cloud
+    operator: Exists
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 512Mi
+  limits:
+    memory: 1.5Gi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  privileged: false
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+    add: [SYS_ADMIN]
+
+persistence:
+  config:
+    storageClass: local-path
+  media:
+    existingClaim: neptune-jellyfin-media
+  cache:
+    enabled: true
+    storageClass: local-path
+
+extraVolumes:
+  - name: tmp
+    emptyDir: {}
+  - name: hwa-kfd
+    hostPath:
+      type: CharDevice
+      path: /dev/kfd
+  - name: hwa-card
+    hostPath:
+      type: CharDevice
+      path: /dev/dri/card2
+  - name: hwa-render
+    hostPath:
+      type: CharDevice
+      path: /dev/dri/renderD129
+
+extraVolumeMounts:
+  - name: tmp
+    mountPath: /tmp
+  - name: hwa-kfd
+    mountPath: /dev/kfd
+  - name: hwa-card
+    mountPath: /dev/dri/card2
+  - name: hwa-render
+    mountPath: /dev/dri/renderD129

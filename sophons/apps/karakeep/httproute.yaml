@@ -19,8 +19,8 @@ spec:
       sectionName: websecure
 
   hostnames:
-    - holding.sophons.cloud
     - hoarder.sophons.cloud
+    - holding.sophons.cloud
 
   rules:
     - backendRefs:
