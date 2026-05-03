@@ -60,20 +60,3 @@ spec:
       ensure: present
     - name: earthdistance
       ensure: present
----
-apiVersion: postgresql.cnpg.io/v1
-kind: ScheduledBackup
-metadata:
-  name: gimmich-postgres-daily
-  namespace: immich
-spec:
-  schedule: "0 3 0 * * *" # 3am daily
-  backupOwnerReference: cluster
-  cluster:
-    name: gimmich-postgres
-
-  method: plugin
-  pluginConfiguration:
-    name: barman-cloud.cloudnative-pg.io
-    parameters:
-      barmanObjectName: pgbooze

@@ -76,6 +76,9 @@ tempo:
   multitenancyEnabled: false
   retention: 24h
 
+  overrides:
+    per_tenant_override_config: /runtime/runtime.yaml
+
   metricsGenerator:
     enabled: true
     remoteWriteUrl: http://mimir-mirage:9009/api/v1/push
@@ -103,6 +106,8 @@ tempo:
   extraVolumeMounts:
     - mountPath: /tmp
       name: tmp
+    - mountPath: /runtime
+      name: tempo-runtime
 
 persistence:
   enabled: false
@@ -127,3 +132,6 @@ serviceMonitor:
 extraVolumes:
   - name: tmp
     emptyDir: {}
+  - name: tempo-runtime
+    configMap:
+      name: tempo-runtime
