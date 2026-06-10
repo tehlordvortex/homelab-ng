@@ -166,14 +166,18 @@ lapi:
           valueFrom:
             resourceFieldRef:
               resource: limits.memory
-        - name: LITESTREAM_DB_PATH
-          value: /db/crowdsec.db
         - name: LITESTREAM_ENDPOINT
           value: https://ps3-global.sphns.run
         - name: LITESTREAM_BUCKET
           value: litestream-ad-infinitum
         - name: LITESTREAM_REPLICA_PATH
-          value: ng/crowdsec-lapi/crowdsec.db
+          value: ng/crowdsec-lapi
+        - name: LITESTREAM_CONFIG
+          value: |-
+            dbs:
+              - path: /db/crowdsec.db
+                replica:
+                  url: "[[replica_url crowdsec.db]]"
 
       ports:
         - name: ls-metrics
@@ -208,7 +212,7 @@ lapi:
           cpu: 50m
           memory: 48Mi
         limits:
-          memory: 100Mi
+          memory: 128Mi
 
   metrics:
     serviceMonitor:

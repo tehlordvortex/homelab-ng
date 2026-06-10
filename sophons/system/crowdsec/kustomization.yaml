@@ -6,3 +6,4 @@ resources:
   - ../../apps/garage/access-keys/infinity-and-beyond
 components:
   - ../../common/litestream
+  - ../../common/litestream/templ-config
