@@ -1,0 +1,13 @@
+addr: ${LITESTREAM_PROMETHEUS_ADDRESS}
+socket:
+  enabled: true
+  path: ${LITESTREAM_SOCKET_PATH}
+logging:
+  level: ${LITESTREAM_LOGGING_LEVEL}
+
+sync-interval: ${LITESTREAM_SYNC_INTERVAL}
+validation:
+  interval: ${LITESTREAM_VALIDATION_INTERVAL}
+snapshot:
+  retention: ${LITESTREAM_RETENTION}
+  interval: ${LITESTREAM_SNAPSHOT_INTERVAL}

@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+configMapGenerator:
+  - name: litestream-template-config
+    options:
+      annotations:
+        config.kubernetes.io/local-config: "true"
+    files:
+      - entrypoint.sh
+      - restore-probe.sh
+      - litestream.base.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: litestream-template-config
+      fieldPath: data.[entrypoint.sh]
+    targets:
+      - select:
+          kind: ConfigMap
+          name: litestream-config
+        fieldPaths:
+          - data.[entrypoint.sh]
+  - source:
+      kind: ConfigMap
+      name: litestream-template-config
+      fieldPath: data.[restore-probe.sh]
+    targets:
+      - select:
+          kind: ConfigMap
+          name: litestream-config
+        fieldPaths:
+          - data.[restore-probe.sh]
+  - source:
+      kind: ConfigMap
+      name: litestream-template-config
+      fieldPath: data.[litestream.base.yaml]
+    targets:
+      - select:
+          kind: ConfigMap
+          name: litestream-config
+        fieldPaths:
+          - data.[litestream.base.yaml]
+        options:
+          create: true
+
+patches:
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: litestream-config
+      data:
+        litestream.yaml: null

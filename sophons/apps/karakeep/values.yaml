@@ -6,20 +6,25 @@
 #
 applicationProtocol: https
 applicationHost: hoarder.sophons.cloud
-# enc!
-applicationSecretKey: ENC[AES256_GCM,data:DYlrEcS2vQ5COEVhea49yscrsEpqfaE/yl5Yw4iYmp/yTxU5NwhMWlUGvn41fVrj,iv:44n5vxUxOwpcx3DJwpyKngZIOLruEmR1OxegYKr3+HE=,tag:ihQAbdOpfqRzpx0G99oskg==,type:str]
-# enc!
-meilisearchMasterKey: ENC[AES256_GCM,data:ydxIEMG8HyBEgt6tBf/FpYfRnZhF+yv/hU2lC1bz,iv:m0X47hLKAm6P3x1yqHsrNimNGaZZ2beDKlEkp55HKuA=,tag:lEYd4E2rsE3qJZlLkkipCg==,type:str]
+
+secrets:
+  karakeep:
+    enabled: false
+  meilesearch:
+    enabled: false
+
 ingress:
   karakeep:
     enabled: false
+
 controllers:
   karakeep:
-    type: deployment
-    strategy: Recreate
     statefulset:
       volumeClaimTemplates: []
     pod:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -33,7 +38,7 @@ controllers:
     containers:
       karakeep:
         image:
-          tag: 0.31.0
+          tag: 0.32.0
         # Next.js is a plague :(
         resources:
           requests:
@@ -41,25 +46,32 @@ controllers:
             memory: 300Mi
           limits:
             memory: 756Mi
+
         envFrom:
           - secretRef:
-              name: '{{ .Release.Name }}'
-          - secretRef:
-              name: '{{ .Release.Name }}-meilesearch'
-          - secretRef:
-              name: hoarder-access-key
-          - secretRef:
-              name: karakeep-oauth
+              name: karakeep
+
         env:
           DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
           BROWSER_WEB_URL: null
-          BROWSER_WEBSOCKET_URL: ws://{{ .Release.Name }}-chrome:3000?token=waososecure
+          # BROWSER_WEBSOCKET_URL: ws://karakeep-chrome:3000?token=waososecure
+          BROWSER_WEBSOCKET_URL: ws://karakeep-chrome:3000
           BROWSER_CONNECT_ONDEMAND: "true"
           ASSET_STORE_S3_ENDPOINT: https://ps3-global.sphns.run
           ASSET_STORE_S3_REGION: global
           ASSET_STORE_S3_BUCKET: karakeep
           ASSET_STORE_S3_FORCE_PATH_STYLE: "true"
+          ASSET_STORE_S3_ACCESS_KEY_ID:
+            valueFrom:
+              secretKeyRef:
+                name: hoarder-access-key
+                key: AWS_ACCESS_KEY_ID
+          ASSET_STORE_S3_SECRET_ACCESS_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: hoarder-access-key
+                key: AWS_SECRET_ACCESS_KEY
           OAUTH_WELLKNOWN_URL: https://auth.sophons.cloud/.well-known/openid-configuration
           OAUTH_CLIENT_ID: sphns_q1F-KFdfxuwpzFejpdac311zzc65t0eiT.X1Vu3mE5
           OAUTH_PROVIDER_NAME: Authelia
@@ -82,109 +94,92 @@ controllers:
           # 3 minutes
           CRAWLER_JOB_TIMEOUT_SEC: "300"
           CRAWLER_SCREENSHOT_TIMEOUT_SEC: "60"
+
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: [ALL]
+
     initContainers:
-      00-litestream-legacy-restore-db:
-        image:
-          repository: docker.io/litestream/litestream
-          tag: 0.3.13
-        args:
-          - restore
-          - -config=/etc/litestream/litestream-legacy.yaml
-          - /data/db.db
-        envFrom:
-          - secretRef:
-              name: litestream-ps3-global-access-key
-        env:
-          - name: GOMEMLIMIT
-            value: 120MiB
-          - name: LITESTREAM_LOGGING_LEVEL
-            value: debug
-        resources:
-          requests:
-            cpu: 25m
-            memory: 128Mi
-          limits:
-            memory: 128Mi
-        securityContext:
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
-      01-litestream-legacy-restore-queue:
-        image:
-          repository: docker.io/litestream/litestream
-          tag: 0.3.13
-        args:
-          - restore
-          - -config=/etc/litestream/litestream-legacy.yaml
-          - /data/queue.db
-        envFrom:
-          - secretRef:
-              name: litestream-ps3-global-access-key
-        env:
-          - name: GOMEMLIMIT
-            value: 120MiB
-          - name: LITESTREAM_LOGGING_LEVEL
-            value: debug
-        resources:
-          requests:
-            cpu: 25m
-            memory: 128Mi
-          limits:
-            memory: 128Mi
-        securityContext:
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
-      02-litestream-legacy-replicate:
-        image:
-          repository: docker.io/litestream/litestream
-          tag: 0.3.13
+      litestream:
         restartPolicy: Always
-        args:
-          - replicate
-          - -config=/etc/litestream/litestream-legacy.yaml
-        ports:
-          - name: metrics
-            containerPort: 9090
+        image:
+          repository: docker.io/litestream/litestream
+          tag: latest # required, replaced
+        command: [bash, /etc/litestream/entrypoint.sh]
         envFrom:
+          - configMapRef:
+              name: litestream-env
           - secretRef:
-              name: litestream-ps3-global-access-key
+              name: infinity-and-beyond-access-key
         env:
+          - name: GOGC
+            value: "10"
           - name: GOMEMLIMIT
-            value: 120MiB
-        resources:
-          requests:
-            cpu: 25m
-            memory: 64Mi
-          limits:
-            memory: 128Mi
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.memory
+          - name: LITESTREAM_ENDPOINT
+            value: https://ps3-global.sphns.run
+          - name: LITESTREAM_BUCKET
+            value: litestream-ad-infinitum
+          - name: LITESTREAM_REPLICA_PATH
+            value: ng/karakeep
+          - name: LITESTREAM_CONFIG
+            value: |-
+              dbs:
+                - path: /data/db.db
+                  replica:
+                    url: "[[replica_url db.db]]"
+                - path: /data/queue.db
+                  replica:
+                    url: "[[replica_url queue.db]]"
+
+        ports:
+          - name: ls-metrics
+            containerPort: 9090
+
+        probes:
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command: [bash, /etc/litestream/restore-probe.sh]
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              failureThreshold: 30
+
         securityContext:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
-      03-tailscale:
+            drop: [ALL]
+
+        resources:
+          requests:
+            cpu: 50m
+            memory: 48Mi
+          limits:
+            memory: 100Mi
+      tailscale:
         image:
           repository: ghcr.io/tailscale/tailscale
-          tag: v1.94.2
+          tag: v1.98.4
         restartPolicy: Always
         envFrom:
+          - configMapRef:
+              name: tailscale-config
           - secretRef:
-              name: tailscale-base-config
-          - secretRef:
-              name: tailscale-ephemeral-auth
+              name: tailscale-auth
         env:
+          - name: GOGC
+            value: "10"
+          - name: GOMEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.memory
           - name: TS_EXTRA_ARGS
             value: $(TS_BASE_ARGS)
           - name: TS_TAILSCALED_EXTRA_ARGS
@@ -196,27 +191,38 @@ controllers:
         ports:
           - name: ts-metrics
             containerPort: 9002
+
+        resources:
+          requests:
+            cpu: 50m
+            memory: 48Mi
+          limits:
+            memory: 100Mi
+            devic.es/tun: 1
+
         securityContext:
-          privileged: true
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
           capabilities:
-            drop:
-              - ALL
-          seccompProfile:
-            type: RuntimeDefault
-        liveness:
-          enabled: true
-          spec:
-            initialDelaySeconds: 10
-            httpGet:
-              path: /healthz
-              port: 9002
-        readiness:
-          enabled: true
-          spec:
-            initialDelaySeconds: 10
-            httpGet:
-              path: /healthz
-              port: 9002
+            drop: [ALL]
+            add: [NET_ADMIN]
+
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: ts-metrics
+
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: ts-metrics
   chrome:
     pod:
       nodeSelector:
@@ -240,8 +246,8 @@ controllers:
             value: "600000"
           - name: CONCURRENT
             value: "8"
-          - name: TOKEN
-            value: waososecure
+          # - name: TOKEN
+          #   value: waososecure
         # args:
         #   # FIXME: CHROME SANDBOX
         #   # - --no-sandbox
@@ -254,15 +260,17 @@ controllers:
         probes:
           liveness:
             enabled: true
+            custom: true
             spec:
               httpGet:
-                path: /
+                path: /active
                 port: 3000
           readiness:
             enabled: true
+            custom: true
             spec:
               httpGet:
-                path: /
+                path: /active
                 port: 3000
         securityContext:
           readOnlyRootFilesystem: false
@@ -289,41 +297,37 @@ service:
       ws:
         port: 3000
 persistence:
-  data:
+  tmp:
     type: emptyDir
     advancedMounts:
       karakeep:
         karakeep:
           - path: /data
-        00-litestream-legacy-restore-db:
+            subPath: data
+          - path: /tmp
+            subPath: karakeep
+          - path: /run
+            subPath: run
+        litestream:
           - path: /data
-        01-litestream-legacy-restore-queue:
-          - path: /data
-        02-litestream-legacy-replicate:
-          - path: /data
-  chrome-tmp:
-    type: emptyDir
-    advancedMounts:
+            subPath: data
+          - path: /tmp
+            subPath: litestream
+        tailscale:
+          - path: /tmp
+            subPath: tailscale
       chrome:
         chrome:
           - path: /tmp
-  # chrome-home:
-  #   type: emptyDir
-  #   advancedMounts:
-  #     chrome:
-  #       chrome:
-  #         - path: /home/chrome
-  litestream:
+            subPath: chrome
+  litestream-config:
     type: configMap
-    name: litestream
+    name: litestream-config
     advancedMounts:
       karakeep:
-        00-litestream-legacy-restore-db:
+        litestream:
           - path: /etc/litestream
-        01-litestream-legacy-restore-queue:
-          - path: /etc/litestream
-        02-litestream-legacy-replicate:
-          - path: /etc/litestream
+
 meilisearch:
   affinity:
     nodeAffinity:
@@ -335,6 +339,8 @@ meilisearch:
                 values:
                   - ng
           weight: 100
+  auth:
+    existingMasterKeySecret: karakeep
   resources:
     requests:
       cpu: 50m
@@ -351,29 +357,4 @@ meilisearch:
     seccompProfile:
       type: RuntimeDefault
   persistence:
-    existingClaim: karakeep-meilisearch
-sops:
-  age:
-    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
-      enc: |
-        -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBsOEI4
-        aFRTcmt3M3RkdU9QdVZtWDl0UHVnTUt6VnAwN2RBVjRlUkJ1UlVVCmFSNlBhaFAx
-        TFIrTUhDMkF1L3M0QStJcDBRdXNDU3F0UU9sTG5qV0FsRkEKLS0tIEVvU2xjZjdS
-        RjJ1d0VYOVBtMlA1cy95c2pkcGlENzFYNUVydnUvUFcrc0UKGfH5JWpawt7CZ0sx
-        Df/kI2IqVQwxpeKAOp7setSRFQBoYkJg2RmqKJCum0nGiQ8xGQZFGWRQ3UiG2QzE
-        33m79Q==
-        -----END AGE ENCRYPTED FILE-----
-    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
-      enc: |
-        -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBWdHd0MHlFNnUvRjlxTVoy
-        SHVWRW9TZGpDQWhZdi9QTGZOZnpmc0NNTDM4ClFjUGRIYTNISUFNSGMyNHcydjQr
-        MXFYakdkYWFJOENWOW1XVkhTRVNEdU0KLS0tIGRQeGdaNG9URmJLRGpTK0JGUzFw
-        YlIrL1ZZOWxvOXpJb2FFdE5KeWMwcXcKp6l5/YNhQrjMH94dZKNXBf/bbyTTk16e
-        nkRZjQSKMp5Jnvg5tzeih+s41Yugxwaf7qxPzwZMFJi5epJZGEo1YQ==
-        -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-04-30T22:46:56Z"
-  mac: ENC[AES256_GCM,data:mRu2FPulBnI47M1mLrHOoO4d2rApaLWXuNklOexwIIp1RZ1c+0J9Q4RrTB4v0V+ojiEmhx2Y+j0y4rOycCOGBHtcel2H9rkURRizqPqfNnEOJLyCz96nZfLI0jZF+77TrSKtPsbzaaYHNXmPdotlMyEuG1nw4pg4tbydrWE4ZaI=,iv:xTzQhIO0YnyHzH4XiBmagZmUwu7SCAEjCzNfJUZUTM8=,tag:D9SDlW9HScCaY5DVZIbRwQ==,type:str]
-  encrypted_comment_regex: enc!
-  version: 3.11.0
+    enabled: false

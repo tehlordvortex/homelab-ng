@@ -1,0 +1,5 @@
+dbs:
+  - path: ${LITESTREAM_DB_PATH}
+    replica:
+      url: ${LITESTREAM_REPLICA_URL}
+      url3: "{{replica_url /path/db.db}}"
