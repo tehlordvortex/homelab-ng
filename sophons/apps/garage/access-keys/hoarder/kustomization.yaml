@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: hoarder-access-key
+    env: .env
