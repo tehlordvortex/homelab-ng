@@ -20,6 +20,14 @@ configMapGenerator:
     files:
       - config/haproxy.cfg
       - config/cloudflare-ips.txt
+      - config/private-ips.txt
+  - name: traefik-grafana-dashboards
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "true"
+    files:
+      - traefik-kubernetes.json=https://grafana.com/api/dashboards/17347/revisions/9/download
 
 patches:
   - patch: |

@@ -77,22 +77,26 @@ spec:
             # - quic:developer:clean,qmux:developer:minimal,h3:developer:minimal
 
           ports:
-            - name: tcp-ssh
+            - name: ssh
               containerPort: 22
               hostPort: 22
               protocol: TCP
-            - name: tcp-http
+            - name: web
               containerPort: 80
               hostPort: 80
               protocol: TCP
-            - name: tcp-https
+            - name: websecure
               containerPort: 443
               hostPort: 443
               protocol: TCP
-            - name: udp-https
+            - name: websecure-http3
               containerPort: 443
               hostPort: 443
               protocol: UDP
+            - name: traefik
+              containerPort: 8080
+              hostPort: 8080
+              protocol: TCP
             - name: metrics
               containerPort: 9069
               protocol: TCP

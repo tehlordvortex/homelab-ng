@@ -36,12 +36,13 @@ spec:
           extensionRef:
             group: traefik.io
             kind: Middleware
-            name: oidc-enable-response-caching
-        - type: ExtensionRef
-          extensionRef:
-            group: traefik.io
-            kind: Middleware
             name: oidc-cache
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            remove: [pragma]
+            set:
+              - name: cache-control
+                value: max-age=604800, stale-while-revalidate=86400
       backendRefs:
         - name: authelia
           port: 80

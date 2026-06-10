@@ -23,17 +23,17 @@ spec:
     middlewares:
       - name: forwardauth-authelia
         namespace: authelia
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: oidc-enable-response-caching
-  namespace: authelia
-spec:
-  headers:
-    customResponseHeaders:
-      cache-control: "public, max-age=604800, stale-while-revalidate=86400, stale-if-error=86400"
-      pragma: ""
+# ---
+# apiVersion: traefik.io/v1alpha1
+# kind: Middleware
+# metadata:
+#   name: oidc-enable-response-caching
+#   namespace: authelia
+# spec:
+#   headers:
+#     customResponseHeaders:
+#       cache-control: "public, max-age=604800, stale-while-revalidate=86400, stale-if-error=86400"
+#       pragma: ""
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -45,3 +45,5 @@ spec:
     cacheify:
       path: /cache
       maxExpiry: 604800 # 7d
+      # maxExpiry: 1
+      # cleanup: 5
