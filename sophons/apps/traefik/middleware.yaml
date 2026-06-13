@@ -7,7 +7,8 @@ spec:
   plugin:
     cacheify:
       path: /cache
-      maxExpiry: 86400 # 1d
+      maxExpiry: 900 # 15mins
+      cleanup: 300 # 5 mins
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware

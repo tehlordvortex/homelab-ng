@@ -19,13 +19,3 @@ spec:
     middlewares:
       - name: forwardauth-authelia
         namespace: authelia
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: enable-caching
-  namespace: garage
-spec:
-  headers:
-    customResponseHeaders:
-      cache-control: "public, max-age=3600, stale-while-revalidate=300"

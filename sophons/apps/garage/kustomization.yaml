@@ -10,6 +10,17 @@ resources:
   - poddisruptionbudget.yaml
   - ciliumlocalredirectpolicy.yaml
 
+configMapGenerator:
+  - name: garage-grafana-dashboards
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "true"
+    files:
+      # https://git.deuxfleurs.fr/Deuxfleurs/garage/src/tag/v2.3.0/script/telemetry/grafana-garage-dashboard-prometheus.json
+      - https://git.deuxfleurs.fr/Deuxfleurs/garage/raw/tag/v2.3.0/script/telemetry/grafana-garage-dashboard-prometheus.json
+      - grafana/garage-dashboard.json
+
 patches:
   - patch: |
       apiVersion: apps/v1

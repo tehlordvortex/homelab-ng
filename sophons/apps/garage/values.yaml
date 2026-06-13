@@ -13,6 +13,7 @@ garage:
   additionalTopLevelConfig: |
     block_ram_buffer_max = "512MiB"
     block_max_concurrent_reads = 72
+    block_max_concurrent_writes_per_request = 32
 
 persistence:
   meta:

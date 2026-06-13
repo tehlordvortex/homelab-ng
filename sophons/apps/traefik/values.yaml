@@ -1,10 +1,16 @@
-# yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v39.0.2/traefik/values.schema.json
+# yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v40.3.0/traefik/values.schema.json
 
 trustedIPs: &trustedIPs
   - 127.0.0.0/8 # lokalhost
   - ::1/128
   - 10.41.0.0/16 # kluster
   - 2001:cafe:41::/56
+
+api:
+  insecure: true
+  debug: true
+  dashboard: true
+  disableDashboardAd: true
 
 logs:
   general:
@@ -20,7 +26,7 @@ ingressRoute:
     enabled: true
 
 additionalArguments:
-  - --serversTransport.maxIdleConnsPerHost=256
+  - --serversTransport.maxIdleConnsPerHost=128
   - --serversTransport.forwardingTimeouts.idleConnTimeout=300s
 
 ports:
@@ -243,7 +249,7 @@ deployment:
         claimName: traefik-data
     - name: plugin-cacheify
       image:
-        reference: pz3d.sphns.run/library/traefik/plugins/github.com/ciaranj/cacheify:dev-409ae70-7
+        reference: pz3d.sphns.run/library/traefik/plugins/github.com/ciaranj/cacheify:dev-409ae70-8
         pullPolicy: IfNotPresent
 persistence:
   enabled: false
@@ -264,12 +270,16 @@ startupProbe:
 env:
   - name: GOGC
     value: "30"
+  - name: GOMEMLIMIT
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.memory
 resources:
   requests:
     cpu: 300m
     memory: 256Mi
   limits:
-    memory: 768Mi
+    memory: 512Mi
 
 volumes:
   - type: secret

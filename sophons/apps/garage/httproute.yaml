@@ -17,7 +17,7 @@ spec:
   rules:
     - matches:
         - path:
-            type: PathPrefix
+            type: Exact
             value: /admin/health
       filters:
         - type: URLRewrite
@@ -37,6 +37,13 @@ kind: HTTPRoute
 metadata:
   name: s3ui-global
   namespace: garage
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: "Garage S3-compatible storage admin"
+    gethomepage.dev/icon: garage.svg
+    gethomepage.dev/name: Garage
+    gethomepage.dev/app: garage
+    gethomepage.dev/group: Storage
 spec:
   parentRefs:
     - name: traefik-gateway
@@ -46,22 +53,30 @@ spec:
   hostnames:
     - s3ui-global.sophons.cloud
   rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /assets
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: cache
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              - name: cache-control
+                value: max-age=3600, stale-while-revalidate=300
+      backendRefs:
+        - name: global-webui
+          port: 3909
     - filters:
         - type: ExtensionRef
           extensionRef:
             group: traefik.io
             kind: Middleware
             name: forwardauth-authelia
-        - type: ExtensionRef
-          extensionRef:
-            group: traefik.io
-            kind: Middleware
-            name: enable-caching
-        - type: ExtensionRef
-          extensionRef:
-            group: traefik.io
-            kind: Middleware
-            name: cache
       backendRefs:
         - name: global-webui
           port: 3909
@@ -86,12 +101,12 @@ spec:
           extensionRef:
             group: traefik.io
             kind: Middleware
-            name: enable-caching
-        - type: ExtensionRef
-          extensionRef:
-            group: traefik.io
-            kind: Middleware
             name: cache
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              - name: cache-control
+                value: max-age=3600, stale-while-revalidate=300
       backendRefs:
         - name: s3-global
           port: 3902
