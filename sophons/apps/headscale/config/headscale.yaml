@@ -16,7 +16,7 @@ policy:
 database:
   type: sqlite
   sqlite:
-    path: /var/lib/headscale/db.sqlite
+    path: /var/lib/headscale/hs.db
     write_ahead_log: true
 
 prefixes:

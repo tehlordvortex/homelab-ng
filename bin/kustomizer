@@ -8,5 +8,5 @@ if [[ "$dir" == "" ]]; then
 fi
 
 cat >$dir/resources.yaml
-kubectl kustomize $dir
+kustomize build $dir
 rm $dir/resources.yaml

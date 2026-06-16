@@ -2,8 +2,10 @@ namespace: headscale
 labels:
   - pairs:
       app.kubernetes.io/name: headscale
-      app.kubernetes.io/version: 0.27.1
     includeSelectors: true
+    includeTemplates: true
+  - pairs:
+      app.kubernetes.io/version: 0.28.1
     includeTemplates: true
 
 resources:
@@ -13,7 +15,11 @@ resources:
   # retains routing config even if it can't reach the kube api-server
   # - grpcroute.yaml
   # - httproute.yaml
-  - deployment.yaml
+  - statefulset.yaml
+  - ../garage/access-keys/infinity-and-beyond
+components:
+  - ../../common/litestream
+  - ../../common/litestream/templ-config
 
 secretGenerator:
   - name: headscale
@@ -24,7 +30,3 @@ configMapGenerator:
     files:
       - config/headscale.yaml
       - config/headplane.yaml
-      - config/traefik.provider.yaml
-  - name: litestream
-    files:
-      - config/litestream-legacy.yaml

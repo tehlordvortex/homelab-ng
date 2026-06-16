@@ -1,20 +1,16 @@
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/statefulset-apps-v1.json
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: headscale
   namespace: headscale
 spec:
-  strategy:
-    type: Recreate
   replicas: 1
 
   selector: {}
   template:
     spec:
       priorityClassName: system-node-critical
-      imagePullSecrets:
-        - name: harbor-pull-cred
 
       tolerations:
         - key: orunmila.sophons.cloud/ase-orun
@@ -36,10 +32,17 @@ spec:
                       - sophons-oduduwa
 
           preferredDuringSchedulingIgnoredDuringExecution:
+            # - preference:
+            #     matchExpressions:
+            #       - key: node-role.kubernetes.io/control-plane
+            #         operator: DoesNotExist
+            #   weight: 100
             - preference:
                 matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: DoesNotExist
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - sophons-voltzahl
               weight: 100
 
       securityContext:
@@ -62,62 +65,13 @@ spec:
         - ip: 10.43.0.69
           hostnames:
             - auth.sophons.cloud
+            - ps3-global.sphns.run
         - ip: 2001:cafe:43::69
           hostnames:
             - auth.sophons.cloud
+            - ps3-global.sphns.run
 
       containers:
-        # - name: proxy
-        #   image: docker.io/library/traefik:v3.6.0
-        #   args:
-        #     - --log.level=DEBUG
-        #     - --accesslog=true
-        #     - --entrypoints.web.address=:80
-        #     # - --entryPoints.web.proxyProtocol.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
-        #     # - --entryPoints.web.forwardedHeaders.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
-        #     - --entryPoints.web.http.redirections.entryPoint.to=websecure
-        #     - --entryPoints.web.http.redirections.entryPoint.scheme=https
-        #     - --entryPoints.web.http.redirections.entryPoint.permanent=true
-        #     - --entrypoints.websecure.address=:443
-        #     - --entrypoints.websecure.http.tls=true
-        #     # - --entryPoints.websecure.proxyProtocol.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
-        #     # - --entryPoints.websecure.forwardedHeaders.trustedIPs=100.64.0.0/10,fd7a:115c:a1e0::/48
-        #     - --providers.file.directory=/etc/traefik
-        #   env:
-        #     - name: GOMEMLIMIT
-        #       valueFrom:
-        #         resourceFieldRef:
-        #           resource: limits.memory
-
-        #   ports:
-        #     - containerPort: 80
-        #       name: http
-        #     - containerPort: 443
-        #       name: https
-
-        #   volumeMounts:
-        #     - mountPath: /etc/traefik/provider.yaml
-        #       name: config
-        #       subPath: traefik.provider.yaml
-        #       readOnly: true
-        #     - mountPath: /etc/traefik/cert
-        #       name: tls
-        #       readOnly: true
-
-        #   resources:
-        #     requests:
-        #       cpu: 25m
-        #       memory: 64Mi
-        #     limits:
-        #       memory: 128Mi
-
-        #   securityContext:
-        #     readOnlyRootFilesystem: true
-        #     allowPrivilegeEscalation: false
-        #     capabilities:
-        #       drop: [ALL]
-        #       add: [NET_BIND_SERVICE]
-
         - name: headscale
           image: ghcr.io/juanfont/headscale:v0.28.0
           args: ["serve"]
@@ -137,12 +91,12 @@ spec:
               name: hs-grpc
 
           volumeMounts:
-            - name: headscale
+            - name: tmp
               mountPath: /var/lib/headscale
-              subPath: data
-            - name: headscale
+              subPath: lib-headscale
+            - name: tmp
               mountPath: /var/run/headscale
-              subPath: run
+              subPath: run-headscale
             - name: config
               mountPath: "/etc/headscale/config.yaml"
               subPath: headscale.yaml
@@ -155,13 +109,6 @@ spec:
               mountPath: /etc/headscale/oidc_client.secret
               subPath: oidc_client.secret
               readOnly: true
-
-          # livenessProbe:
-          #   exec:
-          #     command: ["headscale", "health"]
-          #   timeoutSeconds: 5
-          #   failureThreshold: 5
-          #   initialDelaySeconds: 15
 
           readinessProbe:
             exec:
@@ -184,7 +131,7 @@ spec:
               drop: [ALL]
 
         - name: headplane
-          image: ghcr.io/tale/headplane:0.6.2
+          image: ghcr.io/tale/headplane:0.6.3
 
           ports:
             - containerPort: 3000
@@ -212,12 +159,12 @@ spec:
                   key: headscale_api.key
 
           volumeMounts:
-            - name: headplane
+            - name: tmp
               mountPath: /var/lib/headplane
-              subPath: data
-            - name: headplane
+              subPath: lib-headplane
+            - name: tmp
               mountPath: /var/lib/headplane/agent
-              subPath: agent
+              subPath: lib-headplane-agent
             - name: config
               mountPath: "/etc/headplane/config.yaml"
               subPath: headplane.yaml
@@ -259,120 +206,75 @@ spec:
               memory: 256Mi
 
       initContainers:
-        - name: lightstream-restore-headscale
-          image: docker.io/litestream/litestream:0.3.13
-          args:
-            - restore
-            - -config=/etc/litestream/litestream-legacy.yaml
-            - -parallelism=16
-            - /var/lib/headscale/db.sqlite
-
-          envFrom:
-            - secretRef:
-                name: litestream-access-key
-          env:
-            - name: GOMEMLIMIT
-              value: 120MiB
-            - name: LITESTREAM_LOGGING_LEVEL
-              value: debug
-
-          volumeMounts:
-            - name: headscale
-              mountPath: "/var/lib/headscale"
-              subPath: data
-            - name: litestream
-              mountPath: "/etc/litestream"
-              readOnly: true
-
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
-
-          resources:
-            requests:
-              cpu: 25m
-              memory: 128Mi
-            limits:
-              memory: 128Mi
-
-        - name: lightstream-restore-headplane
-          image: docker.io/litestream/litestream:0.3.13
-          args:
-            - restore
-            - -config=/etc/litestream/litestream-legacy.yaml
-            - -parallelism=16
-            - /var/lib/headplane/hp_persist.db
-
-          envFrom:
-            - secretRef:
-                name: litestream-access-key
-          env:
-            - name: GOMEMLIMIT
-              value: 120MiB
-            - name: LITESTREAM_LOGGING_LEVEL
-              value: debug
-
-          volumeMounts:
-            - name: headplane
-              mountPath: "/var/lib/headplane"
-              subPath: data
-            - name: litestream
-              mountPath: "/etc/litestream"
-              readOnly: true
-
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
-
-          resources:
-            requests:
-              cpu: 25m
-              memory: 128Mi
-            limits:
-              memory: 128Mi
-
-        - name: lightstream-replicate
-          image: docker.io/litestream/litestream:0.3.13
-          args: ["replicate", "-config=/etc/litestream/litestream-legacy.yaml"]
+        - name: litestream
           restartPolicy: Always
+          image: docker.io/litestream/litestream
+          command: [bash, /etc/litestream/entrypoint.sh]
           envFrom:
+            - configMapRef:
+                name: litestream-env
             - secretRef:
-                name: litestream-access-key
+                name: infinity-and-beyond-access-key
           env:
+            - name: GOGC
+              value: "25"
             - name: GOMEMLIMIT
-              value: 120MiB
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: LITESTREAM_ENDPOINT
+              value: https://ps3-global.sphns.run
+            - name: LITESTREAM_BUCKET
+              value: litestream-ad-infinitum
+            - name: LITESTREAM_REPLICA_PATH
+              value: ng/headscale
+            - name: LITESTREAM_CONFIG
+              value: |-
+                dbs:
+                  - path: /var/lib/headscale/hs.db
+                    replica:
+                      url: "[[replica_url hs.db]]"
+                  - path: /var/lib/headplane/hp_persist.db
+                    replica:
+                      url: "[[replica_url hp_persist.db]]"
 
           ports:
             - name: ls-metrics
               containerPort: 9090
 
+          startupProbe:
+            exec:
+              command: [bash, /etc/litestream/restore-probe.sh]
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 30
+
           volumeMounts:
-            - name: headscale
+            - name: tmp
               mountPath: "/var/lib/headscale"
-              subPath: data
-            - name: headplane
+              subPath: lib-headscale
+            - name: tmp
               mountPath: "/var/lib/headplane"
-              subPath: data
-            - name: litestream
-              mountPath: "/etc/litestream"
+              subPath: lib-headplane
+            - name: litestream-config
+              mountPath: /etc/litestream
               readOnly: true
+            - name: tmp
+              subPath: litestream
+              mountPath: /tmp
 
           securityContext:
-            readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
 
           resources:
             requests:
-              cpu: 25m
-              memory: 64Mi
+              cpu: 50m
+              memory: 48Mi
             limits:
-              memory: 128Mi
+              memory: 100Mi
 
         - name: update-cf-dns
           image: docker.io/library/alpine:3.22
@@ -381,7 +283,7 @@ spec:
             - -c
             - |
               set -xeu
-              apk add --no-cache curl
+              apk add curl
 
               if [ "$NODE_NAME" = "sophons-oduduwa" ]; then
                 alias acurl="curl -4"
@@ -389,16 +291,15 @@ spec:
                 alias acurl="curl"
               fi
 
-              while :; do
-                acurl -fsSL -XPOST -H "authorization: bearer $CLOUDFLARE_API_TOKEN" \
-                  https://neckhook.sphns.workers.dev/trigger
+              # while :; do
+              acurl -fsSL -XPOST -H "authorization: bearer $CLOUDFLARE_API_TOKEN" \
+                https://neckhook.sphns.workers.dev/trigger
                 # wget -qS -O /dev/null --post-data "" \
                 #   --header "authorization: bearer $CLOUDFLARE_API_TOKEN" \
                 #   https://neckhook.sphns.workers.dev/trigger
-                sleep 90 & # 1.5 minutes
-                wait $!
-              done
-          restartPolicy: Always
+                # sleep 300 & # 5 minutes
+                # wait $!
+              # done
           env:
             - name: CLOUDFLARE_API_TOKEN
               valueFrom:
@@ -411,9 +312,9 @@ spec:
                   fieldPath: spec.nodeName
 
           volumeMounts:
-            - name: cache
+            - name: tmp
               mountPath: "/var/cache/apk"
-              subPath: apk-cache
+              subPath: cache-apk
 
           securityContext:
             runAsNonRoot: false
@@ -439,12 +340,8 @@ spec:
         - name: secret
           secret:
             secretName: headscale
-        - name: litestream
+        - name: litestream-config
           configMap:
-            name: litestream
-        - name: headscale
-          emptyDir: {}
-        - name: headplane
-          emptyDir: {}
-        - name: cache
+            name: litestream-config
+        - name: tmp
           emptyDir: {}
