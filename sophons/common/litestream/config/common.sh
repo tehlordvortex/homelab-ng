@@ -57,6 +57,11 @@ restore_from_config() {
         -if-replica-exists -if-db-not-exists -integrity-check=full "$db_path"
       touch "$restored_flag"
     fi
+
+    if test -z "${LITESTREAM_NO_WALINIT:-}"; then
+      # initialize db as litestream user if it doesn't exist
+      sqlite3 "$db_path" "PRAGMA journal_mode=WAL;"
+    fi
   done
 }
 
@@ -98,7 +103,6 @@ restore() {
 
   if test -z "${LITESTREAM_NO_WALINIT:-}"; then
     # initialize db as litestream user if it doesn't exist
-    # also try to validate that the db isn't corrupt
     sqlite3 "$db_path" "PRAGMA journal_mode=WAL;"
   fi
 }
