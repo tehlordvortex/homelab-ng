@@ -3,7 +3,7 @@ kind: Component
 
 images:
   - name: ghcr.io/tailscale/tailscale
-    newTag: v1.96.5
+    newTag: v1.98.4
 
 configMapGenerator:
   - name: tailscale-config
