@@ -1,0 +1,23 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: necronomicon
+  namespace: pihole
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pihole
+      app.kubernetes.io/instance: necronomicon
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: darkhold
+  namespace: pihole
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pihole
+      app.kubernetes.io/instance: darkhold

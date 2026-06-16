@@ -11,6 +11,7 @@ resources:
   - rolebinding.yaml
   - statefulset.yaml
   - serviceaccount.yaml
+  - poddisruptionbudget.yaml
 components:
   - ../../common/tailscale
   - ../../common/tailscale/auth
