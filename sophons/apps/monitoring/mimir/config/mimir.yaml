@@ -40,7 +40,7 @@ blocks_storage:
     ship_concurrency: 4
     head_compaction_interval: 15s
     head_chunks_write_buffer_size_bytes: 524288 # 512KiB
-    # flush_blocks_on_shutdown: true
+    flush_blocks_on_shutdown: true
   bucket_store:
     sync_dir: /tmp/tsdb-sync
     index_cache:

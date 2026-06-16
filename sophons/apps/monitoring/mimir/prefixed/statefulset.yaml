@@ -24,6 +24,14 @@ spec:
                     values:
                       - sophons-caeneus
                       - sophons-voltzahl
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - sophons-voltzahl
+              weight: 67
 
       volumes:
         - name: tmp
@@ -64,19 +72,18 @@ spec:
                 name: weed-s3-access-key
           env:
             - name: GOGC
-              value: "10"
+              value: "5"
             - name: GOMEMLIMIT
-              valueFrom:
-                resourceFieldRef:
-                  resource: limits.memory
-            - name: LITESTREAM_DBS
-              value: "mimir-mirage.v3.meta.db"
-            - name: LITESTREAM_DBS_DIR
-              value: /fs
-            - name: LITESTREAM_DBS_PATTERN
-              value: "*.meta.db"
+              value: "160MiB"
             - name: LITESTREAM_REPLICA_PATH
               value: $(LITESTREAM_REPLICA_PATH_PREFIX)
+            - name: LITESTREAM_CONFIG
+              value: |-
+                dbs:
+                - path: /fs/mimir-mirage.v4.db
+                  replica:
+                    url: "[[replica_url mimir-mirage.v4.db]]"
+                    monitor-interval: 0.5s
 
           ports:
             - name: ls-metrics
@@ -87,15 +94,7 @@ spec:
               command: [bash, /etc/litestream/restore-probe.sh]
             initialDelaySeconds: 10
             periodSeconds: 5
-            failureThreshold: 12
-
-          livenessProbe:
-            httpGet:
-              path: /metrics
-              port: ls-metrics
-            timeoutSeconds: 2
-            failureThreshold: 5
-            periodSeconds: 5
+            failureThreshold: 30
 
           volumeMounts:
             - name: tmp
@@ -119,7 +118,7 @@ spec:
               cpu: 100m
               memory: 64Mi
             limits:
-              memory: 128Mi
+              memory: 172Mi
 
         - name: juice-mount
           restartPolicy: Always
@@ -135,22 +134,23 @@ spec:
               juicefs format --no-update \
                 --storage=s3 --bucket="$LITESTREAM_ENDPOINT/$LITESTREAM_BUCKET" \
                 "sqlite3://$META_PATH" "$VOLUME_NAME"
-              juicefs config --capacity=4 --dir-stats=true --trash-days=0 \
+              juicefs config --yes \
+                --capacity=6 --dir-stats=true --trash-days=0 \
                 "sqlite3://$META_PATH"
 
               exec juicefs mount --metrics 0.0.0.0:9567 --no-usage-report \
                 -o async_dio,allow_other --buffer-size=64M --backup-meta=6h \
-                --cache-large-write --cache-expire 1d --free-space-ratio 0.05 \
-                --get-timeout 120s --put-timeout 120s --max-uploads 6 --max-downloads 10 \
-                --fast-statfs "sqlite3://$META_PATH" /fs/mnt
+                --cache-large-write --cache-expire 2d --free-space-ratio 0.05 \
+                --max-uploads 16 --max-downloads 48 --fast-statfs \
+                "sqlite3://$META_PATH" /fs/mnt
 
           env:
             - name: GOGC
-              value: "10"
+              value: "5"
             - name: GOMEMLIMIT
               value: "350MiB"
             - name: META_PATH
-              value: /fs/mimir-mirage.v3.meta.db
+              value: /fs/mimir-mirage.v4.db
             - name: VOLUME_NAME
               value: mimir-mirage
           envFrom:
@@ -175,8 +175,6 @@ spec:
             exec:
               command: [mountpoint, -q, /fs/mnt]
             initialDelaySeconds: 5
-            periodSeconds: 5
-            failureThreshold: 6
 
           securityContext:
             runAsUser: 0
@@ -262,7 +260,7 @@ spec:
           args: [-config.file=/etc/mimir/mimir.yaml]
           env:
             - name: GOGC
-              value: "10"
+              value: "5"
             - name: GOMEMLIMIT
               value: 2048MiB
           envFrom:

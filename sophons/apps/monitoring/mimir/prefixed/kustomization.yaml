@@ -7,4 +7,4 @@ resources:
 components:
   - ../../../../common/litestream
   - ../../../../common/litestream/juicefs-defaults
-  - ../../../../common/litestream/watch-config
+  - ../../../../common/litestream/templ-config
