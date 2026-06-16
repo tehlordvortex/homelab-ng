@@ -4,8 +4,9 @@ httpRoute:
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: Media Server
     gethomepage.dev/group: Media
-    gethomepage.dev/icon: jellyfin.png
+    gethomepage.dev/icon: jellyfin.svg
     gethomepage.dev/name: Jellyfin
+    gethomepage.dev/app: jellyfin
 
   parentRefs:
     - name: traefik-gateway

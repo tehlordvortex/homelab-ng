@@ -3,6 +3,13 @@ kind: HTTPRoute
 metadata:
   name: gimmich
   namespace: immich
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Self-hosted alternative to Google Photos
+    gethomepage.dev/group: Media
+    gethomepage.dev/icon: immich.svg
+    gethomepage.dev/name: Immich
+    gethomepage.dev/app: server
 spec:
   parentRefs:
     - name: traefik-gateway

@@ -1,7 +1,10 @@
-- Developer:
+- Gits and tigs:
+    - Forgejo:
+        - abbr: GT
+          href: https://tig.vrtx.sh/vrtx
     - Github:
         - abbr: GH
           href: https://github.com/tehlordvortex
-  # - Gitea:
-  #   - abbr: GT
-  #     href: https://tig.vrtx.sh/vrtx
+    - Codeberg:
+        - abbr: CB
+          href: https://codeberg.org/vrtxdotsh

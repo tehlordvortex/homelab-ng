@@ -98,6 +98,13 @@ service:
 
 httpRoute:
   enabled: true
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: "Git Repository"
+    gethomepage.dev/icon: forgejo.svg
+    gethomepage.dev/name: Forgejo
+    gethomepage.dev/app: forgejo
+    gethomepage.dev/group: Code & Packages
   parentRefs:
     - name: traefik-gateway
       namespace: traefik

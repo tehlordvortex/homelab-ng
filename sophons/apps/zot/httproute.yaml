@@ -6,10 +6,9 @@ metadata:
   annotations:
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: "OCI Registry 2: Electric Boogaloo"
-    gethomepage.dev/icon: zot.svg
+    gethomepage.dev/icon: zot-registry.svg
     gethomepage.dev/name: Zot
     gethomepage.dev/app: zot
-    gethomepage.dev/href: "https://zenlesszonezot.sophons.cloud"
     gethomepage.dev/group: Code & Packages
 spec:
   parentRefs:
@@ -21,8 +20,8 @@ spec:
       sectionName: websecure
 
   hostnames:
-    - oci.sophons.cloud
     - zenlesszonezot.sophons.cloud
+    - oci.sophons.cloud
     - z3.sphns.run
     - pz3.sphns.run
     - oci.sphns.run
