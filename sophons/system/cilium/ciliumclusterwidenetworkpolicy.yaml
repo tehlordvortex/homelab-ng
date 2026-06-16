@@ -1,6 +1,23 @@
 apiVersion: "cilium.io/v2"
 kind: CiliumClusterwideNetworkPolicy
 metadata:
+  name: iperftreefiddy
+spec:
+  description: "Allow iperf3"
+  nodeSelector:
+    matchLabels:
+      sophons.cloud/iperftreefiddy: "true"
+  ingress:
+    - toPorts:
+        - ports:
+            - port: "5201"
+              protocol: TCP
+            - port: "5201"
+              protocol: UDP
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
   name: fayawall
 spec:
   description: "Default node firewall"
@@ -76,6 +93,8 @@ spec:
             - port: "51868"
               protocol: UDP
             - port: "51869"
+              protocol: UDP
+            - port: "51870"
               protocol: UDP
 
     - icmps:

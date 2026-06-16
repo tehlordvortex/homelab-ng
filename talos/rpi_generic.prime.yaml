@@ -7,14 +7,12 @@ overlay:
       kernel=u-boot.bin
       arm_64bit=1
       arm_boost=1
+      enable_uart=1
       dtoverlay=disable-bt
       dtoverlay=disable-wifi
-      enable_uart=1
       avoid_warnings=2
-      dtoverlay=vc4-kms-v3d,noaudio
+      dtoverlay=vc4-kms-v3d,noaudio,cma-256
 customization:
-  extraKernelArgs:
-    - cma=256M
   systemExtensions:
     officialExtensions:
       - siderolabs/vc4

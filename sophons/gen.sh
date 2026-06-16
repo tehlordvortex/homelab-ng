@@ -9,11 +9,11 @@ patch_dir=$self_dir/patches
 cluster=sophons
 endpoint=$SOPHONS_ENDPOINT_URL
 talos_version=$TALOS_VERSION
-kubernetes_version=v1.35.2
+kubernetes_version=v1.36.1
 
 vm_image=af87088cf1b22437863dea5433e70768e92cd109a7b115161490f2abf15c26ab
-pi_image=5776775752261925bcf9a6d66f025daeb6de13abcbcac81015c2ffced642ccec
-prime_image=be6b54b45267ef38608da53e992b784c53036a7217819b343d4f472e99a442c2
+pi_image=c00a850feae6a2eeabc0168e1ca0d15c24f8d7ce474fdb1155a16d3b8d4ec3bb
+prime_image=f2ebdd5b4b64f7acdfb0edbb88969872f52f7ad605ef5158db43d4b9e21a8b24
 
 gen_controlplane() {
   local host_name=$1

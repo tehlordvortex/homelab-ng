@@ -2,12 +2,13 @@
 zli = "github:project-zot/zot"
 
 [tools]
+helm = "3.21.0"
 kubectl = "1.34.1"
 "aqua:sarub0b0/kubetui" = "1.7.1"
-kustomize = "5.6.0"
+kustomize = "5.8.1"
 age = "1.2.1"
 sops = "3.11.0"
-talosctl = "1.12.7"
+talosctl = "1.13.4"
 "ubi:cozystack/talm" = "0.16.2"
 cosign = "3.0.2"
 watchexec = "2.3.2"
@@ -48,7 +49,7 @@ REPO_ROOT = "{{config_root}}"
 KUBECONFIG = "{{config_root}}/kubeconfig"
 TALOSCONFIG = "{{config_root}}/talosconfig"
 HEADSCALE_CLI_ADDRESS = "gghs.vrtx.sh:443"
-TALOS_VERSION = "v1.12.7"
+TALOS_VERSION = "v1.13.4"
 
 [settings]
 npm.bun = true
@@ -67,6 +68,21 @@ arg "<rest>" var=#true
 run = """
 eval "rest=(${usage_rest?})"
 helm --namespace {{ usage.namespace }} {{ usage.command }} \
+  --post-renderer kustomizer --post-renderer-args $(dirname "{{ usage.values }}") \
+  --values "{{ usage.values }}" "${rest[@]}"
+"""
+
+[tasks.'helm:diff:kustomized']
+dir = "{{ cwd }}"
+usage = """
+arg "<command>"
+flag "-n --namespace <namespace>"
+flag "-f --values <values>"
+arg "<rest>" var=#true
+"""
+run = """
+eval "rest=(${usage_rest?})"
+helm --namespace {{ usage.namespace }} diff {{ usage.command }} \
   --post-renderer kustomizer --post-renderer-args $(dirname "{{ usage.values }}") \
   --values "{{ usage.values }}" "${rest[@]}"
 """
