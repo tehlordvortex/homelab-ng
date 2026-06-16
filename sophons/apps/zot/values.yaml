@@ -1,3 +1,6 @@
+image:
+  repository: ghcrd.sphns.run/project-zot/zot
+
 replicaCount: 3
 affinity:
   nodeAffinity:
@@ -30,11 +33,10 @@ strategy:
 persistence: false
 resources:
   requests:
-    cpu: 50m
-    memory: 64Mi
+    cpu: 100m
+    memory: 100Mi
   limits:
-    cpu: 250m
-    memory: 300Mi
+    memory: 350Mi
 startupProbe:
   initialDelaySeconds: 15
   failureThreshold: 60
