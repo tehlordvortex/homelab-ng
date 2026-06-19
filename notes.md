@@ -22,7 +22,7 @@
 
 #### manual etcd recovery without reset in case of data corruption
 
-- pull ssd and run this on workstation or use node-debugger: `while true; do pkill -9 -e etcd$; sleep 0.25; done` to shoot etcd whenever it tries to restart
+- pull ssd and run this on workstation or use `talosctl debug`: `while true; do pkill -9 -e etcd$; sleep 0.25; done` to shoot etcd whenever it tries to restart
 - grab same etcd version from <https://github.com/etcd-io/etcd/releases>
 - copy secrets from `/host/system/secrets/etcd` to `/tmp/secrets/etcd`, `chown 60:60 secrets`
 - start etcd instance with user 60:60 in node-debugger container using, e.g.:
@@ -48,4 +48,18 @@ sudo -u etcd ./etcd2 --advertise-client-urls=https://node-a-ip:2379,https://node
 
 ```sh
 pkill -9 -e etcd$ && mv /host/var/lib/etcd/member /tmp/etcd/member.old && mv /tmp/etcd/member /host/var/lib/etcd/member`
+
+```
+
+### resource adoption by helm
+
+use `--take-ownership` or slap these bad bois on 'em:
+
+```yaml
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: Helm
+commonAnnotations:
+  meta.helm.sh/release-name: <name>
+  meta.helm.sh/release-namespace: <namespace>
 ```

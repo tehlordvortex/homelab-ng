@@ -66,24 +66,33 @@ spec:
 
     - toPorts:
         - ports:
+            # ssh
             - port: "22"
               protocol: TCP
             # Break in case of Cloudflare downtime
+            # http
             # - ports: "80"
             #   protocol: TCP
+            # https
             # - ports: "443"
             #   protocol: TCP
             # - ports: "443"
             #   protocol: UDP
-            # apiserver
-            - port: "6443"
-              protocol: TCP
             # etcd
             - port: "2379"
               protocol: TCP
             # health checks?
             - port: "4240"
               protocol: TCP
+            # geneve
+            - port: "6081"
+              protocol: UDP
+            # apiserver
+            - port: "6443"
+              protocol: TCP
+            # vxlan
+            - port: "8472"
+              protocol: UDP
             # talos
             - port: "50000"
               protocol: TCP

@@ -131,6 +131,10 @@ spec:
         - name: bluesky-pds
           image: ghcr.io/bluesky-social/pds:0.4.219
           env:
+            - name: LOG_ENABLED
+              value: "true"
+            - name: LOG_LEVEL
+              value: trace
             - name: PDS_HOSTNAME
               value: pds.vrtx.sh
             - name: PDS_JWT_SECRET
@@ -187,8 +191,6 @@ spec:
               value: "did:plc:ar7c4by46qjdydhdevvrndac"
             - name: PDS_CRAWLERS
               value: "https://bsky.network"
-            - name: LOG_ENABLED
-              value: "true"
             - name: PDS_EMAIL_FROM_ADDRESS
               value: "bsky@vrtx.sh"
 
