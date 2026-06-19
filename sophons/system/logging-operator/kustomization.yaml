@@ -1,3 +1,0 @@
-namespace: logging-system
-resources:
-  - syslogngclusteroutput.yaml
