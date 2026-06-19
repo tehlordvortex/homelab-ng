@@ -69,6 +69,11 @@ patches:
         name: zenlesszonezot
         namespace: zzzot
       spec:
+        trafficDistribution: PreferSameNode
+        # sessionAffinity: ClientIP
+        # sessionAffinityConfig:
+        #   clientIP:
+        #     timeoutSeconds: 900
         clusterIP: 10.43.0.42
         clusterIPs:
           - 10.43.0.42

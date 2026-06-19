@@ -14,9 +14,6 @@ spec:
   parentRefs:
     - name: traefik-gateway
       namespace: traefik
-      sectionName: web
-    - name: traefik-gateway
-      namespace: traefik
       sectionName: websecure
 
   hostnames:
@@ -29,6 +26,8 @@ spec:
 
   rules:
     - backendRefs:
-        - group: traefik.io
-          kind: TraefikService
-          name: zenlesszonezot
+        - name: zenlesszonezot
+          port: 5000
+        # - group: traefik.io
+        #   kind: TraefikService
+        #   name: zenlesszonezot

@@ -37,7 +37,7 @@ regsync = "0.11.2"
 
 
 [tools.zli]
-version = "2.1.15"
+version = "2.1.17"
 platforms.linux-x64 = { asset_pattern = "zli-linux-amd64" }
 platforms.linux-arm64 = { asset_pattern = "zli-linux-arm64" }
 

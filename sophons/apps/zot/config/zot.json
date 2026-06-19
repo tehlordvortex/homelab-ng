@@ -5,14 +5,16 @@
   "storage": {
     "rootDirectory": "/tmp/zot",
     "remoteCache": true,
+    "redirectBlobURL": true,
+    "fastRestart": true,
     "storageDriver": {
       "name": "s3",
       "region": "global",
       "bucket": "zenlesszonezot",
       "secure": false,
       "forcepathstyle": true,
-      "regionendpoint": "s3-global.garage.svc.cluster.local:3900",
-      "loglevel": "debugwithrequestretries"
+      "regionendpoint": "s3-global.sphns.run",
+      "loglevel": "debug"
     },
     "cacheDriver": {
       "name": "redis",
@@ -21,11 +23,41 @@
         "redis-z3-sentinel:26379"
       ],
       "keyprefix": "z3"
+    },
+    "retention": {
+      "dryRun": false,
+      "delay": "24h",
+      "policies": [
+        {
+          "repositories": [
+            "/proxy-*/**"
+          ],
+          "deleteReferrers": true,
+          "deleteUntagged": true,
+          "keepTags": [
+            {
+              "pulledWithin": "720h",
+              "pushedWithin": "720h"
+            }
+          ]
+        },
+        {
+          "keepTags": [
+            {
+              "patterns": [
+                ".*"
+              ]
+            }
+          ]
+        }
+      ]
     }
   },
   "http": {
     "address": "0.0.0.0",
     "port": "5000",
+    "readTimeout": "0",
+    "writeTimeout": "0",
     "compat": [
       "docker2s2"
     ],
@@ -56,6 +88,11 @@
       }
     },
     "accessControl": {
+      "metrics": {
+        "anonymousPolicy": [
+          "read"
+        ]
+      },
       "repositories": {
         "**": {
           "policies": [
@@ -129,7 +166,7 @@
             }
           ],
           "onDemand": true,
-          "preserveDigest": false
+          "preserveDigest": true
         },
         {
           "urls": [
@@ -142,7 +179,7 @@
             }
           ],
           "onDemand": true,
-          "preserveDigest": false
+          "preserveDigest": true
         }
       ]
     },

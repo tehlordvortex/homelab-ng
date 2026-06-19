@@ -1,5 +1,7 @@
 image:
-  repository: ghcrd.sphns.run/project-zot/zot
+  # repository: ghcrd.sphns.run/project-zot/zot
+  repository: docker.io/vrtxdotsh/project-zot--zot
+  tag: main-55b68228dadd603089af8e709009e200505ccd0f
 
 replicaCount: 3
 affinity:
@@ -21,6 +23,14 @@ affinity:
   #             app: redis-z3
   #         topologyKey: topology.kubernetes.io/zone
 
+hostAliases:
+  - ip: 10.43.0.69
+    hostnames:
+      - s3-global.sphns.run
+  - ip: 2001:cafe:43::69
+    hostnames:
+      - s3-global.sphns.run
+
 service:
   type: ClusterIP
   trafficDistribution: PreferClose
@@ -38,8 +48,8 @@ resources:
   limits:
     memory: 350Mi
 startupProbe:
-  initialDelaySeconds: 15
-  failureThreshold: 60
+  initialDelaySeconds: 30
+  failureThreshold: 120
 
 securityContext:
   runAsUser: 1000
