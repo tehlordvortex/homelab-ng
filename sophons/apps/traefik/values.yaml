@@ -249,7 +249,7 @@ deployment:
         claimName: traefik-data
     - name: plugin-cacheify
       image:
-        reference: pz3d.sphns.run/library/traefik/plugins/github.com/ciaranj/cacheify:dev-409ae70-8
+        reference: pz3.sphns.run/library/traefik/plugins/github.com/ciaranj/cacheify:dev-409ae70-10
         pullPolicy: IfNotPresent
 persistence:
   enabled: false

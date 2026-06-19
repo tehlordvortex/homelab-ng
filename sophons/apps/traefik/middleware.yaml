@@ -6,7 +6,7 @@ metadata:
 spec:
   plugin:
     cacheify:
-      path: /cache
+      path: /cache/default
       maxExpiry: 900 # 15mins
       cleanup: 300 # 5 mins
 ---
