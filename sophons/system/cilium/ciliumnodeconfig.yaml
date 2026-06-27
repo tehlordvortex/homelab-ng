@@ -1,0 +1,31 @@
+# apiVersion: cilium.io/v2
+# kind: CiliumNodeConfig
+# metadata:
+#   name: performance-tuning
+#   namespace: kube-system
+# spec:
+#   nodeSelector:
+#     matchLabels:
+#       io.cilium.migration/performance-tuning: "true"
+#   defaults:
+#     enable-bbr: "true"
+#     enable-bandwidth-manager: "true"
+#     enable-bpf-clock-probe: "true"
+#     datapath-mode: netkit
+#     bpf-distributed-lru: "true"
+#     bpf-map-dynamic-size-ratio: "0.00020"
+#     bpf-lb-acceleration: best-effort
+---
+apiVersion: cilium.io/v2
+kind: CiliumNodeConfig
+metadata:
+  name: caeneus-map-size
+  namespace: kube-system
+spec:
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/hostname: sophons-caeneus
+  defaults:
+    # Same as the kubelet, cilium is trying to allocate memory based on
+    # the full CPU/RAM of the host
+    bpf-map-dynamic-size-ratio: "0.000005"

@@ -1,4 +1,4 @@
-apiVersion: "cilium.io/v2"
+apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: iperftreefiddy
@@ -15,7 +15,7 @@ spec:
             - port: "5201"
               protocol: UDP
 ---
-apiVersion: "cilium.io/v2"
+apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: fayawall

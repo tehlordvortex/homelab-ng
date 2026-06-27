@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://github.com/cilium/cilium/raw/refs/tags/v1.20.0-pre.3/install/kubernetes/cilium/values.schema.json
 cgroup:
   autoMount:
     enabled: false
@@ -46,30 +47,28 @@ ipam:
 k8sServiceHost: localhost
 k8sServicePort: 7445
 
-MTU: 1420
+MTU: 1405 # https://github.com/cilium/cilium/pull/45940/changes
 routingMode: native
-# tunnelProtocol: vxlan
 ipv4NativeRoutingCIDR: 10.41.0.0/16
 ipv6NativeRoutingCIDR: 2001:cafe:41::/56
 
-# installNoConntrackIptablesRules: true
-# bpf:
-#   lbExternalClusterIP: true
-#   masquerade: true
-#   hostLegacyRouting: true
-#   lbModeAnnotation: true
 kubeProxyReplacement: true
+bpfClockProbe: true
+bpf:
+  masquerade: true
+  datapathMode: netkit
+  distributedLRU:
+    enabled: true
+  mapDynamicSizeRatio: "0.00020"
+  ctAccounting: true
 localRedirectPolicies:
   enabled: true
-# socketLB:
-#   hostNamespaceOnly: true
 loadBalancer:
   serviceTopology: true
-#   mode: dsr
-#   acceleration: best-effort
-#   dsrDispatch: geneve
+  acceleration: best-effort
 bandwidthManager:
   enabled: true
+  bbr: true
 hostFirewall:
   enabled: true
 pmtuDiscovery:
