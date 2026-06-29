@@ -27,7 +27,7 @@ spec:
           type: RuntimeDefault
 
       initContainers:
-        - name: litestream-replicate
+        - name: litestream
           restartPolicy: Always
           image: docker.io/litestream/litestream
           command: [bash, /etc/litestream/entrypoint.sh]
@@ -43,21 +43,27 @@ spec:
               valueFrom:
                 resourceFieldRef:
                   resource: limits.memory
-            - name: LITESTREAM_DBS
-              value: |-
-                account.sqlite,did_cache.sqlite,sequencer.sqlite,actors/54/did:plc:6gr352ee33a4o6s4ivatzo2u/store.sqlite
-            - name: LITESTREAM_DBS_DIR
-              value: /pds
-            - name: LITESTREAM_DBS_PATTERN
-              value: "*.sqlite"
-            - name: LITESTREAM_WATCH_RECURSIVE
-              value: "true"
             - name: LITESTREAM_ENDPOINT
               value: https://ps3-global.sphns.run
             - name: LITESTREAM_BUCKET
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
               value: ng/pds
+            - name: LITESTREAM_CONFIG
+              value: |-
+                dbs:
+                  - path: /pds/account.sqlite
+                    replica:
+                      url: "[[replica_url account.sqlite]]"
+                  - path: /pds/did_cache.sqlite
+                    replica:
+                      url: "[[replica_url did_cache.sqlite]]"
+                  - path: /pds/sequencer.sqlite
+                    replica:
+                      url: "[[replica_url sequencer.sqlite]]"
+                  - path: /pds/actors/54/did:plc:6gr352ee33a4o6s4ivatzo2u/store.sqlite
+                    replica:
+                      url: "[[replica_url actors/54/did:plc:6gr352ee33a4o6s4ivatzo2u/store.sqlite]]"
 
           ports:
             - name: ls-metrics
@@ -92,7 +98,7 @@ spec:
               cpu: 50m
               memory: 48Mi
             limits:
-              memory: 100Mi
+              memory: 128Mi
 
         - name: copy-actor-keys
           image: docker.io/library/busybox:1.37
@@ -129,7 +135,7 @@ spec:
 
       containers:
         - name: bluesky-pds
-          image: ghcr.io/bluesky-social/pds:0.4.219
+          image: ghcr.io/bluesky-social/pds:0.4.5009
           env:
             - name: LOG_ENABLED
               value: "true"

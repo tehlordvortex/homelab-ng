@@ -15,7 +15,7 @@ resources:
   - ../garage/access-keys/infinity-and-beyond
 components:
   - ../../common/litestream
-  - ../../common/litestream/watch-config
+  - ../../common/litestream/templ-config
 
 secretGenerator:
   - name: pds-config
