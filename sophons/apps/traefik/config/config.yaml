@@ -1,8 +1,0 @@
-tunnel: 163f32fb-e910-4a18-9ef0-9c5bfe635f33
-credentials-file: /.cloudflared/163f32fb-e910-4a18-9ef0-9c5bfe635f33.json
-
-ingress:
-  - service: https://traefik.traefik.svc.cluster.local
-    originRequest:
-      matchSNItoHost: true
-      http2Origin: true

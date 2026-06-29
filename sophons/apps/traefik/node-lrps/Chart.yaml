@@ -1,0 +1,4 @@
+apiVersion: v2
+name: node-lrps
+description: Cilium LocalRedirectPolicies mapping nodeIP:[entryPoint] to Traefik pods
+version: 0.1.1

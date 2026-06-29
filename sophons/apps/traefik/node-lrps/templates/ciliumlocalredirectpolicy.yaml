@@ -1,0 +1,20 @@
+{{- $values := .Values }}
+{{- $release := .Release }}
+
+{{- $public := $values.public.nodes | fromJson }}
+{{- $public := $public.nodes }}
+{{- if empty $public }}{{ fail "values must contain a 'public.nodes.nodes:' key" }}{{ end -}}
+
+{{- range $node := $public }}
+{{- $node := dict "Release" $release "Values" $values "kind" "public" "node" $node "toPorts" $values.public.toPorts }}
+{{- template "node-lrps.larp" $node }}
+{{- end }}
+
+{{- $internal := $values.internal.nodes | fromJson }}
+{{- $internal := $internal.nodes }}
+{{- if empty $internal }}{{ fail "values must contain a 'internal.nodes.nodes:' key" }}{{ end -}}
+
+{{- range $node := $internal }}
+{{- $node := dict "Release" $release "Values" $values "kind" "internal" "node" $node "toPorts" $values.internal.toPorts }}
+{{- template "node-lrps.larp" $node }}
+{{- end }}

@@ -7,6 +7,10 @@ sources = ["patches/*.yaml", "secrets.yaml", "gen.sh", ".env"]
 dir = "{{config_root}}"
 run = "./gen.sh"
 
+[tasks.'gen:node-lrps']
+dir = "./apps/traefik/node-lrps"
+run = "./gen.sh"
+
 [tasks.'talos:all']
 run = ["talosctl --nodes=$SOPHONS_NODES"]
 
