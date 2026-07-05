@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.36.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: zenlesszonevalkeyrie
+  namespace: zzzot
+  labels:
+    app.kubernetes.io/name: zot
+    app.kubernetes.io/instance: zenlesszonezot
+    app.kubernetes.io/component: cache
+spec:
+  selector:
+    app.kubernetes.io/name: zot
+    app.kubernetes.io/instance: zenlesszonezot
+    app.kubernetes.io/component: cache
+  ports:
+    - name: redis
+      port: 6379
+    - name: redis-exporter
+      port: 9121

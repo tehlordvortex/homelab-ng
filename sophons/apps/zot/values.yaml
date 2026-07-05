@@ -1,27 +1,55 @@
 image:
   # repository: ghcrd.sphns.run/project-zot/zot
-  repository: docker.io/vrtxdotsh/project-zot--zot
-  tag: main-55b68228dadd603089af8e709009e200505ccd0f
+  # repository: docker.io/vrtxdotsh/project-zot--zot
+  # tag: main-55b68228dadd603089af8e709009e200505ccd0f
+  # repository: ghcrd.sphns.run/tehlordvortex/project-zot/zot
+  # pullPolicy: Never
+  repository: pz3.sphns.run/project-zot/zot
+  tag: dev-cf2030fa-1@sha256:9df083b8fcc3ae5d90beff6a7e52e964a9b0f17fb3e4a887c03686b38d55335d # 2.1.18
 
-replicaCount: 3
+replicaCount: 2
 affinity:
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          namespaces: [alpha-centauri-system]
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: valkey
+              app.kubernetes.io/instance: valkeyrie
+          topologyKey: topology.kubernetes.io/zone
+
   nodeAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: NotIn
+              values: [sophons-oduduwa]
+        weight: 69
       - preference:
           matchExpressions:
             - key: cluster.garage.sophons.cloud/global
               operator: In
               values: ["true"]
-        weight: 100
+        weight: 68
+      - preference:
+          matchExpressions:
+            - key: topology.kubernetes.io/region
+              operator: NotIn
+              values: [ng]
+        weight: 67
 
-  # podAffinity:
-  #   preferredDuringSchedulingIgnoredDuringExecution:
-  #     - weight: 25
-  #       podAffinityTerm:
-  #         labelSelector:
-  #           matchLabels:
-  #             app: redis-z3
-  #         topologyKey: topology.kubernetes.io/zone
+topologySpreadConstraints:
+  - labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: zot
+        app.kubernetes.io/instance: zenlesszonezot
+    maxSkew: 1
+    minDomains: 2
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
 
 hostAliases:
   - ip: 10.43.0.69
@@ -46,54 +74,100 @@ resources:
     cpu: 100m
     memory: 100Mi
   limits:
-    memory: 350Mi
+    memory: 400Mi
 startupProbe:
-  initialDelaySeconds: 30
   failureThreshold: 120
 
-securityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
+podSecurityContext:
+  runAsUser: 65532
+  runAsGroup: 65532
   runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:
     drop: [ALL]
-  seccompProfile:
-    type: RuntimeDefault
 
 env:
   - name: GOGC
-    value: "25"
+    value: "10"
   - name: GOMEMLIMIT
     valueFrom:
       resourceFieldRef:
         resource: limits.memory
-  - name: AWS_ACCESS_KEY_ID
-    valueFrom:
-      secretKeyRef:
-        name: z3
-        key: AWS_ACCESS_KEY_ID
-  - name: AWS_SECRET_ACCESS_KEY
-    valueFrom:
-      secretKeyRef:
-        name: z3
-        key: AWS_SECRET_ACCESS_KEY
 externalSecrets:
   - secretName: z3
     mountPath: /secrets/z3
 extraVolumeMounts:
-  - name: config
+  - name: tmp
+    subPath: config
     mountPath: /etc/zot
   - name: tmp
-    mountPath: /tmp/zot
+    subPath: zot
+    mountPath: /tmp
 
 extraVolumes:
-  - name: config
+  - name: config-templ
     configMap:
       name: zenlesszonezot
   - name: tmp
     emptyDir: {}
+
+initContainers:
+  - name: template-config
+    # image: ghcrd.sphns.run/tehlordvortex/alpine/envsubst:3.24.1@sha256:9a8e0760a2068d86c0583332a809664c2051d489faa409c079f41a6e888f78ae
+    image: pz3.sphns.run/alpine/envsubst:3.24.1@sha256:e54a472f3c276ca68cbb45886b05b61f72b9364b916ed4018c5346304593c887
+    # imagePullPolicy: Never
+    command:
+      - sh
+      - -c
+      - |
+        set -xeuo pipefail
+        envsubst '$B2_ACCESS_KEY_ID $B2_SECRET_ACCESS_KEY $GARAGE_ACCESS_KEY_ID $GARAGE_SECRET_ACCESS_KEY' \
+          < /etc/zot.templ/config.json > /etc/zot/config.json
+
+    env:
+      - name: B2_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: trisolaris-access-key
+            key: AWS_ACCESS_KEY_ID
+      - name: B2_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: trisolaris-access-key
+            key: AWS_SECRET_ACCESS_KEY
+      - name: GARAGE_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: z3-access-key
+            key: AWS_ACCESS_KEY_ID
+      - name: GARAGE_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: z3-access-key
+            key: AWS_SECRET_ACCESS_KEY
+
+    volumeMounts:
+      - name: config-templ
+        mountPath: /etc/zot.templ
+      - name: tmp
+        subPath: config
+        mountPath: /etc/zot
+
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: [ALL]
+
+    resources:
+      requests:
+        memory: 1Mi
+      limits:
+        memory: 16Mi
 
 metrics:
   enabled: true

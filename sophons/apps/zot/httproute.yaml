@@ -25,6 +25,11 @@ spec:
     - poci.sphns.run
 
   rules:
+    # blackhole metrics route
+    - matches:
+        - path:
+            type: Exact
+            value: /metrics
     - backendRefs:
         - name: zenlesszonezot
           port: 5000

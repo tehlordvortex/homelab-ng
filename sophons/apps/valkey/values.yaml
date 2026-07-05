@@ -1,0 +1,158 @@
+rbac:
+  create: false
+serviceAccount:
+  create: false
+
+extraLabels:
+  app.kubernetes.io/name: valkey
+  app.kubernetes.io/instance: valkeyrie
+
+image:
+  repository: ghcrd.sphns.run/valkey-io/valkey
+  tag: 9.1.0-alpine3.23@sha256:a35428eba9043cc0b79dbe54100f0c92784f2de00ad09b01182bfb1c5c83d1bd
+
+replicas: 3
+podDisruptionBudget:
+  minAvailable: 2
+topologySpreadConstraints:
+  enabled: true
+  topologyKey: topology.kubernetes.io/region
+  whenUnsatisfiable: DoNotSchedule
+
+securityContext:
+  runAsUser: 65532
+  runAsGroup: 65532
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+persistentVolume:
+  enabled: false
+
+init:
+  resources:
+    requests:
+      memory: 16Mi
+    limits:
+      memory: 64Mi
+
+redis:
+  terminationGracePeriodSeconds: 180 # 3 minutes
+  masterGroupName: valkeyrie
+  config:
+    min-replicas-to-write: 1
+    min-replicas-max-lag: 5 # seconds
+    dual-channel-replication-enabled: "yes"
+    save: "1 1" # every second, at least 1 change
+    maxmemory: 48mb
+    maxmemory-policy: volatile-lru
+    repl-diskless-sync: "yes"
+    rdbcompression: "yes"
+    rdbchecksum: "yes"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 48Mi
+    limits:
+      memory: 128Mi
+
+  livenessProbe:
+    initialDelaySeconds: null
+  readinessProbe:
+    initialDelaySeconds: null
+  startupProbe:
+    initialDelaySeconds: null
+
+sentinel:
+  livenessProbe:
+    initialDelaySeconds: null
+  readinessProbe:
+    initialDelaySeconds: null
+  startupProbe:
+    initialDelaySeconds: null
+
+exporter:
+  enabled: true
+  image: quay.io/oliver006/redis_exporter
+  tag: v1.86.0-alpine@sha256:755a0b4cbcc86c4843b167c830674e52b63f9467c934b8ccb811b4f506e197f0
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      memory: 64Mi
+
+  serviceMonitor:
+    enabled: true
+
+  livenessProbe:
+    initialDelaySeconds: null
+  readinessProbe:
+    initialDelaySeconds: null
+
+splitBrainDetection:
+  interval: 15
+  retryInterval: 3
+  livenessProbe:
+    initialDelaySeconds: null
+  readinessProbe:
+    initialDelaySeconds: null
+
+extraInitContainers:
+  - name: redis-s3-sync
+    restartPolicy: Always
+    image: ghcrd.sphns.run/tehlordvortex/alpine/redis-s3-sync:3.24.1@sha256:66968045fd96d968fb3fa5b7f3a410a8481c3f68294a17da73f4e3ea145cd7f5
+    # image: pz3.sphns.run/alpine/redis-s3-sync:3.24.1@sha256:ad94d9fc118caca525fc044e703ac9cbe77aac74e6307cd632bf3a81fcec004b
+    # image: pz3.sphns.run/alpine/redis-s3-sync@sha256:ad94d9fc118caca525fc044e703ac9cbe77aac74e6307cd632bf3a81fcec004b
+    # imagePullPolicy: Never
+    envFrom:
+      - secretRef:
+          name: infinity-and-beyond-access-key
+    env:
+      - name: DEBUG
+        value: "true"
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+      - name: ZSTD_COMPRESS
+        value: "10"
+      - name: RDB_PATH
+        value: /data/dump.rdb
+      - name: S3_ENDPOINT
+        value: https://ps3-global.sphns.run
+      - name: S3_URI
+        value: s3://juicestream/redis/$(POD_NAMESPACE)/$(POD_NAME)/dump.rdb
+
+    startupProbe:
+      exec:
+        command: [sh, -c, "[ -e /data/.dump.rdb.ready ]"]
+
+    volumeMounts:
+      - name: data
+        mountPath: /data
+
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: [ALL]
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 16Mi
+      limits:
+        memory: 128Mi

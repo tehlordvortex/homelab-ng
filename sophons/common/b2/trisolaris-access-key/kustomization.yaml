@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: trisolaris-access-key
+    env: .env

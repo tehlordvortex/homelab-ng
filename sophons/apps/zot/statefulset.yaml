@@ -1,0 +1,150 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.36.1/statefulset-apps-v1.json
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zenlesszonevalkeyrie
+  namespace: zzzot
+  labels:
+    app.kubernetes.io/name: zot
+    app.kubernetes.io/instance: zenlesszonezot
+    app.kubernetes.io/component: cache
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zot
+      app.kubernetes.io/instance: zenlesszonezot
+      app.kubernetes.io/component: cache
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zot
+        app.kubernetes.io/instance: zenlesszonezot
+        app.kubernetes.io/component: cache
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: cluster.garage.sophons.cloud/global
+                    operator: In
+                    values: ["true"]
+              weight: 100
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: NotIn
+                    values: [ng]
+              weight: 67
+
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+      initContainers:
+        - name: redis-s3-sync
+          restartPolicy: Always
+          image: ghcrd.sphns.run/tehlordvortex/alpine/redis-s3-sync:3.24.1@sha256:66968045fd96d968fb3fa5b7f3a410a8481c3f68294a17da73f4e3ea145cd7f5
+          # image: pz3.sphns.run/alpine/redis-s3-sync:3.24.1@sha256:ad94d9fc118caca525fc044e703ac9cbe77aac74e6307cd632bf3a81fcec004b
+          # image: pz3.sphns.run/alpine/redis-s3-sync@sha256:ad94d9fc118caca525fc044e703ac9cbe77aac74e6307cd632bf3a81fcec004b
+          # imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: z3-access-key
+          env:
+            - name: DEBUG
+              value: "true"
+            - name: ZSTD_COMPRESS
+              value: "19"
+            - name: RDB_PATH
+              value: /data/dump.rdb
+            - name: S3_ENDPOINT
+              value: https://ps3-global.sphns.run
+            - name: S3_URI
+              value: s3://zenlesszonezot/redis/dump.rdb
+
+          startupProbe:
+            exec:
+              command: [sh, -c, "[ -e /data/.dump.rdb.ready ]"]
+
+          volumeMounts:
+            - name: tmp
+              subPath: valkey-data
+              mountPath: /data
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 100Mi
+
+        - name: redis-exporter
+          restartPolicy: Always
+          image: quay.io/oliver006/redis_exporter:v1.86.0-alpine@sha256:755a0b4cbcc86c4843b167c830674e52b63f9467c934b8ccb811b4f506e197f0
+          # image: pz3.sphns.run/mirror/quay.io/oliver006/redis_exporter:v1.86.0-alpine@sha256:755a0b4cbcc86c4843b167c830674e52b63f9467c934b8ccb811b4f506e197f0
+          # imagePullPolicy: Never
+
+          ports:
+            - containerPort: 9121
+              name: redis-exporter
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+
+      containers:
+        - name: valkey
+          restartPolicy: Always
+          image: ghcrd.sphns.run/valkey-io/valkey:9.1.0-alpine3.23@sha256:a35428eba9043cc0b79dbe54100f0c92784f2de00ad09b01182bfb1c5c83d1bd
+          # image: pz3.sphns.run/mirror/ghcr.io/valkey-io/valkey:9.1.0-alpine3.23@sha256:a35428eba9043cc0b79dbe54100f0c92784f2de00ad09b01182bfb1c5c83d1bd
+          # imagePullPolicy: Never
+          args: [--save "1 1"]
+
+          startupProbe:
+            exec:
+              command: [sh, -c, "valkey-cli PING || exit 1"]
+
+          ports:
+            - containerPort: 6379
+              name: redis
+
+          volumeMounts:
+            - name: tmp
+              subPath: valkey-data
+              mountPath: /data
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 16Mi
+            limits:
+              memory: 64Mi

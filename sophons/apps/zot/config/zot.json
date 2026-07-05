@@ -1,28 +1,29 @@
 {
   "log": {
-    "level": "debug"
+    "level": "info"
   },
   "storage": {
-    "rootDirectory": "/tmp/zot",
+    "rootDirectory": "/tmp/zot-b2",
     "remoteCache": true,
     "redirectBlobURL": true,
     "fastRestart": true,
     "storageDriver": {
       "name": "s3",
-      "region": "global",
-      "bucket": "zenlesszonezot",
-      "secure": false,
+      "region": "eu-central-003",
+      "regionendpoint": "s3.eu-central-003.backblazeb2.com",
+      "bucket": "sophons",
+      "rootdirectory": "/zenlesszonezot",
       "forcepathstyle": true,
-      "regionendpoint": "s3-global.sphns.run",
-      "loglevel": "debug"
+      "accesskey": "${B2_ACCESS_KEY_ID}",
+      "secretkey": "${B2_SECRET_ACCESS_KEY}"
     },
     "cacheDriver": {
       "name": "redis",
-      "master_name": "myMaster",
       "addr": [
-        "redis-z3-sentinel:26379"
+        "valkeyrie-redis-ha.alpha-centauri-system:26379"
       ],
-      "keyprefix": "z3"
+      "master_name": "valkeyrie",
+      "keyprefix": "z3:k"
     },
     "retention": {
       "dryRun": false,
@@ -30,7 +31,7 @@
       "policies": [
         {
           "repositories": [
-            "/proxy-*/**"
+            "/mirror/**"
           ],
           "deleteReferrers": true,
           "deleteUntagged": true,
@@ -51,6 +52,31 @@
           ]
         }
       ]
+    },
+    "subPaths": {
+      "/p": {
+        "rootDirectory": "/tmp/zot-garage",
+        "remoteCache": true,
+        "redirectBlobURL": true,
+        "storageDriver": {
+          "name": "s3",
+          "region": "global",
+          "regionendpoint": "ps3-global.sphns.run",
+          "redirectendpoint": "s3-global.sphns.run",
+          "bucket": "zenlesszonezot",
+          "forcepathstyle": true,
+          "accesskey": "${GARAGE_ACCESS_KEY_ID}",
+          "secretkey": "${GARAGE_SECRET_ACCESS_KEY}"
+        },
+        "cacheDriver": {
+          "name": "redis",
+          "addr": [
+            "valkeyrie-redis-ha.alpha-centauri-system:26379"
+          ],
+          "master_name": "valkeyrie",
+          "keyprefix": "z3:k"
+        }
+      }
     }
   },
   "http": {
@@ -64,9 +90,16 @@
     "externalUrl": "https://zenlesszonezot.sophons.cloud",
     "auth": {
       "apikey": true,
-      "sessionKeysFile": "/secrets/z3/session.json",
+      "sessionDriver": {
+        "name": "redis",
+        "addr": [
+          "valkeyrie-redis-ha.alpha-centauri-system:26379"
+        ],
+        "master_name": "valkeyrie",
+        "keyprefix": "z3:s"
+      },
       "htpasswd": {
-        "path": "/etc/zot/htpasswd"
+        "path": "/secrets/z3/htpasswd"
       },
       "openid": {
         "providers": {
@@ -103,11 +136,33 @@
               "actions": [
                 "read"
               ]
+            },
+            {
+              "users": [
+                "push"
+              ],
+              "actions": [
+                "read",
+                "create",
+                "update"
+              ]
             }
           ],
           "defaultPolicy": []
         },
         "library/**": {
+          "policies": [
+            {
+              "users": [
+                "push"
+              ],
+              "actions": [
+                "read",
+                "create",
+                "update"
+              ]
+            }
+          ],
           "anonymousPolicy": [
             "read"
           ],
@@ -151,18 +206,31 @@
               "tags": {
                 "excludeRegex": ".*"
               },
-              "destination": "/proxy-ghcr.io"
+              "destination": "/mirror/ghcr.io"
             },
             {
               "prefix": "/immich-app/immich-machine-learning",
               "tags": {
                 "excludeRegex": ".*-rocm$"
               },
-              "destination": "/proxy-ghcr.io"
+              "destination": "/mirror/ghcr.io"
             },
             {
               "prefix": "**",
-              "destination": "/proxy-ghcr.io"
+              "destination": "/mirror/ghcr.io"
+            }
+          ],
+          "onDemand": true,
+          "preserveDigest": true
+        },
+        {
+          "urls": [
+            "https://dhi.io"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/mirror/dhi.io"
             }
           ],
           "onDemand": true,
@@ -175,7 +243,20 @@
           "content": [
             {
               "prefix": "**",
-              "destination": "/proxy-docker.io"
+              "destination": "/mirror/docker.io"
+            }
+          ],
+          "onDemand": true,
+          "preserveDigest": true
+        },
+        {
+          "urls": [
+            "https://quay.io"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/mirror/quay.io"
             }
           ],
           "onDemand": true,
