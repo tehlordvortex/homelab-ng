@@ -73,7 +73,7 @@ spec:
 
       containers:
         - name: headscale
-          image: ghcr.io/juanfont/headscale:v0.28.0
+          image: ghcr.io/juanfont/headscale:v0.29.2
           args: ["serve"]
 
           env:
@@ -91,6 +91,9 @@ spec:
               name: hs-grpc
 
           volumeMounts:
+            - name: tmp
+              subPath: headscale
+              mountPath: /tmp
             - name: tmp
               mountPath: /var/lib/headscale
               subPath: lib-headscale
@@ -131,7 +134,7 @@ spec:
               drop: [ALL]
 
         - name: headplane
-          image: ghcr.io/tale/headplane:0.6.3
+          image: ghcr.io/tale/headplane:0.7.0
 
           ports:
             - containerPort: 3000
@@ -147,11 +150,6 @@ spec:
                 secretKeyRef:
                   name: headscale
                   key: cookie.secret
-            - name: HEADPLANE_INTEGRATION__AGENT__PRE_AUTHKEY
-              valueFrom:
-                secretKeyRef:
-                  name: headscale
-                  key: agent_preauth.key
             - name: HEADPLANE_OIDC__HEADSCALE_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -159,6 +157,9 @@ spec:
                   key: headscale_api.key
 
           volumeMounts:
+            - name: tmp
+              subPath: headplane
+              mountPath: /tmp
             - name: tmp
               mountPath: /var/lib/headplane
               subPath: lib-headplane
@@ -228,6 +229,12 @@ spec:
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
               value: ng/headscale
+            - name: LITESTREAM_LOGGING_LEVEL
+              value: debug
+            - name: LITESTREAM_RETENTION
+              value: 24h
+            - name: LITESTREAM_SNAPSHOT_INTERVAL
+              value: 1h
             - name: LITESTREAM_CONFIG
               value: |-
                 dbs:
@@ -277,29 +284,20 @@ spec:
               memory: 100Mi
 
         - name: update-cf-dns
-          image: docker.io/library/alpine:3.22
+          image: docker.io/alpine/curl:8.21.0
           command:
             - ash
             - -c
             - |
               set -xeu
-              apk add curl
-
               if [ "$NODE_NAME" = "sophons-oduduwa" ]; then
                 alias acurl="curl -4"
               else
                 alias acurl="curl"
               fi
 
-              # while :; do
               acurl -fsSL -XPOST -H "authorization: bearer $CLOUDFLARE_API_TOKEN" \
                 https://neckhook.sphns.workers.dev/trigger
-                # wget -qS -O /dev/null --post-data "" \
-                #   --header "authorization: bearer $CLOUDFLARE_API_TOKEN" \
-                #   https://neckhook.sphns.workers.dev/trigger
-                # sleep 300 & # 5 minutes
-                # wait $!
-              # done
           env:
             - name: CLOUDFLARE_API_TOKEN
               valueFrom:
@@ -311,15 +309,9 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
 
-          volumeMounts:
-            - name: tmp
-              mountPath: "/var/cache/apk"
-              subPath: cache-apk
-
           securityContext:
-            runAsNonRoot: false
-            runAsGroup: 0
-            runAsUser: 0
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
 

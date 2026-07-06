@@ -238,7 +238,7 @@
         },
         {
           "urls": [
-            "https://index.docker.io"
+            "https://registry-1.docker.io"
           ],
           "content": [
             {
@@ -257,6 +257,58 @@
             {
               "prefix": "**",
               "destination": "/mirror/quay.io"
+            }
+          ],
+          "onDemand": true,
+          "preserveDigest": true
+        },
+        {
+          "urls": [
+            "https://registry.k8s.io"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/mirror/registry.k8s.io"
+            }
+          ],
+          "onDemand": true,
+          "preserveDigest": true
+        },
+        {
+          "urls": [
+            "https://gcr.io"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/mirror/gcr.io"
+            }
+          ],
+          "onDemand": true,
+          "preserveDigest": true
+        },
+        {
+          "urls": [
+            "https://public.ecr.aws"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/mirror/public.ecr.aws"
+            }
+          ],
+          "onDemand": true,
+          "preserveDigest": true
+        },
+        {
+          "urls": [
+            "https://code.forgejo.org"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/mirror/code.forgejo.org"
             }
           ],
           "onDemand": true,
