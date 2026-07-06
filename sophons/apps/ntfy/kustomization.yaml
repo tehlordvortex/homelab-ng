@@ -3,16 +3,17 @@ resources:
   - service.yaml
   - cfdtunnel.yaml
   - httproute.yaml
-  - deployment.yaml
-  - secret.sops.yaml
+  - statefulset.yaml
+  - ../garage/access-keys/infinity-and-beyond
 
-configMapGenerator:
-  - name: litestream
-    files:
-      - config/litestream.yaml
-      - config/litestream-legacy.yaml
+components:
+  - ../../common/litestream
+  - ../../common/litestream/templ-config
 
 secretGenerator:
+  - name: ntfy
+    env: .env
+
   - name: ntfy-config
     files:
       - server.yaml=config/server.sops.yaml
