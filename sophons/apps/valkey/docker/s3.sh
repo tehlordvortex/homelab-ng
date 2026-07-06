@@ -15,7 +15,7 @@ upload() {
   rm -f "$RDB_PATH.zst"
   zstd -$zstd_level "$RDB_PATH"
   while ! aws s3 cp --endpoint-url "$S3_ENDPOINT" "$RDB_PATH.zst" "$S3_URI"; do
-    >2 echo "upload failed, retrying in ${backoff}s"
+    echo "upload failed, retrying in ${backoff}s"
     sleep $backoff
     backoff=$((backoff * 2 > 180 ? backoff : backoff * 2))
   done
@@ -39,6 +39,9 @@ if [ ! -f "$RDB_PATH" ]; then
   1) echo "no snapshot found - $RDB_PATH - $S3_URI" ;;
   *) exit $rc ;;
   esac
+else
+  set -e
+  upload
 fi
 set -e
 
