@@ -1,0 +1,218 @@
+server:
+  tolerations:
+    - key: caeneus.sophons.cloud
+      operator: Exists
+
+  createAgentSecret: false
+  env:
+    GOGC: "10"
+    GOMEMLIMIT:
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+
+    WOODPECKER_AGENT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: birb-woodpecker
+          key: WOODPECKER_AGENT_SECRET
+
+    WOODPECKER_LOG_LEVEL: debug
+    WOODPECKER_FORCE_IGNORE_SERVICE_FAILURE: "false"
+    WOODPECKER_HOST: https://ic.vrtx.sh
+    WOODPECKER_ADMIN: woodpecker,admin,vrtx
+    WOODPECKER_FORGEJO: "true"
+    WOODPECKER_FORGEJO_URL: https://tig.vrtx.sh
+    WOODPECKER_FORGEJO_CLIENT: 1674ed1d-c5f0-4235-821e-067476acb7b9
+
+    WOODPECKER_FORGEJO_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: birb-woodpecker
+          key: WOODPECKER_FORGEJO_SECRET
+
+  initContainers:
+    - name: litestream
+      restartPolicy: Always
+      image: docker.io/litestream/litestream
+      command: [bash, /etc/litestream/entrypoint.sh]
+      envFrom:
+        - configMapRef:
+            name: litestream-env
+        - secretRef:
+            name: infinity-and-beyond-access-key
+      env:
+        - name: GOGC
+          value: "10"
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+        - name: LITESTREAM_ENDPOINT
+          value: https://ps3-global.sphns.run
+        - name: LITESTREAM_BUCKET
+          value: litestream-ad-infinitum
+        - name: LITESTREAM_REPLICA_PATH
+          value: ng/woodpecker
+        - name: LITESTREAM_CONFIG
+          value: |-
+            dbs:
+              - path: /var/lib/woodpecker/woodpecker.sqlite
+                replica:
+                  url: "[[replica_url woodpecker.sqlite]]"
+
+      ports:
+        - name: ls-metrics
+          containerPort: 9090
+
+      startupProbe:
+        exec:
+          command: [bash, /etc/litestream/restore-probe.sh]
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureThreshold: 30
+
+      volumeMounts:
+        - name: tmp
+          subPath: woodpecker
+          mountPath: /var/lib/woodpecker
+        - name: litestream-config
+          mountPath: /etc/litestream
+          readOnly: true
+        - name: tmp
+          subPath: litestream
+          mountPath: /tmp
+
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+
+  extraVolumes:
+    - name: tmp
+      emptyDir: {}
+    - name: litestream-config
+      configMap:
+        name: litestream-config
+
+  extraVolumeMounts:
+    - name: tmp
+      subPath: woodpecker
+      mountPath: /var/lib/woodpecker
+
+  persistentVolume:
+    enabled: false
+
+  podSecurityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    runAsUser: null
+    runAsGroup: null
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ALL]
+
+  metrics:
+    enabled: true
+
+  grafana:
+    dashboards:
+      enabled: true
+
+  prometheus:
+    podmonitor:
+      enabled: true
+    rules:
+      enabled: true
+
+agent:
+  mapAgentSecret: false
+  replicaCount: 1
+  tolerations:
+    - key: caeneus.sophons.cloud
+      operator: Exists
+  nodeSelector:
+    kubernetes.io/hostname: sophons-caeneus
+
+  env:
+    GOGC: "10"
+    GOMEMLIMIT:
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+
+    WOODPECKER_AGENT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: birb-woodpecker
+          key: WOODPECKER_AGENT_SECRET
+
+    WOODPECKER_SERVER: "birb-server:9000"
+    WOODPECKER_MAX_WORKFLOWS: "3"
+    WOODPECKER_LOG_ENTRY_STREAM_BUFFER_SIZE: "10" # Mb
+    WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker-system
+    WOODPECKER_BACKEND_K8S_STORAGE_CLASS: local-path
+    WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
+    WOODPECKER_BACKEND_K8S_POD_LABELS: |
+      ci.sophons.cloud: "true"
+    WOODPECKER_BACKEND_K8S_POD_TOLERATIONS: |
+      - key: caeneus.sophons.cloud
+        operator: Exists
+    WOODPECKER_BACKEND_K8S_POD_NODE_SELECTOR: |
+      kubernetes.io/hostname: sophons-caeneus
+    WOODPECKER_BACKEND_K8S_PERMISSION_INIT_IMAGE: docker.io/library/busybox:1.37
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+  extraVolumes:
+    - name: tmp
+      emptyDir: {}
+
+  extraVolumeMounts:
+    - name: tmp
+      subPath: woodpecker
+      mountPath: /etc/woodpecker
+
+  persistence:
+    enabled: false
+
+  podSecurityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    runAsUser: null
+    runAsGroup: null
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ALL]

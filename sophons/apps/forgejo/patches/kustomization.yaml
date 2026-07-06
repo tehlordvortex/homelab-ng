@@ -165,18 +165,24 @@ patches:
               valueFrom:
                 resourceFieldRef:
                   resource: limits.memory
-            - name: LITESTREAM_DBS
-              value: fs.meta.db,redka.db,gitea.v2.db
-            - name: LITESTREAM_DBS_DIR
-              value: /db
-            - name: LITESTREAM_DBS_PATTERN
-              value: "*.db"
             - name: LITESTREAM_ENDPOINT
               value: https://ps3-global.sphns.run
             - name: LITESTREAM_BUCKET
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
               value: ng/forge-of-creation
+            - name: LITESTREAM_CONFIG
+              value: |-
+                dbs:
+                  - path: /db/fs.meta.db
+                    replica:
+                      url: "[[replica_url fs.meta.db]]"
+                  - path: /db/redka.db
+                    replica:
+                      url: "[[replica_url redka.db]]"
+                  - path: /db/gitea.v2.db
+                    replica:
+                      url: "[[replica_url gitea.v2.db]]"
 
           ports:
             - name: ls-metrics
@@ -185,7 +191,7 @@ patches:
           startupProbe:
             exec:
               command: [bash, /etc/litestream/restore-probe.sh]
-            initialDelaySeconds: 15
+            initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 30
 
@@ -211,7 +217,7 @@ patches:
               cpu: 50m
               memory: 48Mi
             limits:
-              memory: 100Mi
+              memory: 128Mi
 
   - target:
       kind: Deployment
@@ -223,4 +229,3 @@ patches:
         value: StatefulSet
       - op: remove
         path: /spec/strategy
-        value: StatefulSet

@@ -78,20 +78,20 @@ data:
         # Workloads in the cluster should ideally directly access their
         # brethren, rather than going through the global internet.
         template IN ANY vrtx.sh {
-            match "^(hs|ppkg[.]tig)[.]"
+            match "^(hs|p?pkg[.]tig)[.]"
             answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
             fallthrough
         }
         template IN ANY sphns.run {
-            match "^(pauth|ps3-(global|backup|weed|b2|time-machine)|prestic-(backup|b2|time-machine)|pz3|poci)[.]"
+            match "^(p?auth|p?s3-(global|backup|weed|b2|time-machine)|p?restic-(backup|b2|time-machine)|p?z3|p?oci)[.]"
             answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
             fallthrough
         }
-        template IN ANY sophons.cloud {
-            match "^(auth)[.]"
-            answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
-            fallthrough
-        }
+        # template IN ANY sophons.cloud {
+        #     match "^(auth)[.]"
+        #     answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
+        #     fallthrough
+        # }
         # forward . __PILLAR__UPSTREAM__SERVERS__
         forward . __PILLAR__CLUSTER__DNS__
         prometheus :9253

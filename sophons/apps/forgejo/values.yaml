@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://code.forgejo.org/forgejo-helm/forgejo-helm/raw/tag/v17.1.1/values.schema.json
 valkey-cluster:
   enabled: false
 valkey:
@@ -48,6 +49,9 @@ extraInitVolumeMounts:
   - name: data
     subPath: db
     mountPath: /db
+  - name: data
+    subPath: forgejo
+    mountPath: /tmp
 
 podSecurityContext:
   runAsUser: 1000
@@ -69,7 +73,9 @@ deployment:
   terminationGracePeriodSeconds: 120
   env:
     - name: GOMEMLIMIT
-      value: 500MiB
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
     - name: AWS_ACCESS_KEY_ID
       valueFrom:
         secretKeyRef:
@@ -139,7 +145,7 @@ gitea:
 
   config:
     log:
-      LEVEL: info
+      LEVEL: trace
 
     server:
       DOMAIN: tig.vrtx.sh
@@ -170,9 +176,11 @@ gitea:
 
     storage:
       STORAGE_TYPE: minio
-      MINIO_ENDPOINT: ps3-global.sphns.run
+      SERVE_DIRECT: true
+      MINIO_ENDPOINT: s3-global.sphns.run
       MINIO_USE_SSL: true
       MINIO_BUCKET: forge-of-creation
+      MINIO_LOCATION: global
     "storage.attachments":
       SERVE_DIRECT: true
       MINIO_BASE_PATH: attachments/
@@ -198,6 +206,14 @@ gitea:
 
     actions:
       ENABLED: false
+
+    packages:
+      CHUNKED_UPLOAD_PATH: /tmp/package-upload
+
+    repository:
+      TEMP_PATH: /tmp/uploads
+    "repository.local":
+      LOCAL_COPY_PATH: /tmp/local-repo
 
     security:
       REVERSE_PROXY_TRUSTED_PROXIES: 10.41.0.0/16,2001:cafe:41::/56
