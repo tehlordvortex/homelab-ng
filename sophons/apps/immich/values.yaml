@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://github.com/immich-app/immich-charts/raw/refs/tags/immich-0.13.1/charts/immich/values.schema.json
 defaultPodOptions:
   nodeSelector:
     kubernetes.io/hostname: sophons-caeneus
@@ -46,6 +47,8 @@ valkey:
   persistence:
     data:
       enabled: true
+      size: 1Gi
+      accessMode: ReadWriteOnce
       type: persistentVolumeClaim
       storageClass: local-path
 
@@ -110,23 +113,23 @@ server:
             privileged: true
 
   persistence:
-    dev-dri-card2:
+    dev-dri-card1:
       type: hostPath
-      hostPath: /dev/dri/card2
+      hostPath: /dev/dri/card1
       hostPathType: CharDevice
       advancedMounts:
         main:
           main:
-            - path: /dev/dri/card2
+            - path: /dev/dri/card1
 
-    dev-dri-renderd129:
+    dev-dri-renderd128:
       type: hostPath
-      hostPath: /dev/dri/renderD129
+      hostPath: /dev/dri/renderD128
       hostPathType: CharDevice
       advancedMounts:
         main:
           main:
-            - path: /dev/dri/renderD129
+            - path: /dev/dri/renderD128
 
     dev-kfd:
       type: hostPath
@@ -175,6 +178,7 @@ machine-learning:
   persistence:
     cache:
       enabled: true
+      size: 10Gi
       type: persistentVolumeClaim
       storageClass: local-path
       accessMode: ReadWriteOnce
