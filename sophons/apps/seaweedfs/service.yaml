@@ -5,7 +5,7 @@ metadata:
   name: weedfs-s3
   namespace: weed-system
   labels:
-    app.kubernetes.io/component: filer
+    app.kubernetes.io/component: s3
     app.kubernetes.io/instance: weedfs
     app.kubernetes.io/name: seaweedfs
 spec:
@@ -15,6 +15,36 @@ spec:
       protocol: TCP
       port: 8333
       targetPort: 8333
+  selector:
+    app.kubernetes.io/component: filer
+    app.kubernetes.io/instance: weedfs
+    app.kubernetes.io/name: seaweedfs
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: RequireDualStack
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: weedfs-filer
+  namespace: weed-system
+  labels:
+    app.kubernetes.io/component: filer
+    app.kubernetes.io/instance: weedfs
+    app.kubernetes.io/name: seaweedfs
+spec:
+  trafficDistribution: PreferClose
+  ports:
+    - name: swfs-filer
+      protocol: TCP
+      port: 8888
+      targetPort: 8888
+    - name: swfs-filer-grpc
+      protocol: TCP
+      port: 18888
+      targetPort: 18888
   selector:
     app.kubernetes.io/component: filer
     app.kubernetes.io/instance: weedfs

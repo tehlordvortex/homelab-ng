@@ -7,6 +7,15 @@ metadata:
 spec:
   replicas: 1
   selector: {}
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: data
+  #     spec:
+  #       accessModes: ["ReadWriteMany"]
+  #       storageClassName: weedfs-no-repl
+  #       resources:
+  #         requests:
+  #           storage: 6.7Gi
   template:
     spec:
       priorityClassName: system-node-critical
@@ -36,21 +45,21 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
-        # - name: seaweedfs-cache
-        #   hostPath:
-        #     path: /var/lib/garage/weedfs/cache
+        - name: seaweedfs-cache
+          hostPath:
+            path: /var/lib/garage/weedfs/cache
         - name: config
           configMap:
             name: mimir-config
         - name: runtime-config
           configMap:
             name: mimir-runtime-config
-        - name: litestream-config
-          configMap:
-            name: litestream-config
-        - name: juicefs-cache
-          hostPath:
-            path: /var/lib/garage/juicefs/cache
+        # - name: litestream-config
+        #   configMap:
+        #     name: litestream-config
+        # - name: juicefs-cache
+        #   hostPath:
+        #     path: /var/lib/garage/juicefs/cache
 
       securityContext:
         runAsNonRoot: true
@@ -61,203 +70,203 @@ spec:
           type: RuntimeDefault
 
       initContainers:
-        - name: litestream-replicate
-          restartPolicy: Always
-          image: docker.io/litestream/litestream
-          command: [bash, /etc/litestream/entrypoint.sh]
-          envFrom:
-            - configMapRef:
-                name: litestream-env
-            - secretRef:
-                name: weed-s3-access-key
-          env:
-            - name: GOGC
-              value: "5"
-            - name: GOMEMLIMIT
-              value: "160MiB"
-            - name: LITESTREAM_REPLICA_PATH
-              value: $(LITESTREAM_REPLICA_PATH_PREFIX)
-            - name: LITESTREAM_CONFIG
-              value: |-
-                dbs:
-                - path: /fs/mimir-mirage.v4.db
-                  replica:
-                    url: "[[replica_url mimir-mirage.v4.db]]"
-                    monitor-interval: 0.5s
+        #   - name: litestream-replicate
+        #     restartPolicy: Always
+        #     image: docker.io/litestream/litestream
+        #     command: [bash, /etc/litestream/entrypoint.sh]
+        #     envFrom:
+        #       - configMapRef:
+        #           name: litestream-env
+        #       - secretRef:
+        #           name: weed-s3-access-key
+        #     env:
+        #       - name: GOGC
+        #         value: "5"
+        #       - name: GOMEMLIMIT
+        #         value: "160MiB"
+        #       - name: LITESTREAM_REPLICA_PATH
+        #         value: $(LITESTREAM_REPLICA_PATH_PREFIX)
+        #       - name: LITESTREAM_CONFIG
+        #         value: |-
+        #           dbs:
+        #           - path: /fs/mimir-mirage.v4.db
+        #             replica:
+        #               url: "[[replica_url mimir-mirage.v4.db]]"
+        #               monitor-interval: 0.5s
 
-          ports:
-            - name: ls-metrics
-              containerPort: 9090
+        #     ports:
+        #       - name: ls-metrics
+        #         containerPort: 9090
+
+        #     startupProbe:
+        #       exec:
+        #         command: [bash, /etc/litestream/restore-probe.sh]
+        #       initialDelaySeconds: 10
+        #       periodSeconds: 5
+        #       failureThreshold: 30
+
+        #     volumeMounts:
+        #       - name: tmp
+        #         subPath: fs
+        #         mountPath: /fs
+        #       - name: tmp
+        #         subPath: litestream
+        #         mountPath: /tmp
+        #       - name: litestream-config
+        #         mountPath: /etc/litestream
+        #         readOnly: true
+
+        #     securityContext:
+        #       readOnlyRootFilesystem: true
+        #       allowPrivilegeEscalation: false
+        #       capabilities:
+        #         drop: [ALL]
+
+        #     resources:
+        #       requests:
+        #         cpu: 100m
+        #         memory: 64Mi
+        #       limits:
+        #         memory: 172Mi
+
+        #   - name: juice-mount
+        #     restartPolicy: Always
+        #     # NOTE: the fix for 0% available inodes blocking caching exists
+        #     # in juicefs main, but the docker image hasn't been updated in months
+        #     # this image is pinned to a commit including the fix
+        #     image: pz3.sphns.run/library/juicedata/mount:ce-6541bca
+        #     command:
+        #       - bash
+        #       - -c
+        #       - |-
+        #         set -xeuo pipefail
+        #         juicefs format --no-update \
+        #           --storage=s3 --bucket="$LITESTREAM_ENDPOINT/$LITESTREAM_BUCKET" \
+        #           "sqlite3://$META_PATH" "$VOLUME_NAME"
+        #         juicefs config --yes \
+        #           --capacity=6 --dir-stats=true --trash-days=0 \
+        #           "sqlite3://$META_PATH"
+
+        #         exec juicefs mount --metrics 0.0.0.0:9567 --no-usage-report \
+        #           -o async_dio,allow_other --buffer-size=64M --backup-meta=6h \
+        #           --cache-large-write --cache-expire 2d --free-space-ratio 0.05 \
+        #           --max-uploads 16 --max-downloads 48 --fast-statfs \
+        #           "sqlite3://$META_PATH" /fs/mnt
+
+        #     env:
+        #       - name: GOGC
+        #         value: "5"
+        #       - name: GOMEMLIMIT
+        #         value: "350MiB"
+        #       - name: META_PATH
+        #         value: /fs/mimir-mirage.v4.db
+        #       - name: VOLUME_NAME
+        #         value: mimir-mirage
+        #     envFrom:
+        #       - configMapRef:
+        #           name: litestream-env-juicefs
+        #       - secretRef:
+        #           name: weed-s3-access-key
+
+        #     ports:
+        #       - name: jfs-metrics
+        #         containerPort: 9567
+
+        #     volumeMounts:
+        #       - name: tmp
+        #         subPath: fs
+        #         mountPath: /fs
+        #         mountPropagation: Bidirectional
+        #       - name: juicefs-cache
+        #         mountPath: /var/jfsCache
+
+        #     startupProbe:
+        #       exec:
+        #         command: [mountpoint, -q, /fs/mnt]
+        #       initialDelaySeconds: 5
+
+        #     securityContext:
+        #       runAsUser: 0
+        #       runAsGroup: 0
+        #       runAsNonRoot: false
+        #       privileged: true # required for Bidirectional
+        #       seccompProfile:
+        #         type: RuntimeDefault
+        #     resources:
+        #       requests:
+        #         cpu: 250m
+        #         memory: 128Mi
+        #       limits:
+        #         memory: 768Mi
+
+        - name: weed-mount
+          image: docker.io/chrislusf/seaweedfs:4.36
+          restartPolicy: Always
+
+          env:
+            - name: DATA_CENTER
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['topology.kubernetes.io/region']
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              value: 300MiB
+
+          command:
+            - sh
+            - -c
+            - |
+              set -xeuo pipefail
+              if mountpoint -q /tmp/fs; then
+                umount /tmp/fs || umount -f /tmp/fs
+              fi
+
+              exec weed -logtostderr=true mount -dirAutoCreate=true -umask=000 \
+                -asyncDio -dir=/tmp/fs -cacheDir=/var/cache/seaweedfs -cacheDirWrite=/tmp/write-cache \
+                -cacheMetaTtlSec=60 -cacheCapacityMB=4096 -cacheSymlink -metadataFlushSeconds=60 \
+                -filer=weedfs-filer.weed-system:8888 -filer.path=/pvcs--no-repl/pvc-1f3c366f-0924-4034-8b01-610ecdfd8ba7 \
+                -concurrentReaders=64 -concurrentWriters=32 -dataCenter=$DATA_CENTER \
+                -volumeServerAccess=publicUrl -collection=weedfs-no-repl -replication=000
 
           startupProbe:
             exec:
-              command: [bash, /etc/litestream/restore-probe.sh]
-            initialDelaySeconds: 10
+              command: [mountpoint, -q, /tmp/fs]
             periodSeconds: 5
-            failureThreshold: 30
+            failureThreshold: 5
 
           volumeMounts:
-            - name: tmp
-              subPath: fs
-              mountPath: /fs
-            - name: tmp
-              subPath: litestream
-              mountPath: /tmp
-            - name: litestream-config
-              mountPath: /etc/litestream
-              readOnly: true
-
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
+            - mountPath: /tmp
+              name: tmp
+              mountPropagation: Bidirectional
+            - mountPath: /var/cache/seaweedfs
+              name: seaweedfs-cache
 
           resources:
             requests:
-              cpu: 100m
-              memory: 64Mi
+              cpu: 150m
+              memory: 128Mi
             limits:
-              memory: 172Mi
-
-        - name: juice-mount
-          restartPolicy: Always
-          # NOTE: the fix for 0% available inodes blocking caching exists
-          # in juicefs main, but the docker image hasn't been updated in months
-          # this image is pinned to a commit including the fix
-          image: pz3.sphns.run/library/juicedata/mount:ce-6541bca
-          command:
-            - bash
-            - -c
-            - |-
-              set -xeuo pipefail
-              juicefs format --no-update \
-                --storage=s3 --bucket="$LITESTREAM_ENDPOINT/$LITESTREAM_BUCKET" \
-                "sqlite3://$META_PATH" "$VOLUME_NAME"
-              juicefs config --yes \
-                --capacity=6 --dir-stats=true --trash-days=0 \
-                "sqlite3://$META_PATH"
-
-              exec juicefs mount --metrics 0.0.0.0:9567 --no-usage-report \
-                -o async_dio,allow_other --buffer-size=64M --backup-meta=6h \
-                --cache-large-write --cache-expire 2d --free-space-ratio 0.05 \
-                --max-uploads 16 --max-downloads 48 --fast-statfs \
-                "sqlite3://$META_PATH" /fs/mnt
-
-          env:
-            - name: GOGC
-              value: "5"
-            - name: GOMEMLIMIT
-              value: "350MiB"
-            - name: META_PATH
-              value: /fs/mimir-mirage.v4.db
-            - name: VOLUME_NAME
-              value: mimir-mirage
-          envFrom:
-            - configMapRef:
-                name: litestream-env-juicefs
-            - secretRef:
-                name: weed-s3-access-key
-
-          ports:
-            - name: jfs-metrics
-              containerPort: 9567
-
-          volumeMounts:
-            - name: tmp
-              subPath: fs
-              mountPath: /fs
-              mountPropagation: Bidirectional
-            - name: juicefs-cache
-              mountPath: /var/jfsCache
-
-          startupProbe:
-            exec:
-              command: [mountpoint, -q, /fs/mnt]
-            initialDelaySeconds: 5
+              memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
+              # prob mem leak
 
           securityContext:
             runAsUser: 0
             runAsGroup: 0
             runAsNonRoot: false
-            privileged: true # required for Bidirectional
-            seccompProfile:
-              type: RuntimeDefault
-          resources:
-            requests:
-              cpu: 250m
-              memory: 128Mi
-            limits:
-              memory: 768Mi
-
-        # - name: weed-mount
-        #   image: docker.io/chrislusf/seaweedfs:4.19
-        #   restartPolicy: Always
-
-        #   env:
-        #     - name: DATA_CENTER
-        #       valueFrom:
-        #         fieldRef:
-        #           fieldPath: metadata.labels['topology.kubernetes.io/region']
-        #     - name: GOGC
-        #       value: "10"
-        #     - name: GOMEMLIMIT
-        #       value: 512MiB
-
-        #   command:
-        #     - sh
-        #     - -c
-        #     - |
-        #       set -xeuo pipefail
-        #       if mountpoint -q /tmp/fs; then
-        #         umount /tmp/fs || umount -f /tmp/fs
-        #       fi
-
-        #       exec weed -logtostderr=true mount -dirAutoCreate=true -umask=000 \
-        #         -asyncDio -dir=/tmp/fs -cacheDir=/var/cache/seaweedfs/mimirpv -cacheDirWrite=/tmp/write-cache \
-        #         -cacheMetaTtlSec=60 -cacheCapacityMB=4096 -cacheSymlink -metadataFlushSeconds=30 \
-        #         -filer=weedfs-seaweedfs-filer-client.weed-system:8888 -filer.path=/buckets/monitoring/mimirpv \
-        #         -concurrentReaders=16 -concurrentWriters=16 -dataCenter=$DATA_CENTER -collectionQuotaMB=8192 \
-        #         -volumeServerAccess=publicUrl -collection=monitoring -replication=000
-
-        #   startupProbe:
-        #     exec:
-        #       command: [mountpoint, -q, /tmp/fs]
-        #     initialDelaySeconds: 5
-        #     periodSeconds: 5
-        #     failureThreshold: 5
-
-        #   volumeMounts:
-        #     - mountPath: /tmp
-        #       name: tmp
-        #       mountPropagation: Bidirectional
-        #     - mountPath: /var/cache/seaweedfs
-        #       name: seaweedfs-cache
-
-        #   resources:
-        #     requests:
-        #       cpu: 150m
-        #       memory: 256Mi
-        #     limits:
-        #       cpu: 1000m
-        #       memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
-        #       # prob mem leak
-
-        #   securityContext:
-        #     runAsUser: 0
-        #     runAsGroup: 0
-        #     runAsNonRoot: false
-        #     privileged: true
-        #     readOnlyRootFilesystem: true
-        #     capabilities:
-        #       drop: [ALL]
-        #       add: [SYS_ADMIN]
+            privileged: true
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+              add: [SYS_ADMIN]
 
       containers:
         - name: mimir
           image: docker.io/grafana/mimir
           # image: registry.k8s.io/pause:3.9
-          args: [-config.file=/etc/mimir/mimir.yaml]
+          args:
+            - -config.file=/etc/mimir/mimir.yaml
+            - -compactor.cleanup-interval=5m
           env:
             - name: GOGC
               value: "5"
@@ -301,8 +310,8 @@ spec:
               mountPath: /etc/mimir/runtime
               readOnly: true
             - name: tmp
+              subPath: fs
               mountPath: /data
-              subPath: fs/mnt
               mountPropagation: HostToContainer
             - name: tmp
               mountPath: /tmp

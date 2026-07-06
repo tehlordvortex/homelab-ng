@@ -48,6 +48,8 @@ spec:
 
   rules:
     - backendRefs:
-        - group: traefik.io
-          kind: TraefikService
-          name: weedfs-s3
+        - name: weedfs-s3
+          port: 8333
+        # - group: traefik.io
+        #   kind: TraefikService
+        #   name: weedfs-s3

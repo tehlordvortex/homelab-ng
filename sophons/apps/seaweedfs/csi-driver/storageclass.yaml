@@ -28,4 +28,4 @@ parameters:
   volumeServerAccess: publicUrl
   collection: weedfs-no-repl
   dataLocality: write_preferlocaldc
-  parentDir: "/pvcs"
+  parentDir: "/pvcs--no-repl"

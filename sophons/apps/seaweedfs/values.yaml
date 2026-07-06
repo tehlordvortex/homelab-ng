@@ -1,8 +1,9 @@
 global:
-  monitoring:
-    enabled: true
-  enableReplication: true
-  replicationPlacement: "100"
+  seaweedfs:
+    monitoring:
+      enabled: true
+    enableReplication: true
+    replicationPlacement: "100"
 
 admin:
   enabled: true
@@ -17,8 +18,7 @@ admin:
       cpu: 25m
       memory: 64Mi
     limits:
-      cpu: 150m # keeps pegging a core at 100%??
-      memory: 72Mi
+      memory: 128Mi
 
   containerSecurityContext:
     enabled: true
@@ -37,7 +37,7 @@ admin:
       type: RuntimeDefault
 
   extraEnvironmentVars:
-    GOGC: "30"
+    GOGC: "10"
     GOMEMLIMIT:
       resourceFieldRef:
         resource: limits.memory
@@ -91,6 +91,7 @@ master:
 
 volume:
   enabled: true
+  rust: true # what's the worst that could go wrong
   replicas: 3
   priorityClassName: system-node-critical
 
@@ -268,7 +269,6 @@ filer:
     createBuckets:
       - name: monitoring
       - name: juicestream
-      - name: forge-of-creation
 
   resources:
     requests:

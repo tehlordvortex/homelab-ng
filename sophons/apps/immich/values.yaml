@@ -148,7 +148,6 @@ machine-learning:
         main:
           image:
             repository: ghcrd.sphns.run/immich-app/immich-machine-learning
-            tag: v2.7.5-rocm
             pullPolicy: IfNotPresent
 
           env:

@@ -22,9 +22,9 @@ patches:
               - name: seaweedfs-mount
                 env:
                   - name: GOGC
-                    value: "25"
+                    value: "10"
                   - name: GOMEMLIMIT
-                    value: 256MiB
+                    value: 300MiB
 
   - target:
       kind: DaemonSet

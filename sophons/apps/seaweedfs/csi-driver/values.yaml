@@ -1,15 +1,15 @@
-seaweedfsFiler: weedfs-seaweedfs-filer-client:8888
+seaweedfsFiler: weedfs-filer:8888
 storageClassName: ""
 dataLocality: write_preferlocaldc
 cacheCapacityMB: 4096
 
 csiProvisioner:
-  image: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
+  image: registry.k8s.io/sig-storage/csi-provisioner:v6.3.0
 csiResizer:
-  image: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
+  image: registry.k8s.io/sig-storage/csi-resizer:v2.2.0
 csiAttacher:
   enabled: true
-  image: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
+  image: registry.k8s.io/sig-storage/csi-attacher:v4.12.0
 
 controller:
   resources:
@@ -28,8 +28,7 @@ mountService:
       cpu: 150m
       memory: 128Mi
     limits:
-      cpu: 750m
-      memory: 1Gi
+      memory: 1.5Gi
 
 node:
   updateStrategy:

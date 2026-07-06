@@ -19,11 +19,14 @@ server:
 
     WOODPECKER_LOG_LEVEL: debug
     WOODPECKER_FORCE_IGNORE_SERVICE_FAILURE: "false"
+    WOODPECKER_DISABLE_USER_AGENT_REGISTRATION: "true"
     WOODPECKER_HOST: https://ic.vrtx.sh
     WOODPECKER_ADMIN: woodpecker,admin,vrtx
     WOODPECKER_FORGEJO: "true"
     WOODPECKER_FORGEJO_URL: https://tig.vrtx.sh
     WOODPECKER_FORGEJO_CLIENT: 1674ed1d-c5f0-4235-821e-067476acb7b9
+    WOODPECKER_PLUGINS_PRIVILEGED: |-
+      docker.io/woodpeckerci/plugin-docker-buildx
 
     WOODPECKER_FORGEJO_SECRET:
       valueFrom:

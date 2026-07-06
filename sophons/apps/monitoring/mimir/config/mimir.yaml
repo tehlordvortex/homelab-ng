@@ -90,4 +90,4 @@ usage_stats:
   enabled: false
 
 activity_tracker:
-  filepath: /data/metrics-activity.log
+  filepath: /tmp/metrics-activity.log
