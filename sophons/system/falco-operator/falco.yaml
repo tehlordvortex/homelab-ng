@@ -1,0 +1,115 @@
+apiVersion: artifact.falcosecurity.dev/v1alpha1
+kind: Config
+metadata:
+  name: cuvierii-confg
+  namespace: falco-system
+spec:
+  priority: 99
+  config:
+    json_output: true
+    http_output:
+      enabled: true
+      url: "http://cuvierii-sidekick:2801"
+---
+apiVersion: artifact.falcosecurity.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: falco-container
+  namespace: falco-system
+spec:
+  ociArtifact:
+    image:
+      repository: mirror/ghcr.io/falcosecurity/plugins/plugin/container
+      tag: 0.7.1@sha256:f3d531f370e8e7907f5fbfc27f8cf99863563ae02174e420f8bbf8b2b4828891
+    registry:
+      name: pz3.sphns.run
+      auth:
+        secretRef:
+          name: z3-kluzter-auth
+---
+apiVersion: artifact.falcosecurity.dev/v1alpha1
+kind: Rulesfile
+metadata:
+  name: falco-rules
+  namespace: falco-system
+spec:
+  priority: 50
+  ociArtifact:
+    image:
+      repository: mirror/ghcr.io/falcosecurity/rules/falco-rules
+      tag: 5.1.0@sha256:36d143c0ae2d5569da0274ea6bef188bac02b95abe51e44cfff16f38d3d6b9e0
+    registry:
+      name: pz3.sphns.run
+      auth:
+        secretRef:
+          name: z3-kluzter-auth
+---
+apiVersion: instance.falcosecurity.dev/v1alpha1
+kind: Falco
+metadata:
+  name: cuvierii
+  namespace: falco-system
+spec:
+  type: DaemonSet
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  podTemplateSpec:
+    spec:
+      tolerations:
+        - key: prime.sophons.cloud
+          operator: Exists
+        - key: caeneus.sophons.cloud
+          operator: Exists
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        - name: artifact-operator
+          image: docker.io/falcosecurity/artifact-operator:0.4.1@sha256:30ede11835af82798e8b4d19514265b35036f597165a28d620b2b43f4dd3a2d7
+
+          env:
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+
+          resources:
+            requests:
+              cpu: 15m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+      containers:
+        - name: falco
+          image: docker.io/falcosecurity/falco:0.44.1@sha256:d0cfe422d6ac0e0f20857798f46c7d7273210e1b064b22821e4e6e7f843cde6b
+
+          env:
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+
+          resources:
+            requests:
+              cpu: 85m
+              memory: 64Mi
+            limits:
+              cpu: null
+              memory: 300Mi
+
+          securityContext:
+            readOnlyRootFilesystem: true

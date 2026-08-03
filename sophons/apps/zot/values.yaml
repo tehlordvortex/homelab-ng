@@ -5,9 +5,13 @@ image:
   # repository: ghcrd.sphns.run/tehlordvortex/project-zot/zot
   # pullPolicy: Never
   repository: pz3.sphns.run/project-zot/zot
-  tag: dev-cf2030fa-1@sha256:9df083b8fcc3ae5d90beff6a7e52e964a9b0f17fb3e4a887c03686b38d55335d # 2.1.18
+  tag: dev-fcf89d20-1@sha256:731c4ab34da477b6ff0880ba6435677c3e1b593bec49a1aaefb45fa4ffc8e7cb # 2.1.18 + commits from main
 
 replicaCount: 2
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
 affinity:
   podAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -50,6 +54,7 @@ topologySpreadConstraints:
     minDomains: 2
     topologyKey: topology.kubernetes.io/zone
     whenUnsatisfiable: DoNotSchedule
+    matchLabelKeys: [pod-template-hash]
 
 hostAliases:
   - ip: 10.43.0.69

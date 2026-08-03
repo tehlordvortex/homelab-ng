@@ -1,0 +1,41 @@
+apiVersion: instance.falcosecurity.dev/v1alpha1
+kind: Component
+metadata:
+  name: cuvierii-sidekick
+  namespace: falco-system
+spec:
+  component:
+    type: falcosidekick
+    version: 2.34.1
+  replicas: 2
+
+  podTemplateSpec:
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: falcosidekick
+          image: docker.io/falcosecurity/falcosidekick:2.34.1@sha256:d4f0d7c538ede3fe4a491143c45c0787bf4fc24e6fcac6d39dff6721d75a9419
+
+          env:
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]

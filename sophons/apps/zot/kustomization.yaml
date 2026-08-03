@@ -7,7 +7,6 @@ resources:
   - dnsendpoint.yaml
   - traefikservice.yaml
   - serverstransport.yaml
-  - poddisruptionbudget.yaml
   - ../../common/b2/trisolaris-access-key
 
 configMapGenerator:

@@ -40,7 +40,11 @@
               "pulledWithin": "720h",
               "pushedWithin": "720h"
             }
-          ]
+          ],
+          "keepUntagged": {
+            "pulledWithin": "720h",
+            "pushedWithin": "720h"
+          }
         },
         {
           "keepTags": [
@@ -309,6 +313,19 @@
             {
               "prefix": "**",
               "destination": "/mirror/code.forgejo.org"
+            }
+          ],
+          "onDemand": true,
+          "preserveDigest": true
+        },
+        {
+          "urls": [
+            "https://codeberg.org"
+          ],
+          "content": [
+            {
+              "prefix": "**",
+              "destination": "/mirror/codeberg.org"
             }
           ],
           "onDemand": true,

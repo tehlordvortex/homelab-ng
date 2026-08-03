@@ -1,0 +1,7 @@
+namereference:
+  - kind: Secret
+    fieldSpecs:
+      - kind: Plugin
+        path: spec/ociArtifact/registry/auth/secretRef/name
+      - kind: Rulesfile
+        path: spec/ociArtifact/registry/auth/secretRef/name

@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: z3-kluzter-auth
+    env: .env

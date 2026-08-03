@@ -1,0 +1,22 @@
+image:
+  tag: "0.4.1@sha256:8a99fcc57a578ed7db113e3e4acfa7ea0816cdfc7215575a5542d658432e8d05"
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+
+extraEnv:
+  - name: GOGC
+    value: "10"
+  - name: GOMEMLIMIT
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.memory
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: null
+    memory: 128Mi
