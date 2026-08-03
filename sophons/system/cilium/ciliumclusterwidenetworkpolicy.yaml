@@ -78,8 +78,11 @@ spec:
             #   protocol: TCP
             # - ports: "443"
             #   protocol: UDP
-            # etcd
+            # etcd-client
             - port: "2379"
+              protocol: TCP
+            # etcd-peer
+            - port: "2380"
               protocol: TCP
             # health checks?
             - port: "4240"

@@ -1,4 +1,8 @@
-# yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v41.0.0/traefik/values.schema.json
+# yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v41.1.0/traefik/values.schema.json
+
+versionOverride: 3.7.10
+image:
+  digest: sha256:617c253c5d960e257ec153d582cc62f191461baba6863bd6b498ae062d3d5c19
 
 trustedIPs: &trustedIPs
   - 127.0.0.0/8 # lokalhost
@@ -66,6 +70,7 @@ ports:
       kaos: true
       theta: true
     http:
+      underscoreHeadersStrategy: delete
       redirections:
         entryPoint:
           to: websecure
@@ -93,6 +98,7 @@ ports:
         readTimeout: 600s
         idleTimeout: 600s
     http:
+      underscoreHeadersStrategy: delete
       middlewares:
         - crowdsec-crowdsec-bouncer@kubernetescrd
         - traefik-default-compression@kubernetescrd

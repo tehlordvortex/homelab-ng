@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://github.com/cilium/cilium/raw/refs/tags/v1.20.0-pre.3/install/kubernetes/cilium/values.schema.json
+# yaml-language-server: $schema=https://github.com/cilium/cilium/raw/refs/tags/v1.20.0/install/kubernetes/cilium/values.schema.json
 cgroup:
   autoMount:
     enabled: false
@@ -59,7 +59,7 @@ bpf:
   datapathMode: netkit
   distributedLRU:
     enabled: true
-  mapDynamicSizeRatio: "0.00020"
+  mapDynamicSizeRatio: "0.00010"
   ctAccounting: true
 localRedirectPolicies:
   enabled: true
@@ -72,6 +72,8 @@ bandwidthManager:
 hostFirewall:
   enabled: true
 pmtuDiscovery:
+  enabled: true
+egressGateway:
   enabled: true
 
 envoy:
