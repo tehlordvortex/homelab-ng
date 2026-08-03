@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: cf-dns-api-token
+    env: .env

@@ -1,9 +1,12 @@
+# yaml-language-server: $schema=https://github.com/kubernetes-sigs/external-dns/raw/refs/tags/v0.21.0/charts/external-dns/values.schema.json
 logLevel: debug
 extraArgs:
-  - --cloudflare-proxied
+  txt-prefix: "_ed-%{record_type}."
+  cloudflare-proxied: true
   # Don't want wildcard DNS records when creating wildcard SSL certs
-  - --ignore-ingress-tls-spec
+  ignore-ingress-tls-spec: true
 
+policy: sync
 provider:
   name: cloudflare
 env:
@@ -11,17 +14,15 @@ env:
     valueFrom:
       secretKeyRef:
         name: cf-dns-api-token
-        key: api-token
+        key: CLOUDFLARE_API_TOKEN
   - name: GOMEMLIMIT
-    value: 120MiB
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.memory
 
 sources:
   - crd
-  - pod
   - service
-  - ingress
-  - traefik-proxy
-  - gateway-httproute
 
 resources:
   requests:
@@ -29,3 +30,6 @@ resources:
     memory: 64Mi
   limits:
     memory: 128Mi
+
+serviceMonitor:
+  enabled: true
