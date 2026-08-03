@@ -7,3 +7,22 @@ resources:
 components:
   - ../../common/litestream
   - ../../common/litestream/templ-config
+
+# patches:
+#   - patch: |
+#       $patch: delete
+#       apiVersion: batch/v1
+#       kind: Job
+#       metadata:
+#         name: crowdsec-capi-register-job
+#         namespace: crowdsec
+patches:
+  - target:
+      kind: Deployment
+      name: crowdsec-lapi
+    patch: |-
+      - op: replace
+        path: /kind
+        value: StatefulSet
+      - op: remove
+        path: /spec/strategy

@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://code.forgejo.org/forgejo-helm/forgejo-helm/raw/tag/v17.1.1/values.schema.json
+# yaml-language-server: $schema=https://code.forgejo.org/forgejo-helm/forgejo-helm/raw/tag/v17.1.3/values.schema.json
 valkey-cluster:
   enabled: false
 valkey:
@@ -9,7 +9,12 @@ postgresql-ha:
   enabled: false
 
 image:
-  rootless: true
+  # registry: code.forgejo.org
+  # repository: forgejo/forgejo
+  rootless: true # adds -rootless to the digest if enabled
+  # registry: registry.k8s.io
+  # repository: pause
+  # tag: 3.10@sha256:ee6521f290b2168b6e0935a181d4cff9be1ac3f505666ef0e3c98fae8199917a
 
 affinity:
   nodeAffinity:
@@ -19,6 +24,12 @@ affinity:
             - key: cluster.garage.sophons.cloud/global
               operator: In
               values: ["true"]
+        weight: 100
+      - preference:
+          matchExpressions:
+            - key: topology.kubernetes.io/region
+              operator: NotIn
+              values: [ng]
         weight: 100
 
 resources:

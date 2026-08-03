@@ -122,3 +122,11 @@ clear_restored_flag() {
 
   rm -f "$restored_flag"
 }
+
+do_startup_actions() {
+  if test -n "${LITESTREAM_STARTUP_ENFORCE_RETENTION:-}" || test -n "${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-}"; then
+    LITESTREAM_LOGGING_LEVEL=debug litestream replicate -config="$CONFIG_PATH" -once \
+      -enforce-retention="${LITESTREAM_STARTUP_ENFORCE_RETENTION:-false}" \
+      -force-snapshot="${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-false}"
+  fi
+}

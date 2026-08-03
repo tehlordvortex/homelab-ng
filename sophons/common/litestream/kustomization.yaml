@@ -3,7 +3,7 @@ kind: Component
 
 images:
   - name: docker.io/litestream/litestream
-    newTag: 0.5.12
+    newTag: 0.5.15@sha256:f45ca298a567bef6edd23d43429b5f80721473a9a9719e467f11d7888999403e
 
 configMapGenerator:
   - name: litestream-env

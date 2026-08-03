@@ -31,6 +31,7 @@ patches:
           name: redka-redis
           restartPolicy: Always
           image: docker.io/nalgeon/redka:1.0.1
+          # image: registry.k8s.io/pause:3.10@sha256:ee6521f290b2168b6e0935a181d4cff9be1ac3f505666ef0e3c98fae8199917a
           args: ["/db/redka.db"]
           env:
             - name: GOGC
@@ -81,6 +82,7 @@ patches:
           # in juicefs main, but the docker image hasn't been updated in months
           # this image is pinned to a commit including the fix
           image: pz3.sphns.run/library/juicedata/mount:ce-6541bca
+          # image: registry.k8s.io/pause:3.10@sha256:ee6521f290b2168b6e0935a181d4cff9be1ac3f505666ef0e3c98fae8199917a
           command:
             - sh
             - -c
@@ -171,8 +173,21 @@ patches:
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
               value: ng/forge-of-creation
+            - name: LITESTREAM_SNAPSHOT_INTERVAL
+              value: 12h
+            - name: LITESTREAM_RETENTION
+              value: 24h
+            # - name: LITESTREAM_STARTUP_ENFORCE_RETENTION
+            #   value: "true"
+            # - name: LITESTREAM_STARTUP_FORCE_SNAPSHOT
+            #   value: "true"
             - name: LITESTREAM_CONFIG
               value: |-
+                levels:
+                  - interval: 15m  # L1
+                  - interval: 1.5h # L2
+                  - interval: 6h   # L3
+
                 dbs:
                   - path: /db/fs.meta.db
                     replica:

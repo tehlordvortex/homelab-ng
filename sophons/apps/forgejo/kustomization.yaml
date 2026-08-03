@@ -9,6 +9,11 @@ components:
   - ../../common/litestream
   - ../../common/litestream/templ-config
 
+images:
+  # override the -rootless suffix here instead
+  - name: code.forgejo.org/forgejo/forgejo
+    newTag: 16.0.1-rootless@sha256:71863f6b6c5837a27b3a2d133c3161c78a432aa878d57798d74b1d917ff842be
+
 secretGenerator:
   - name: forge-of-creation-forgejo-config
     files:

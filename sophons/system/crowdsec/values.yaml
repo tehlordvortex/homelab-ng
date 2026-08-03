@@ -1,5 +1,7 @@
 # yaml-language-server: $schema=https://github.com/crowdsecurity/helm-charts/raw/refs/tags/crowdsec-0.23.0/charts/crowdsec/values.schema.json
 image:
+  # repository: registry.k8s.io/pause
+  # tag: 3.10@sha256:ee6521f290b2168b6e0935a181d4cff9be1ac3f505666ef0e3c98fae8199917a
   repository: docker.io/crowdsecurity/crowdsec
   pullPolicy: IfNotPresent
 
@@ -172,18 +174,26 @@ lapi:
           value: litestream-ad-infinitum
         - name: LITESTREAM_REPLICA_PATH
           value: ng/crowdsec-lapi
+        - name: LITESTREAM_SNAPSHOT_INTERVAL
+          value: 12h
         - name: LITESTREAM_RETENTION
           value: 24h
-        - name: LITESTREAM_LOGGING_LEVEL
-          value: debug
-        - name: LITESTREAM_SNAPSHOT_INTERVAL
-          value: 1h
+        # - name: LITESTREAM_STARTUP_ENFORCE_RETENTION
+        #   value: "true"
+        # - name: LITESTREAM_STARTUP_FORCE_SNAPSHOT
+        #   value: "true"
         - name: LITESTREAM_CONFIG
           value: |-
+            levels:
+              - interval: 15m  # L1
+              - interval: 1.5h # L2
+              - interval: 6h   # L3
+
             dbs:
               - path: /db/crowdsec.db
                 replica:
                   url: "[[replica_url crowdsec.db]]"
+                  truncate-page-n: 10000
 
       ports:
         - name: ls-metrics
