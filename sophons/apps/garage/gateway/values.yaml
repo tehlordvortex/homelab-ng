@@ -21,7 +21,7 @@ resources:
     cpu: 100m
     memory: 128Mi
   limits:
-    memory: 768Mi
+    memory: 1Gi
 
 priorityClassName: system-node-critical
 
@@ -32,7 +32,7 @@ securityContext:
 
 deployment:
   kind: StatefulSet
-  replicaCount: 4
+  replicaCount: 3
 
 tolerations:
   - operator: Exists

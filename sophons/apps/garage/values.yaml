@@ -11,9 +11,9 @@ garage:
       region: global
 
   additionalTopLevelConfig: |
-    block_ram_buffer_max = "512MiB"
-    block_max_concurrent_reads = 72
-    block_max_concurrent_writes_per_request = 32
+    block_ram_buffer_max = "768MiB"
+    block_max_concurrent_reads = 48
+    block_max_concurrent_writes_per_request = 24
 
 persistence:
   meta:
@@ -31,7 +31,7 @@ resources:
     cpu: 250m
     memory: 128Mi
   limits:
-    memory: 768Mi
+    memory: 1Gi
 
 nodeSelector:
   hugeloads.sophons.cloud/garage: "true"
