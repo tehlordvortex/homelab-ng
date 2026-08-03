@@ -119,6 +119,7 @@ gen_wgcf() {
   local interface="$(basename "$config" | sed s/.sops.yaml$//)"
   local has_interface="$(HOST_NAME="$host_name" yq '.nodes[env(HOST_NAME)] != null' "$config")"
 
+  # "routes": [{"gateway":  "fe80::1", "metric": 256}]
   HOST_NAME="$host_name" INTERFACE="$interface" yq '
     .wireguard as $wg |
     .nodes[env(HOST_NAME)] as $self |
@@ -142,7 +143,7 @@ gen_wgcf() {
       "up": true,
       "privateKey": $self.privateKey,
       "addresses": [$self.addresses[] | {"address": .}],
-      "routes": [{"gateway":  "fe80::1", "metric": 256}]
+      "routes": []
     }))
   ' "$config" >"$self_dir/generated/$interface.$host_name.yaml"
 }
