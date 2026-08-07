@@ -69,7 +69,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
-      initContainers:
+      initContainers: []
         #   - name: litestream-replicate
         #     restartPolicy: Always
         #     image: docker.io/litestream/litestream
@@ -199,66 +199,66 @@ spec:
         #       limits:
         #         memory: 768Mi
 
-        - name: weed-mount
-          image: docker.io/chrislusf/seaweedfs:4.36
-          restartPolicy: Always
+        # - name: weed-mount
+        #   image: docker.io/chrislusf/seaweedfs:4.36
+        #   restartPolicy: Always
 
-          env:
-            - name: DATA_CENTER
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.labels['topology.kubernetes.io/region']
-            - name: GOGC
-              value: "10"
-            - name: GOMEMLIMIT
-              value: 300MiB
+        #   env:
+        #     - name: DATA_CENTER
+        #       valueFrom:
+        #         fieldRef:
+        #           fieldPath: metadata.labels['topology.kubernetes.io/region']
+        #     - name: GOGC
+        #       value: "10"
+        #     - name: GOMEMLIMIT
+        #       value: 300MiB
 
-          command:
-            - sh
-            - -c
-            - |
-              set -xeuo pipefail
-              if mountpoint -q /tmp/fs; then
-                umount /tmp/fs || umount -f /tmp/fs
-              fi
+        #   command:
+        #     - sh
+        #     - -c
+        #     - |
+        #       set -xeuo pipefail
+        #       if mountpoint -q /tmp/fs; then
+        #         umount /tmp/fs || umount -f /tmp/fs
+        #       fi
 
-              exec weed -logtostderr=true mount -dirAutoCreate=true -umask=000 \
-                -asyncDio -dir=/tmp/fs -cacheDir=/var/cache/seaweedfs -cacheDirWrite=/tmp/write-cache \
-                -cacheMetaTtlSec=60 -cacheCapacityMB=4096 -cacheSymlink -metadataFlushSeconds=60 \
-                -filer=weedfs-filer.weed-system:8888 -filer.path=/pvcs--no-repl/pvc-1f3c366f-0924-4034-8b01-610ecdfd8ba7 \
-                -concurrentReaders=64 -concurrentWriters=32 -dataCenter=$DATA_CENTER \
-                -volumeServerAccess=publicUrl -collection=weedfs-no-repl -replication=000
+        #       exec weed -logtostderr=true mount -dirAutoCreate=true -umask=000 \
+        #         -asyncDio -dir=/tmp/fs -cacheDir=/var/cache/seaweedfs -cacheDirWrite=/tmp/write-cache \
+        #         -cacheMetaTtlSec=60 -cacheCapacityMB=4096 -cacheSymlink -metadataFlushSeconds=60 \
+        #         -filer=weedfs-filer.weed-system:8888 -filer.path=/pvcs--no-repl/pvc-1f3c366f-0924-4034-8b01-610ecdfd8ba7 \
+        #         -concurrentReaders=64 -concurrentWriters=32 -dataCenter=$DATA_CENTER \
+        #         -volumeServerAccess=publicUrl -collection=weedfs-no-repl -replication=000
 
-          startupProbe:
-            exec:
-              command: [mountpoint, -q, /tmp/fs]
-            periodSeconds: 5
-            failureThreshold: 5
+        #   startupProbe:
+        #     exec:
+        #       command: [mountpoint, -q, /tmp/fs]
+        #     periodSeconds: 5
+        #     failureThreshold: 5
 
-          volumeMounts:
-            - mountPath: /tmp
-              name: tmp
-              mountPropagation: Bidirectional
-            - mountPath: /var/cache/seaweedfs
-              name: seaweedfs-cache
+        #   volumeMounts:
+        #     - mountPath: /tmp
+        #       name: tmp
+        #       mountPropagation: Bidirectional
+        #     - mountPath: /var/cache/seaweedfs
+        #       name: seaweedfs-cache
 
-          resources:
-            requests:
-              cpu: 150m
-              memory: 128Mi
-            limits:
-              memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
-              # prob mem leak
+        #   resources:
+        #     requests:
+        #       cpu: 150m
+        #       memory: 128Mi
+        #     limits:
+        #       memory: 1Gi # higher limit to avoid getting shot in the head by OOMkilla
+        #       # prob mem leak
 
-          securityContext:
-            runAsUser: 0
-            runAsGroup: 0
-            runAsNonRoot: false
-            privileged: true
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: [ALL]
-              add: [SYS_ADMIN]
+        #   securityContext:
+        #     runAsUser: 0
+        #     runAsGroup: 0
+        #     runAsNonRoot: false
+        #     privileged: true
+        #     readOnlyRootFilesystem: true
+        #     capabilities:
+        #       drop: [ALL]
+        #       add: [SYS_ADMIN]
 
       containers:
         - name: mimir
@@ -310,9 +310,9 @@ spec:
               mountPath: /etc/mimir/runtime
               readOnly: true
             - name: tmp
-              subPath: fs
-              mountPath: /data
-              mountPropagation: HostToContainer
+              subPath: data
+              mountPath: /data # YOLO
+              # mountPropagation: HostToContainer
             - name: tmp
               mountPath: /tmp
               subPath: mimir
