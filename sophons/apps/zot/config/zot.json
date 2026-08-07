@@ -130,20 +130,55 @@
           "read"
         ]
       },
+      "groups": {
+        "readers": {
+          "users": [
+            "push",
+            "kluzter"
+          ]
+        },
+        "writers": {
+          "users": [
+            "push"
+          ]
+        }
+      },
       "repositories": {
         "**": {
           "policies": [
             {
-              "users": [
-                "kluzter"
+              "groups": [
+                "readers"
               ],
               "actions": [
                 "read"
               ]
             },
             {
-              "users": [
-                "push"
+              "groups": [
+                "writers"
+              ],
+              "actions": [
+                "create",
+                "update"
+              ]
+            }
+          ]
+        },
+        "cloudflare/workerd": {
+          "policies": [
+            {
+              "groups": [
+                "readers"
+              ],
+              "actions": [
+                "read"
+              ]
+            },
+            {
+              "groups": [
+                "woodpecker:repo:1",
+                "writers"
               ],
               "actions": [
                 "read",
@@ -151,17 +186,15 @@
                 "update"
               ]
             }
-          ],
-          "defaultPolicy": []
+          ]
         },
         "library/**": {
           "policies": [
             {
-              "users": [
-                "push"
+              "groups": [
+                "writers"
               ],
               "actions": [
-                "read",
                 "create",
                 "update"
               ]

@@ -1,11 +1,9 @@
 image:
   # repository: ghcrd.sphns.run/project-zot/zot
-  # repository: docker.io/vrtxdotsh/project-zot--zot
-  # tag: main-55b68228dadd603089af8e709009e200505ccd0f
   # repository: ghcrd.sphns.run/tehlordvortex/project-zot/zot
-  # pullPolicy: Never
   repository: pz3.sphns.run/project-zot/zot
-  tag: dev-fcf89d20-1@sha256:731c4ab34da477b6ff0880ba6435677c3e1b593bec49a1aaefb45fa4ffc8e7cb # 2.1.18 + commits from main
+  # 2.1.20 + redisworksfineasasubpathdriveridkwhyitsnotlikethat
+  tag: dev-7eb7c25e-1@sha256:915a1aa0d7a60c12169e9bbc2f2db25d14f408dca9af12eb3334176c1bc9ef70
 
 replicaCount: 2
 podDisruptionBudget:
