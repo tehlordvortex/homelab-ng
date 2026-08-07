@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: ci-lockdown
+  namespace: woodpecker-system
+spec:
+  description: Restrict CI workloads to only that which they need and no more.
+  endpointSelector:
+    matchLabels:
+      k8s:ci.sophons.cloud/workload: "true"
+
+  egress:
+    - toEntities: [world, kube-apiserver]
+
+    - toEndpoints:
+        - matchLabels:
+            k8s:ci.sophons.cloud/cache: "true"
+        - matchLabels:
+            k8s:ci.sophons.cloud/infra: "true"
+      toPorts:
+        - ports:
+            - port: s3
+              protocol: TCP
+            - port: registry
+              protocol: TCP
+            - port: identity
+              protocol: TCP
+
+    - toEndpoints:
+        # - matchLabels:
+        #     k8s:io.kubernetes.pod.namespace: kube-system
+        #     k8s-app: kube-dns
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: node-local-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+
+    - toServices:
+        - k8sService:
+            serviceName: traefik
+            namespace: traefik
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "443"
+              protocol: UDP
+          serverNames:
+            - tig.vrtx.sh
+            - ic.vrtx.sh
+            - oci.sphns.run
+            - pz3.sphns.run
+            - s3-global.sphns.run

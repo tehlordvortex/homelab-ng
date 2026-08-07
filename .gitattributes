@@ -3,6 +3,7 @@
 *.sops.conf filter=sops
 *.sops.key filter=sops
 sops.htpasswd filter=sops
+*.sops.pem filter=sops
 .sops.yaml -filter
 
 kubeconfig  filter=sops

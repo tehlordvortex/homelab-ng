@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3-cache
+  namespace: woodpecker-system
+  labels:
+    ci.sophons.cloud/cache: "true"
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-cache
+spec:
+  ports:
+    - name: s3
+      port: 80
+      targetPort: s3
+      protocol: TCP
+      appProtocol: kubernetes.io/h2c
+  selector:
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-cache
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-cache
+  namespace: woodpecker-system
+  labels:
+    ci.sophons.cloud/cache: "true"
+    app.kubernetes.io/name: distribution-registry
+    app.kubernetes.io/instance: registry-cache
+spec:
+  ports:
+    - name: registry
+      port: 80
+      targetPort: registry
+      protocol: TCP
+      appProtocol: kubernetes.io/h2c
+  selector:
+    app.kubernetes.io/name: distribution-registry
+    app.kubernetes.io/instance: registry-cache
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: ci-identity
+  namespace: woodpecker-system
+  labels:
+    ci.sophons.cloud/infra: "true"
+    app.kubernetes.io/name: ext-ci-identity
+spec:
+  ports:
+    - name: identity
+      port: 80
+      targetPort: identity
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ext-ci-identity

@@ -1,9 +1,16 @@
 server:
+  image:
+    registry: pz3.sphns.run
+    # 3.17.0 + default-host-userns
+    tag: next-6fd88c5dec@sha256:cccc378d214aaac853065cd86f2e5d17843776b259f610c84577dd042f6258ee
+
   tolerations:
     - key: caeneus.sophons.cloud
       operator: Exists
 
   createAgentSecret: false
+
+  extraSecretNamesForEnvFrom: [infinity-and-beyond-access-key]
   env:
     GOGC: "10"
     GOMEMLIMIT:
@@ -25,14 +32,29 @@ server:
     WOODPECKER_FORGEJO: "true"
     WOODPECKER_FORGEJO_URL: https://tig.vrtx.sh
     WOODPECKER_FORGEJO_CLIENT: 1674ed1d-c5f0-4235-821e-067476acb7b9
-    WOODPECKER_PLUGINS_PRIVILEGED: |-
-      docker.io/woodpeckerci/plugin-docker-buildx
+    # WOODPECKER_PLUGINS_PRIVILEGED: |-
+    #   docker.io/woodpeckerci/plugin-docker-buildx
 
     WOODPECKER_FORGEJO_SECRET:
       valueFrom:
         secretKeyRef:
           name: birb-woodpecker
           key: WOODPECKER_FORGEJO_SECRET
+
+    WOODPECKER_DEFAULT_CLONE_PLUGIN: docker.io/woodpeckerci/plugin-git:2.9.2@sha256:ebde4a4d07e0e24b630082484d192890dd4f6d442d90bf5466f0763860f83652
+
+    WOODPECKER_LOG_STORE: addon
+    WOODPECKER_LOG_STORE_FILE_PATH: /var/lib/woodpecker/addons/log-s3/addon-log-s3
+    PLUGIN_UNIX_SOCKET_DIR: /var/lib/woodpecker/sockets
+    ADDON_LOG_S3_BUCKET: forge-of-creation
+    ADDON_LOG_S3_BUCKET_PREFIX: woodpecker-logs/
+    ADDON_LOG_S3_ENDPOINT: https://ps3-global.sphns.run
+    ADDON_LOG_S3_MIGRATE_EXISTING_LOGS_ON_DEMAND: true
+    ADDON_LOG_S3_DELETE_MIGRATED_LOGS: true
+
+    WOODPECKER_EXTENSIONS_ALLOWED_HOSTS: ci-identity,external
+    WOODPECKER_SECRET_EXTENSION_ENDPOINT: http://ci-identity/api/v1/woodpecker/secrets
+    WOODPECKER_SECRET_EXTENSION_NETRC: false
 
   initContainers:
     - name: litestream
@@ -57,12 +79,22 @@ server:
           value: litestream-ad-infinitum
         - name: LITESTREAM_REPLICA_PATH
           value: ng/woodpecker
+        - name: LITESTREAM_SNAPSHOT_INTERVAL
+          value: 12h
+        - name: LITESTREAM_RETENTION
+          value: 24h
         - name: LITESTREAM_CONFIG
           value: |-
+            levels:
+              - interval: 15m  # L1
+              - interval: 1.5h # L2
+              - interval: 6h   # L3
+
             dbs:
               - path: /var/lib/woodpecker/woodpecker.sqlite
                 replica:
                   url: "[[replica_url woodpecker.sqlite]]"
+                  truncate-page-n: 10000
 
       ports:
         - name: ls-metrics
@@ -112,11 +144,20 @@ server:
     - name: litestream-config
       configMap:
         name: litestream-config
+    - name: addon-log-s3
+      image:
+        reference: codeberg.org/vrtxdotsh/woodpecker-addon-log-s3
 
   extraVolumeMounts:
     - name: tmp
       subPath: woodpecker
       mountPath: /var/lib/woodpecker
+    - name: tmp
+      subPath: woodpecker-sockets
+      mountPath: /var/lib/woodpecker/sockets
+    - name: addon-log-s3
+      mountPath: /var/lib/woodpecker/addons/log-s3
+      readOnly: true
 
   persistentVolume:
     enabled: false
@@ -150,13 +191,16 @@ server:
       enabled: true
 
 agent:
+  image:
+    registry: pz3.sphns.run
+    # 3.17.0 + default-host-userns
+    tag: next-6fd88c5dec@sha256:694dbe9eaf13cf151363838ae8e5e94d23d313110fb3f53bec7914c98d75fec6
+
   mapAgentSecret: false
   replicaCount: 1
   tolerations:
     - key: caeneus.sophons.cloud
       operator: Exists
-  nodeSelector:
-    kubernetes.io/hostname: sophons-caeneus
 
   env:
     GOGC: "10"
@@ -171,20 +215,22 @@ agent:
           name: birb-woodpecker
           key: WOODPECKER_AGENT_SECRET
 
+    WOODPECKER_LOG_LEVEL: debug
     WOODPECKER_SERVER: "birb-server:9000"
-    WOODPECKER_MAX_WORKFLOWS: "3"
-    WOODPECKER_LOG_ENTRY_STREAM_BUFFER_SIZE: "10" # Mb
+    WOODPECKER_MAX_WORKFLOWS: 5
+    WOODPECKER_LOG_ENTRY_STREAM_BUFFER_SIZE: 100 # Mb
     WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker-system
     WOODPECKER_BACKEND_K8S_STORAGE_CLASS: local-path
     WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
     WOODPECKER_BACKEND_K8S_POD_LABELS: |
-      ci.sophons.cloud: "true"
+      ci.sophons.cloud/workload: "true"
     WOODPECKER_BACKEND_K8S_POD_TOLERATIONS: |
       - key: caeneus.sophons.cloud
         operator: Exists
     WOODPECKER_BACKEND_K8S_POD_NODE_SELECTOR: |
       kubernetes.io/hostname: sophons-caeneus
-    WOODPECKER_BACKEND_K8S_PERMISSION_INIT_IMAGE: docker.io/library/busybox:1.37
+    WOODPECKER_BACKEND_K8S_PERMISSION_INIT_IMAGE: docker.io/library/busybox:1.38@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+    WOODPECKER_BACKEND_K8S_DISABLE_HOST_USERNS: true
 
   resources:
     requests:

@@ -1,0 +1,216 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3-cache
+  namespace: woodpecker-system
+  labels:
+    ci.sophons.cloud/cache: "true"
+    app.kubernetes.io/name: rclone
+    app.kubernetes.io/instance: s3-cache
+spec:
+  selector:
+    matchLabels:
+      ci.sophons.cloud/cache: "true"
+      app.kubernetes.io/name: rclone
+      app.kubernetes.io/instance: s3-cache
+  template:
+    metadata:
+      labels:
+        ci.sophons.cloud/cache: "true"
+        app.kubernetes.io/name: rclone
+        app.kubernetes.io/instance: s3-cache
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
+
+      containers:
+        - name: rclone-s3
+          image: ghcr.io/rclone/rclone
+          args:
+            - serve
+            - s3
+            - -vvv
+            - --addr=:8080
+            - /cache
+
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: s3
+
+          volumeMounts:
+            - mountPath: /cache
+              name: cache-docker
+              subPath: rclone
+
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+      volumes:
+        - name: cache-docker
+          persistentVolumeClaim:
+            claimName: cache-docker
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-cache
+  namespace: woodpecker-system
+  labels:
+    ci.sophons.cloud/cache: "true"
+    app.kubernetes.io/name: distribution-registry
+    app.kubernetes.io/instance: registry-cache
+spec:
+  selector:
+    matchLabels:
+      ci.sophons.cloud/cache: "true"
+      app.kubernetes.io/name: distribution-registry
+      app.kubernetes.io/instance: registry-cache
+  template:
+    metadata:
+      labels:
+        ci.sophons.cloud/cache: "true"
+        app.kubernetes.io/name: distribution-registry
+        app.kubernetes.io/instance: registry-cache
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
+
+      containers:
+        - name: registry
+          image: docker.io/library/registry
+
+          env:
+            - name: REGISTRY_HTTP_H2C_ENABLED
+              value: "true"
+
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+              name: registry
+
+          volumeMounts:
+            - mountPath: /var/lib/registry
+              name: cache-docker
+              subPath: registry
+
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+      volumes:
+        - name: cache-docker
+          persistentVolumeClaim:
+            claimName: cache-docker
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ext-ci-identity
+  namespace: woodpecker-system
+  labels:
+    ci.sophons.cloud/infra: "true"
+    app.kubernetes.io/name: ext-ci-identity
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      ci.sophons.cloud/infra: "true"
+      app.kubernetes.io/name: ext-ci-identity
+  template:
+    metadata:
+      labels:
+        ci.sophons.cloud/infra: "true"
+        app.kubernetes.io/name: ext-ci-identity
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
+
+      volumes:
+        - name: identity
+          secret:
+            secretName: birb-identity
+
+      containers:
+        - name: ci-identity
+          image: codeberg.org/vrtxdotsh/woodpecker-ext-ci-identity
+
+          env:
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: LOG_LEVEL
+              value: debug
+            - name: WOODPECKER_URL
+              value: https://ic.vrtx.sh
+            - name: OIDC_ISSUER_URL
+              value: https://ic.vrtx.sh/.identity
+            - name: CI_ISSUER_URL
+              value: http://ci-identity
+            - name: OIDC_PRIVATE_KEY_FILE
+              value: /secrets/identity.rsa.pem
+
+          volumeMounts:
+            - mountPath: /secrets
+              name: identity
+              readOnly: true
+
+          ports:
+            - containerPort: 6080
+              protocol: TCP
+              name: identity
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]

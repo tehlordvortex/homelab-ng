@@ -78,7 +78,7 @@ data:
         # Workloads in the cluster should ideally directly access their
         # brethren, rather than going through the global internet.
         template IN ANY vrtx.sh {
-            match "^(hs|(p?pkg[.])?tig)[.]"
+            match "^(hs|(p?pkg[.])?tig|ic)[.]"
             answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
             fallthrough
         }
