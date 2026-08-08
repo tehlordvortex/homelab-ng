@@ -1,9 +1,9 @@
-# yaml-language-server: $schema=https://github.com/grafana/k8s-monitoring-helm/raw/refs/tags/k8s-monitoring-4.0.1/charts/k8s-monitoring/values.schema.json
+# yaml-language-server: $schema=https://github.com/grafana/k8s-monitoring-helm/raw/refs/tags/k8s-monitoring-4.3.2/charts/k8s-monitoring/values.schema.json
 cluster:
   name: sophons
 
 global:
-  scrapeInterval: 30s
+  scrapeInterval: 15s
 
 destinations:
   mimir-mirage:
@@ -139,10 +139,10 @@ collectors:
         enabled: true
       resources:
         requests:
-          cpu: 250m
+          cpu: 100m
           memory: 256Mi
         limits:
-          cpu: 1250m
+          cpu: 550m
           memory: 512Mi
       extraEnv:
         - name: GOGC

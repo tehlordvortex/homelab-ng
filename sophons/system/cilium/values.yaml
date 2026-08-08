@@ -7,20 +7,22 @@ cgroup:
 cluster:
   name: sophons
 
-# dashboards:
-#   enabled: true
-# prometheus:
-#   enabled: true
-#   serviceMonitor:
-#     enabled: true
-#     interval: null
+pprof:
+  enabled: true
+dashboards:
+  enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: null
 
 resources:
   requests:
-    cpu: 250m
+    cpu: 150m
     memory: 256Mi
   limits:
-    memory: 1Gi # higher limit for bpf compilations and stuff
+    memory: 1.5Gi # higher limit for bpf compilations and stuff
 initResources:
   requests:
     cpu: 10m
@@ -33,11 +35,13 @@ cni:
   uninstall: false
 
 # gatewayAPI:
+#   enabled: true
 #   enableAlpn: true
 #   enableAppProtocol: true
-#   enabled: true
+#   gatewayClass:
+#     create: false
 #   hostNetwork:
-#     enabled: true
+#     enabled: false
 
 ipv6:
   enabled: true
@@ -59,7 +63,7 @@ bpf:
   datapathMode: netkit
   distributedLRU:
     enabled: true
-  mapDynamicSizeRatio: "0.00010"
+  mapDynamicSizeRatio: "0.00005"
   ctAccounting: true
 localRedirectPolicies:
   enabled: true
@@ -78,11 +82,34 @@ egressGateway:
 
 envoy:
   enabled: true
+  xdsMode: ads
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  # We inject this manually using the pod labels
+  # nodeLocality:
+  #   enabled: true
+
+  extraArgs:
+    - --service-zone
+    - "@/var/run/cilium/envoy-locality-config/service-zone"
   extraEnv:
     - name: GOMEMLIMIT
       valueFrom:
         resourceFieldRef:
           resource: limits.memory
+  extraVolumes:
+    - name: locality-config
+      downwardAPI:
+        items:
+          - path: service-zone
+            fieldRef:
+              fieldPath: metadata.labels['topology.kubernetes.io/zone']
+  extraVolumeMounts:
+    - name: locality-config
+      mountPath: /var/run/cilium/envoy-locality-config
+      readOnly: true
+
   resources:
     requests:
       memory: 32Mi
@@ -105,11 +132,11 @@ envoy:
         - BPF
         # Bind to ports < 1023
         - NET_BIND_SERVICE
-  # prometheus:
-  #   enabled: true
-  #   serviceMonitor:
-  #     enabled: true
-  #     interval: null
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: null
 
 hubble:
   ui:

@@ -19,6 +19,18 @@
 apiVersion: cilium.io/v2
 kind: CiliumNodeConfig
 metadata:
+  name: voltzahl-map-size
+  namespace: kube-system
+spec:
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/hostname: sophons-voltzahl
+  defaults:
+    bpf-map-dynamic-size-ratio: "0.000005"
+---
+apiVersion: cilium.io/v2
+kind: CiliumNodeConfig
+metadata:
   name: caeneus-map-size
   namespace: kube-system
 spec:
@@ -28,4 +40,4 @@ spec:
   defaults:
     # Same as the kubelet, cilium is trying to allocate memory based on
     # the full CPU/RAM of the host
-    bpf-map-dynamic-size-ratio: "0.000005"
+    bpf-map-dynamic-size-ratio: "0.0000005"

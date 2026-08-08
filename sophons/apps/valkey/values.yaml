@@ -16,8 +16,17 @@ podDisruptionBudget:
   minAvailable: 2
 topologySpreadConstraints:
   enabled: true
-  topologyKey: topology.kubernetes.io/region
+  topologyKey: topology.kubernetes.io/zone
   whenUnsatisfiable: DoNotSchedule
+additionalAffinities:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+            - key: topology.kubernetes.io/region
+              operator: NotIn
+              values: [ng]
+        weight: 100
 
 securityContext:
   runAsUser: 65532
@@ -58,7 +67,7 @@ redis:
 
   resources:
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 48Mi
     limits:
       memory: 128Mi
@@ -151,7 +160,7 @@ extraInitContainers:
 
     resources:
       requests:
-        cpu: 50m
+        cpu: 25m
         memory: 16Mi
       limits:
         memory: 128Mi
