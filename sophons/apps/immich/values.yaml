@@ -19,7 +19,7 @@ controllers:
     containers:
       main:
         image:
-          tag: v2.7.5
+          tag: v3.1.0
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -113,14 +113,14 @@ server:
             privileged: true
 
   persistence:
-    dev-dri-card1:
+    dev-dri-card0:
       type: hostPath
-      hostPath: /dev/dri/card1
+      hostPath: /dev/dri/card0
       hostPathType: CharDevice
       advancedMounts:
         main:
           main:
-            - path: /dev/dri/card1
+            - path: /dev/dri/card0
 
     dev-dri-renderd128:
       type: hostPath
@@ -183,14 +183,14 @@ machine-learning:
       storageClass: local-path
       accessMode: ReadWriteOnce
 
-    dev-dri-card1:
+    dev-dri-card0:
       type: hostPath
-      hostPath: /dev/dri/card1
+      hostPath: /dev/dri/card0
       hostPathType: CharDevice
       advancedMounts:
         main:
           main:
-            - path: /dev/dri/card1
+            - path: /dev/dri/card0
 
     dev-dri-renderd128:
       type: hostPath
