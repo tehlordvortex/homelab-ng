@@ -29,11 +29,11 @@ run = ["talosctl --nodes=$SOPHONS_THETA"]
 [tasks.'talos:voltzahl']
 run = ["talosctl --nodes=$SOPHONS_VOLTZAHL"]
 
+[tasks.'talos:leistung']
+run = ["talosctl --nodes=$SOPHONS_LEISTUNG"]
+
 [tasks.'talos:alpha']
 run = ["talosctl --nodes=$SOPHONS_ALPHA"]
-
-[tasks.'talos:kaos']
-run = ["talosctl --nodes=$SOPHONS_KAOS"]
 
 [tasks.'talos:prime']
 run = ["talosctl --nodes=$SOPHONS_PRIME"]
@@ -61,10 +61,10 @@ run = [
   "mise talos:voltzahl apply-config -f generated/controlplane.voltzahl.yaml",
 ]
 
-[tasks.'apply:kaos']
+[tasks.'apply:leistung']
 depends = ["gen"]
 dir = "{{config_root}}"
-run = ["mise talos:kaos apply-config -f generated/controlplane.kaos.yaml"]
+run = ["mise talos:leistung apply-config -f generated/worker.leistung.yaml"]
 
 [tasks.'apply:prime']
 depends = ["gen"]
@@ -96,15 +96,7 @@ run = "talosctl reset --system-labels-to-wipe STATE --system-labels-to-wipe EPHE
 [tasks.'apply:all']
 depends = ["gen"]
 dir = "{{config_root}}"
-run = [
-  { task = "apply:alpha" },
-  { task = "apply:prime" },
-  { task = "apply:oduduwa" },
-  { task = "apply:caeneus" },
-  { task = "apply:beta" },
-  { task = "apply:theta" },
-  { task = "apply:voltzahl" },
-]
+run = [{ task = "apply:worker" }, { task = "apply:controlplane" }]
 
 [tasks.'apply:controlplane']
 depends = ["gen"]
@@ -123,4 +115,5 @@ run = [
   { task = "apply:prime" },
   { task = "apply:oduduwa" },
   { task = "apply:caeneus" },
+  { task = "apply:leistung" },
 ]

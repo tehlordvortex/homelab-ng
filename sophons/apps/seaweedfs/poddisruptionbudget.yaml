@@ -1,0 +1,25 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: weedfs-seaweedfs-filer
+  namespace: weed-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: seaweedfs
+      app.kubernetes.io/instance: weedfs
+      app.kubernetes.io/component: filer
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: weedfs-seaweedfs-volume
+  namespace: weed-system
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: seaweedfs
+      app.kubernetes.io/instance: weedfs
+      app.kubernetes.io/component: volume

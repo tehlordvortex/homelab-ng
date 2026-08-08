@@ -28,7 +28,7 @@ image:
 
 resources:
   requests:
-    cpu: 250m
+    cpu: 150m
     memory: 128Mi
   limits:
     memory: 1Gi
@@ -62,15 +62,15 @@ tolerations:
   - key: node.kubernetes.io/unschedulable
     operator: Exists
     effect: NoSchedule
-affinity:
-  podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchLabels:
-            app.kubernetes.io/name: garage
-            app.kubernetes.io/instance: global
-        mismatchLabelKeys: [controller-revision-hash]
-        topologyKey: topology.kubernetes.io/region
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       - labelSelector:
+#           matchLabels:
+#             app.kubernetes.io/name: garage
+#             app.kubernetes.io/instance: global
+#         mismatchLabelKeys: [controller-revision-hash]
+#         topologyKey: topology.kubernetes.io/zone
 
 priorityClassName: system-node-critical
 

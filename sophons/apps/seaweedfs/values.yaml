@@ -58,7 +58,6 @@ master:
       cpu: 75m
       memory: 64Mi
     limits:
-      cpu: 250m
       memory: 200Mi
 
   containerSecurityContext:
@@ -99,28 +98,6 @@ volume:
     weed.sophons.cloud/cluster: global
     weed.sophons.cloud/volume: "true"
 
-  tolerations: |
-    - key: orunmila.sophons.cloud/ase-orun
-      operator: Exists
-    - key: node.kubernetes.io/not-ready
-      operator: Exists
-      effect: NoExecute
-    - key: node.kubernetes.io/unreachable
-      operator: Exists
-      effect: NoExecute
-    - key: node.kubernetes.io/disk-pressure
-      operator: Exists
-      effect: NoSchedule
-    - key: node.kubernetes.io/memory-pressure
-      operator: Exists
-      effect: NoSchedule
-    - key: node.kubernetes.io/pid-pressure
-      operator: Exists
-      effect: NoSchedule
-    - key: node.kubernetes.io/unschedulable
-      operator: Exists
-      effect: NoSchedule
-
   affinity: |
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -149,7 +126,7 @@ volume:
           app.kubernetes.io/component: volume
       maxSkew: 1
       minDomains: 3
-      topologyKey: topology.kubernetes.io/region
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: DoNotSchedule
 
   readMode: redirect
@@ -169,8 +146,8 @@ volume:
 
   resources:
     requests:
-      cpu: 150m
-      memory: 128Mi
+      cpu: 50m
+      memory: 64Mi
     limits:
       memory: 512Mi
 
@@ -179,7 +156,7 @@ volume:
     GOMEMLIMIT: 500MiB
     DATA_CENTER:
       fieldRef:
-        fieldPath: metadata.labels['topology.kubernetes.io/region']
+        fieldPath: metadata.labels['topology.kubernetes.io/zone']
   extraArgs:
     - -dataCenter=$(DATA_CENTER)
 
@@ -205,27 +182,9 @@ filer:
   loggingOverrideLevel: 0 # noisy filer generates data for logs/metrics, which generates logs in filer, which...
   replicas: 3
   priorityClassName: system-node-critical
-  tolerations: |
-    - key: orunmila.sophons.cloud/ase-orun
-      operator: Exists
-    - key: node.kubernetes.io/not-ready
-      operator: Exists
-      effect: NoExecute
-    - key: node.kubernetes.io/unreachable
-      operator: Exists
-      effect: NoExecute
-    - key: node.kubernetes.io/disk-pressure
-      operator: Exists
-      effect: NoSchedule
-    - key: node.kubernetes.io/memory-pressure
-      operator: Exists
-      effect: NoSchedule
-    - key: node.kubernetes.io/pid-pressure
-      operator: Exists
-      effect: NoSchedule
-    - key: node.kubernetes.io/unschedulable
-      operator: Exists
-      effect: NoSchedule
+  nodeSelector: |
+    weed.sophons.cloud/cluster: global
+    weed.sophons.cloud/filer: "true"
   topologySpreadConstraints: |
     - labelSelector:
         matchLabels:
@@ -243,7 +202,7 @@ filer:
           app.kubernetes.io/component: filer
       maxSkew: 1
       minDomains: 3
-      topologyKey: topology.kubernetes.io/region
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: DoNotSchedule
 
   extraVolumes: |
@@ -268,11 +227,10 @@ filer:
 
     createBuckets:
       - name: monitoring
-      - name: juicestream
 
   resources:
     requests:
-      cpu: 300m
+      cpu: 100m
       memory: 172Mi
     limits:
       memory: 564Mi
@@ -282,7 +240,7 @@ filer:
     GOMEMLIMIT: 550MiB
     DATA_CENTER:
       fieldRef:
-        fieldPath: metadata.labels['topology.kubernetes.io/region']
+        fieldPath: metadata.labels['topology.kubernetes.io/zone']
   extraArgs:
     - -dataCenter=$(DATA_CENTER)
 
@@ -371,18 +329,23 @@ worker:
       preferredDuringSchedulingIgnoredDuringExecution:
         - preference:
             matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values: [sophons-voltzahl]
+          weight: 100
+        - preference:
+            matchExpressions:
               - key: topology.kubernetes.io/region
                 operator: In
                 values: [de, nl]
-          weight: 100
+          weight: 80
 
   jobType: all
   resources:
     requests:
-      cpu: 150m
-      memory: 128Mi
+      cpu: 50m
+      memory: 64Mi
     limits:
-      cpu: 250m
       memory: 512Mi
 
   extraEnvironmentVars:

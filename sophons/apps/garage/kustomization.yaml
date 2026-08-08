@@ -46,5 +46,5 @@ patches:
                     app.kubernetes.io/instance: global
                 maxSkew: 1
                 minDomains: 3
-                topologyKey: topology.kubernetes.io/region
+                topologyKey: topology.kubernetes.io/zone
                 whenUnsatisfiable: DoNotSchedule

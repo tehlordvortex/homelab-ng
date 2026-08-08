@@ -30,6 +30,7 @@ gen_controlplane() {
     --with-secrets "$self_dir/secrets.yaml" \
     --config-patch "@$patch_dir/common.sops.yaml" \
     --config-patch "@$patch_dir/chrome.seccomp.yaml" \
+    --config-patch "@$patch_dir/unshare.seccomp.yaml" \
     --config-patch "@$patch_dir/controlplane.sops.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
     --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml" \
@@ -58,6 +59,7 @@ gen_worker() {
     --with-secrets "$self_dir/secrets.yaml" \
     --config-patch "@$patch_dir/common.sops.yaml" \
     --config-patch "@$patch_dir/chrome.seccomp.yaml" \
+    --config-patch "@$patch_dir/unshare.seccomp.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
     --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml" \
     --config-patch "@$self_dir/generated/wg.kluster.$host_name.yaml" \
@@ -159,3 +161,4 @@ gen_worker alpha factory.talos.dev/installer/$pi_image:$talos_version
 gen_worker prime factory.talos.dev/installer/$prime_image:$talos_version
 gen_worker oduduwa factory.talos.dev/installer/$vm_image:$talos_version
 gen_worker caeneus ghcr.io/siderolabs/talos:$talos_version
+gen_worker leistung factory.talos.dev/installer/$vm_image:$talos_version

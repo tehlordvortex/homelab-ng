@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.36.1/job-batch-v1.json
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: weedfs-seaweedfs-filer-config-reloader
+  namespace: weeed-system
+  labels:
+    app.kubernetes.io/name: seaweedfs
+    app.kubernetes.io/instance: weedfs
+    app.kubernetes.io/component: filer-config-reloader
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: weedfs-seaweedfs-filer-config-reloader
+      labels:
+        app.kubernetes.io/name: seaweedfs
+        app.kubernetes.io/instance: weedfs
+        app.kubernetes.io/component: filer-config-reloader
+
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 65534
+        runAsNonRoot: true
+      volumes:
+        - name: filer-config
+          configMap:
+            name: weed-filer
+
+      containers:
+        - name: config-reloader
+          image: docker.io/alpine/curl:8.21.0
+
+          env:
+            - name: FILER
+              value: http://weedfs-filer:8888
+          command:
+            - sh
+            - -c
+            - |
+              set -euo pipefail
+              filename=/etc/seaweedfs/filer.conf
+
+              curl -fsS -X PUT --upload-file $filename "$FILER$filename"
+              echo "config reloaded"
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          volumeMounts:
+            - name: filer-config
+              mountPath: /etc/seaweedfs
+              readOnly: true
