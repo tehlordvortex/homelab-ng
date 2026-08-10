@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://github.com/grafana-community/helm-charts/raw/refs/heads/main/charts/loki/values.schema.json
+# yaml-language-server: $schema=https://github.com/grafana-community/helm-charts/raw/refs/tags/loki-18.7.6/charts/loki/values.schema.json
 loki:
   auth_enabled: false
   commonConfig:
@@ -18,6 +18,10 @@ loki:
           period: 24h
   ingester:
     chunk_encoding: lz4
+    wal:
+      dir: /tmp/loki/wal
+      flush_on_shutdown: true
+      replay_memory_ceiling: 128MB
   tracing:
     enabled: true
   querier:
@@ -35,7 +39,7 @@ loki:
   storage:
     type: s3
     s3:
-      endpoint: https://ps3-weed.sphns.run
+      endpoint: https://ps3-global.sphns.run
       s3ForcePathStyle: true
       disable_dualstack: false
     bucketNames:
@@ -51,7 +55,7 @@ deploymentMode: SingleBinary
 singleBinary:
   extraArgs:
     - -log.level=debug
-  terminationGracePeriodSeconds: 120
+  terminationGracePeriodSeconds: 180
 
   replicas: 1
 
@@ -60,35 +64,46 @@ singleBinary:
       operator: Exists
   affinity:
     nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: topology.kubernetes.io/region
-                operator: In
-                values:
-                  - ng
-                  - de
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+                - ng-middle-east
+                - ng-east-1
+        weight: 100
+      - preference:
+          matchExpressions:
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+                - de-east-1
+        weight: 50
 
   resources:
-    limits:
-      cpu: 1000m
-      memory: 512Mi
     requests:
-      cpu: 150m
+      cpu: 100m
       memory: 128Mi
+    limits:
+      memory: 768Mi
   extraEnv:
     - name: GOGC
       value: "5"
     - name: GOMEMLIMIT
-      value: 500MiB
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
   extraEnvFrom:
     - secretRef:
-        name: weed-s3-access-key
+        name: stalker-access-key
 
   persistence:
     enabled: false
 
 lokiCanary:
+  enabled: false
+
   kind: Deployment
   replicas: 2
 
@@ -113,13 +128,14 @@ lokiCanary:
       cpu: 10m
       memory: 16Mi
     limits:
-      cpu: 50m
-      memory: 32Mi
+      memory: 64Mi
   extraEnv:
     - name: GOGC
       value: "5"
     - name: GOMEMLIMIT
-      value: 30MiB
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
 
 chunksCache:
   enabled: false
@@ -165,4 +181,7 @@ bloomGateway:
   replicas: 0
 
 minio:
+  enabled: false
+
+test:
   enabled: false

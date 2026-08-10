@@ -3,7 +3,7 @@ namePrefix: mimir-mirage-
 resources:
   - statefulset.yaml
   - ../config
-  - ../../../seaweedfs/access-key
+  - ../../../garage/access-keys/stalker
 components:
   - ../../../../common/litestream
   - ../../../../common/litestream/juicefs-defaults

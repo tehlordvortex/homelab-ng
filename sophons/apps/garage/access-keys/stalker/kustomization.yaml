@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: stalker-access-key
+    env: .env

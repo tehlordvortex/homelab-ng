@@ -4,7 +4,7 @@ multitenancy_enabled: false
 runtime_config:
   file: /etc/mimir/runtime/mimir.yaml
 limits:
-  compactor_blocks_retention_period: 5d
+  compactor_blocks_retention_period: 3d
   query_ingesters_within: 3h
 
 server:
@@ -17,7 +17,7 @@ common:
   storage:
     backend: s3
     s3:
-      endpoint: ps3-weed.sphns.run
+      endpoint: ps3-global.sphns.run
       bucket_name: monitoring
       trace:
         enabled: true

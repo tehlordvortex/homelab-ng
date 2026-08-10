@@ -28,11 +28,12 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: kubernetes.io/hostname
+                  - key: topology.kubernetes.io/zone
                     operator: In
                     values:
-                      - sophons-caeneus
-                      - sophons-voltzahl
+                      - de-east-1
+                      - ng-middle-east
+                      - ng-east-1
           preferredDuringSchedulingIgnoredDuringExecution:
             - preference:
                 matchExpressions:
@@ -274,7 +275,7 @@ spec:
               value: 2048MiB
           envFrom:
             - secretRef:
-                name: weed-s3-access-key
+                name: stalker-access-key
 
           ports:
             - containerPort: 9009
