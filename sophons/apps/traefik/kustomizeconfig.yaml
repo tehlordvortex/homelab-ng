@@ -1,0 +1,5 @@
+namereference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - kind: BackendTLSPolicy
+        path: spec/validation/caCertificateRefs/name

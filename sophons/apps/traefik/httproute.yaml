@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: positron
+  namespace: traefik
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Unifi network administration
+    gethomepage.dev/group: Admin
+    gethomepage.dev/icon: ubiquiti-unifi.svg
+    gethomepage.dev/name: Unifi
+    gethomepage.dev/app: traefik
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - positron.sophons.cloud
+
+  rules:
+    - backendRefs:
+        - name: positron
+          port: 443
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/gateway.networking.k8s.io/backendtlspolicy_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: positron-ca
+  namespace: traefik
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: positron
+      sectionName: https
+  validation:
+    hostname: unifi.local
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: positron-ca

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumegressgatewaypolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  name: traefik-positron-access
+spec:
+  destinationCIDRs: [10.42.0.1/32]
+  egressGateway:
+    nodeSelector:
+      matchExpressions:
+        - key: egress.sophons.cloud/positron
+          operator: Exists
+        - key: kubernetes.io/hostname
+          operator: NotIn
+          values: [sophons-prime]
+
+  selectors:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: traefik
+          io.kubernetes.pod.namespace: traefik
+      nodeSelector:
+        matchExpressions:
+          - key: egress.sophons.cloud/positron
+            operator: DoesNotExist
