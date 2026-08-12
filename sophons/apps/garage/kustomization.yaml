@@ -6,6 +6,7 @@ resources:
   - httproute.yaml
   - deployment.yaml
   - middleware.yaml
+  - dnsendpoint.yaml
   - referencegrant.yaml
   - secret.sops.yaml
   - poddisruptionbudget.yaml

@@ -46,6 +46,7 @@ server:
     WOODPECKER_LOG_STORE: addon
     WOODPECKER_LOG_STORE_FILE_PATH: /var/lib/woodpecker/addons/log-s3/addon-log-s3
     PLUGIN_UNIX_SOCKET_DIR: /var/lib/woodpecker/sockets
+    ADDON_LOG_S3_COMPONENTS: log-addon,step-compactor
     ADDON_LOG_S3_BUCKET: forge-of-creation
     ADDON_LOG_S3_BUCKET_PREFIX: woodpecker-logs/
     ADDON_LOG_S3_ENDPOINT: https://ps3-global.sphns.run
@@ -198,6 +199,8 @@ agent:
 
   mapAgentSecret: false
   replicaCount: 1
+  nodeSelector:
+    kubernetes.io/hostname: sophons-caeneus
   tolerations:
     - key: caeneus.sophons.cloud
       operator: Exists

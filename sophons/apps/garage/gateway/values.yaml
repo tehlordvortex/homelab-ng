@@ -18,7 +18,7 @@ image:
 
 resources:
   requests:
-    cpu: 100m
+    cpu: 50m
     memory: 128Mi
   limits:
     memory: 1Gi
@@ -32,10 +32,13 @@ securityContext:
 
 deployment:
   kind: StatefulSet
-  replicaCount: 3
+  replicaCount: 4
 
 tolerations:
-  - operator: Exists
+  - key: prime.sophons.cloud
+    operator: Exists
+  - key: caeneus.sophons.cloud
+    operator: Exists
 
 affinity:
   podAntiAffinity:

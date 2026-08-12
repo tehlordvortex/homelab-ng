@@ -6,6 +6,7 @@ resources:
   - cfdtunnel.yaml
   - httproute.yaml
   - middleware.yaml
+  - dnsendpoint.yaml
   - traefikservice.yaml
   - poddisruptionbudget.yaml
   # - storageclass.yaml # managed seperately

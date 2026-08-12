@@ -7,9 +7,8 @@ labels:
 
 resources:
   - service.yaml
-  - cfdtunnel.yaml
   - httproute.yaml
-  - middleware.yaml
+  - dnsendpoint.yaml
   - statefulset.yaml
   - serviceaccount.yaml
   - ../garage/access-keys/infinity-and-beyond

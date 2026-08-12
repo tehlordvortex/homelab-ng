@@ -1,0 +1,11 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: karakeep
+  namespace: karakeep
+spec:
+  endpoints:
+    - dnsName: hoarder.sophons.cloud
+      recordType: CNAME
+      targets:
+        - cfd-traefik.sophons.cloud

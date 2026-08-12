@@ -10,12 +10,8 @@ labels:
 
 resources:
   - service.yaml
-  - cfdtunnel.yaml
-  # These are now managed with the file provider so Traefik
-  # retains routing config even if it can't reach the kube api-server
-  # - grpcroute.yaml
-  # - httproute.yaml
   - statefulset.yaml
+  - dnsendpoint.yaml
   - ../garage/access-keys/infinity-and-beyond
 components:
   - ../../common/litestream

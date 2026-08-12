@@ -1,9 +1,9 @@
 namespace: homepage
 resources:
   - service.yaml
-  - cfdtunnel.yaml
   - httproute.yaml
   - deployment.yaml
+  - dnsendpoint.yaml
   - clusterrole.yaml
   - serviceaccount.yaml
   - traefikservice.yaml

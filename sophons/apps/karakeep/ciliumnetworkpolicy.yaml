@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: chrome-lockdown
+  namespace: karakeep
+spec:
+  description: Chrome will only ever need to talk to the outside world (and Pihole)
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: karakeep
+      k8s:app.kubernetes.io/instance: karakeep
+      k8s:app.kubernetes.io/component: chrome
+
+  egress:
+    - toEntities: [world]
+
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: pihole
+            k8s:app.kubernetes.io/name: pihole
+            k8s:app.kubernetes.io/instance: necronomicon
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP

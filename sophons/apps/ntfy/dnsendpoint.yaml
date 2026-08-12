@@ -1,0 +1,17 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: updown
+  namespace: ntfy
+spec:
+  endpoints:
+    - dnsName: up.sophons.cloud
+      recordType: CNAME
+      targets:
+        - page.updown.io
+      providerSpecific:
+        - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
+          value: "false"
+    - dnsName: _updown.up.sophons.cloud
+      recordType: TXT
+      targets: [updown-page=p/z65nu]

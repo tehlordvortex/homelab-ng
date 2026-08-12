@@ -267,7 +267,6 @@ configMap:
           client_secret:
             path: "/secrets/authelia/oidc.client.karakeep.digest"
           redirect_uris:
-            - https://holding.sophons.cloud/api/auth/callback/custom
             - https://hoarder.sophons.cloud/api/auth/callback/custom
           # workaround because karakeep doesn't actually implement oidc correctly:
           # https://www.authelia.com/integration/openid-connect/clients/karakeep/#configuration-escape-hatch
@@ -331,7 +330,7 @@ configMap:
           # https://www.authelia.com/integration/openid-connect/clients/grafana/#configuration-escape-hatch
           claims_policy: grafana
           redirect_uris:
-            - https://klustermntr.sophons.cloud/login/generic_oauth
+            - https://klstrmntr.sophons.cloud/login/generic_oauth
           scopes:
             - openid
             - offline_access

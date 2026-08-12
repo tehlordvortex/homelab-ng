@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/instance: weedfs
     app.kubernetes.io/name: seaweedfs
 spec:
-  trafficDistribution: PreferSameNode
+  # trafficDistribution: PreferSameNode
   ports:
     - name: swfs-s3
       protocol: TCP
@@ -35,7 +35,7 @@ metadata:
     app.kubernetes.io/instance: weedfs
     app.kubernetes.io/name: seaweedfs
 spec:
-  trafficDistribution: PreferSameNode
+  # trafficDistribution: PreferSameNode
   ports:
     - name: swfs-filer
       protocol: TCP

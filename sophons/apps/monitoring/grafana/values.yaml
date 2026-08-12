@@ -4,8 +4,15 @@ initChownData:
 tolerations:
   - key: caeneus.sophons.cloud
     operator: Exists
-nodeSelector:
-  topology.kubernetes.io/region: ng
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+            - key: topology.kubernetes.io/region
+              operator: In
+              values: [ng]
+        weight: 100
 
 env:
   GOGC: "10"
@@ -33,8 +40,8 @@ admin:
 
 grafana.ini:
   server:
-    domain: klustermntr.sophons.cloud
-    root_url: https://klustermntr.sophons.cloud
+    domain: klstrmntr.sophons.cloud
+    root_url: https://klstrmntr.sophons.cloud
   auth.generic_oauth:
     # For variables see https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#env-provider
     enabled: true
@@ -87,7 +94,3 @@ sidecar:
       initialDelaySeconds: 5
       periodSeconds: 5
       failureThreshold: 60 # 5 minutes
-
-plugins:
-  - victoriametrics-metrics-datasource
-  - victoriametrics-logs-datasource

@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://github.com/kubernetes-sigs/external-dns/raw/refs/tags/v0.21.0/charts/external-dns/values.schema.json
 logLevel: debug
 extraArgs:
-  txt-prefix: "_ed-%{record_type}."
+  txt-wildcard-replacement: "w-c"
   cloudflare-proxied: true
   # Don't want wildcard DNS records when creating wildcard SSL certs
   ignore-ingress-tls-spec: true
@@ -20,9 +20,9 @@ env:
       resourceFieldRef:
         resource: limits.memory
 
-sources:
-  - crd
-  - service
+txtPrefix: ed-%{record_type}.
+sources: [crd, service]
+managedRecordTypes: [A, AAAA, CNAME, TXT]
 
 resources:
   requests:

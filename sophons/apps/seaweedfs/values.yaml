@@ -90,7 +90,7 @@ master:
 
 volume:
   enabled: true
-  rust: true # what's the worst that could go wrong
+  # rust: true # what's the worst that could go wrong
   replicas: 3
   priorityClassName: system-node-critical
 
@@ -233,11 +233,13 @@ filer:
       cpu: 100m
       memory: 172Mi
     limits:
-      memory: 564Mi
+      memory: 768Mi
 
   extraEnvironmentVars:
-    GOGC: "10"
-    GOMEMLIMIT: 550MiB
+    GOGC: "5"
+    GOMEMLIMIT:
+      resourceFieldRef:
+        resource: limits.memory
     DATA_CENTER:
       fieldRef:
         fieldPath: metadata.labels['topology.kubernetes.io/zone']

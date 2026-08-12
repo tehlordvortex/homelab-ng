@@ -22,6 +22,8 @@ controllers:
     statefulset:
       volumeClaimTemplates: []
     pod:
+      terminationGracePeriodSeconds: 180
+      hostUsers: false
       securityContext:
         seccompProfile:
           type: RuntimeDefault
@@ -38,14 +40,14 @@ controllers:
     containers:
       karakeep:
         image:
-          tag: 0.32.0
+          tag: 0.33.1
         # Next.js is a plague :(
         resources:
           requests:
             cpu: 150m
             memory: 300Mi
           limits:
-            memory: 756Mi
+            memory: 1.5Gi
 
         envFrom:
           - secretRef:
@@ -54,10 +56,7 @@ controllers:
         env:
           DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
-          BROWSER_WEB_URL: null
-          # BROWSER_WEBSOCKET_URL: ws://karakeep-chrome:3000?token=waososecure
-          BROWSER_WEBSOCKET_URL: ws://karakeep-chrome:3000
-          BROWSER_CONNECT_ONDEMAND: "true"
+          BROWSER_WEB_URL: ws://karakeep-chrome:3000
           ASSET_STORE_S3_ENDPOINT: https://ps3-global.sphns.run
           ASSET_STORE_S3_REGION: global
           ASSET_STORE_S3_BUCKET: karakeep
@@ -81,19 +80,27 @@ controllers:
           OPENAI_API_KEY: clankerstudio
           # lmstudio on kaos
           OPENAI_BASE_URL: http://100.64.0.26:11433/v1
-          INFERENCE_TEXT_MODEL: openai/gpt-oss-20b
-          INFERENCE_IMAGE_MODEL: qwen/qwen3-vl-8b
-          EMBEDDING_TEXT_MODEL: qwen/qwen3-embedding-4b
-          INFERENCE_CONTEXT_LENGTH: "49152"
-          INFERENCE_MAX_OUTPUT_TOKENS: "16384"
+          OPENAI_PROXY_URL: http://localhost:8080
+          OPENAI_REASONING_EFFORT: none
+          INFERENCE_TEXT_MODEL: google/gemma-4-12b-qat
+          INFERENCE_IMAGE_MODEL: google/gemma-4-12b-qat
+          INFERENCE_CONTEXT_LENGTH: "12288"
+          INFERENCE_MAX_OUTPUT_TOKENS: "4096"
+          EMBEDDING_DIMENSIONS: "768"
+          EMBEDDING_TEXT_MODEL: google/embeddinggemma-300m-qat
           INFERENCE_ENABLE_AUTO_TAGGING: "true"
           INFERENCE_ENABLE_AUTO_SUMMARIZATION: "true"
           # 2.5 minutes
-          INFERENCE_JOB_TIMEOUT_SEC: "150"
-          CRAWLER_FULL_PAGE_ARCHIVE: "true"
+          # INFERENCE_JOB_TIMEOUT_SEC: "150"
+          # turns out its disabled by default for a reason whoopsie
+          # CRAWLER_FULL_PAGE_ARCHIVE: "true"
           # 3 minutes
           CRAWLER_JOB_TIMEOUT_SEC: "300"
-          CRAWLER_SCREENSHOT_TIMEOUT_SEC: "60"
+          CRAWLER_SCREENSHOT_TIMEOUT_SEC: "30"
+          CRAWLER_MONOLITH_TIMEOUT_SEC: "180"
+          HTML_CONTENT_SIZE_INLINE_THRESHOLD_BYTES: "1024"
+
+          EVENT_LOGS_ENABLED: "true"
 
         securityContext:
           readOnlyRootFilesystem: true
@@ -102,7 +109,67 @@ controllers:
             drop: [ALL]
 
     initContainers:
-      litestream:
+      0-tailscale:
+        image:
+          repository: ghcr.io/tailscale/tailscale
+          tag: latest # required, replaced
+        restartPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: tailscale-config
+          - secretRef:
+              name: tailscale-auth
+        env:
+          - name: GOGC
+            value: "10"
+          - name: GOMEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.memory
+          - name: TS_EXTRA_ARGS
+            value: $(TS_BASE_ARGS)
+          - name: TS_TAILSCALED_EXTRA_ARGS
+            value: $(TSD_BASE_ARGS)
+          - name: TS_HOSTNAME
+            value: karakeep
+          - name: TS_OUTBOUND_HTTP_PROXY_LISTEN
+            value: localhost:8080
+        ports:
+          - name: ts-metrics
+            containerPort: 9002
+
+        resources:
+          requests:
+            cpu: 25m
+            memory: 48Mi
+          limits:
+            memory: 100Mi
+            devic.es/tun: 1
+
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: [ALL]
+
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: ts-metrics
+
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: ts-metrics
+
+      1-litestream:
         restartPolicy: Always
         image:
           repository: docker.io/litestream/litestream
@@ -126,8 +193,16 @@ controllers:
             value: litestream-ad-infinitum
           - name: LITESTREAM_REPLICA_PATH
             value: ng/karakeep
+          - name: LITESTREAM_SNAPSHOT_INTERVAL
+            value: 24h
           - name: LITESTREAM_CONFIG
             value: |-
+              shutdown-sync-timeout: 150s
+              levels:
+                - interval: 15m  # L1
+                - interval: 1.5h # L2
+                - interval: 6h   # L3
+
               dbs:
                 - path: /data/db.db
                   replica:
@@ -163,100 +238,37 @@ controllers:
             memory: 48Mi
           limits:
             memory: 100Mi
-      tailscale:
-        image:
-          repository: ghcr.io/tailscale/tailscale
-          tag: v1.98.4
-        restartPolicy: Always
-        envFrom:
-          - configMapRef:
-              name: tailscale-config
-          - secretRef:
-              name: tailscale-auth
-        env:
-          - name: GOGC
-            value: "10"
-          - name: GOMEMLIMIT
-            valueFrom:
-              resourceFieldRef:
-                resource: limits.memory
-          - name: TS_EXTRA_ARGS
-            value: $(TS_BASE_ARGS)
-          - name: TS_TAILSCALED_EXTRA_ARGS
-            value: $(TSD_BASE_ARGS)
-          - name: TS_HOSTNAME
-            value: karakeep
-          - name: TS_USERSPACE
-            value: "false"
-        ports:
-          - name: ts-metrics
-            containerPort: 9002
-
-        resources:
-          requests:
-            cpu: 50m
-            memory: 48Mi
-          limits:
-            memory: 100Mi
-            devic.es/tun: 1
-
-        securityContext:
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: [ALL]
-            add: [NET_ADMIN]
-
-        probes:
-          liveness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /healthz
-                port: ts-metrics
-
-          readiness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /healthz
-                port: ts-metrics
   chrome:
     pod:
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 10.43.14.40 # necronomicon-0
+          - 10.43.203.219 # necronomicon-1
+      hostUsers: false
       nodeSelector:
         kubernetes.io/hostname: sophons-caeneus
       tolerations:
         - key: caeneus.sophons.cloud
           operator: Exists
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+
     containers:
       chrome:
-        # https://github.com/jlandure/alpine-chrome/issues/272#issuecomment-3536582057
-        # Can't trust the alpine container :(
         image:
           repository: ghcrd.sphns.run/browserless/chromium
           tag: v2.46.0
         args: null
         env:
           - name: ENABLE_DEBUGGER
-            value: false
+            value: "false"
           - name: TIMEOUT
-            # Now 10 minutes
-            value: "600000"
+            # 5 minutes
+            value: "300000"
           - name: CONCURRENT
-            value: "8"
-          # - name: TOKEN
-          #   value: waososecure
-        # args:
-        #   # FIXME: CHROME SANDBOX
-        #   # - --no-sandbox
-        #   - --remote-debugging-address=0.0.0.0
-        #   - --remote-debugging-port=9222
-        #   - --headless
-        #   - --hide-scrollbars
-        #   - --disable-gpu
-        #   - --disable-dev-shm-usage
+            value: "4"
         probes:
           liveness:
             enabled: true
@@ -277,19 +289,13 @@ controllers:
           allowPrivilegeEscalation: false
           capabilities:
             add: null
-            drop:
-              - ALL
-              # - SYS_ADMIN
-          seccompProfile:
-            type: RuntimeDefault
-            # seccompProfile:
-            #   type: Localhost
-            #   localhostProfile: profiles/chrome.json
+            drop: [ALL]
         resources:
           requests:
             cpu: 100m
           limits:
             cpu: null
+            memory: 1.5Gi
 service:
   chrome:
     ports:
@@ -308,14 +314,14 @@ persistence:
             subPath: karakeep
           - path: /run
             subPath: run
-        litestream:
+        0-tailscale:
+          - path: /tmp
+            subPath: tailscale
+        1-litestream:
           - path: /data
             subPath: data
           - path: /tmp
             subPath: litestream
-        tailscale:
-          - path: /tmp
-            subPath: tailscale
       chrome:
         chrome:
           - path: /tmp
@@ -325,7 +331,7 @@ persistence:
     name: litestream-config
     advancedMounts:
       karakeep:
-        litestream:
+        1-litestream:
           - path: /etc/litestream
 
 meilisearch:

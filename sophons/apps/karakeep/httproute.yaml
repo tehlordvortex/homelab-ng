@@ -13,14 +13,10 @@ spec:
   parentRefs:
     - name: traefik-gateway
       namespace: traefik
-      sectionName: web
-    - name: traefik-gateway
-      namespace: traefik
       sectionName: websecure
 
   hostnames:
     - hoarder.sophons.cloud
-    - holding.sophons.cloud
 
   rules:
     - backendRefs:

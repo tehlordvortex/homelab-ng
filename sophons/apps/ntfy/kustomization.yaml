@@ -4,6 +4,7 @@ resources:
   - cfdtunnel.yaml
   - httproute.yaml
   - statefulset.yaml
+  - dnsendpoint.yaml
   - ../garage/access-keys/infinity-and-beyond
 
 components:

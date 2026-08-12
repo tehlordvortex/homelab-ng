@@ -11,4 +11,4 @@ spec:
   to:
     - group: ""
       kind: Service
-      name: s3-global
+      name: s3-website

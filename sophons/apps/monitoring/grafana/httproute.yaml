@@ -19,7 +19,7 @@ spec:
       sectionName: websecure
 
   hostnames:
-    - klustermntr.sophons.cloud
+    - klstrmntr.sophons.cloud
 
   rules:
     - backendRefs:
