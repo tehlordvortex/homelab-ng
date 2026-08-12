@@ -29,7 +29,7 @@ services:
       net.ipv6.conf.all.forwarding: 1
     security_opt:
       - seccomp=unconfined
-    cpus: 8
+    cpus: 6
     mem_limit: 12G
     read_only: true
     tmpfs:
@@ -43,6 +43,7 @@ services:
       - etc-kubernetes:/etc/kubernetes
       - usr-libexec-kubernetes:/usr/libexec/kubernetes
       - opt:/opt
+      - /dev/dri/by-path:/dev/dri/by-path
       - /run/media/vrtx/big-boi/backups/backups/garage:/var/lib/garage/backup/big-boi
       - /run/media/vrtx/less-big-boi/backups/garage:/var/lib/garage/backup/less-big-boi
       - /run/media/vrtx/big-boi/time-machine:/mnt/big-boi/time-machine
@@ -50,11 +51,11 @@ services:
       - /run/media/vrtx/less-big-boi/media:/mnt/less-big-boi/media
     environment:
       - PLATFORM=container
-      - TALOSSKU=8CPU-8192RAM
+      # - TALOSSKU=8CPU-8192RAM
     devices:
-      - /dev/net/tun
       - /dev/dri
       - /dev/kfd
+      - /dev/net/tun
     networks:
       # default: {}
       lab:

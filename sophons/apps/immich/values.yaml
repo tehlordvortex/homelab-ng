@@ -76,7 +76,7 @@ server:
               protocol: TCP
 
           env:
-            CPU_CORES: "8"
+            CPU_CORES: "4"
             IMMICH_LOG_LEVEL: debug
             IMMICH_TRUSTED_PROXIES: 10.41.0.0/16,::ffff:10.41.0.0/112,::ffff:0a29:0000/112,2001:cafe:41::/56
             IMMICH_ALLOW_SETUP: "false"
@@ -113,32 +113,41 @@ server:
             privileged: true
 
   persistence:
-    dev-dri-card0:
+    dev-dri:
       type: hostPath
-      hostPath: /dev/dri/card0
-      hostPathType: CharDevice
+      hostPath: /dev/dri
+      hostPathType: Directory
       advancedMounts:
         main:
           main:
-            - path: /dev/dri/card0
+            - path: /dev/dri
 
-    dev-dri-renderd128:
-      type: hostPath
-      hostPath: /dev/dri/renderD128
-      hostPathType: CharDevice
-      advancedMounts:
-        main:
-          main:
-            - path: /dev/dri/renderD128
+    # dev-dri-card0:
+    #   type: hostPath
+    #   hostPath: /dev/dri/by-path/pci-0000:09:00.0-card
+    #   hostPathType: CharDevice
+    #   advancedMounts:
+    #     main:
+    #       main:
+    #         - path: /dev/dri/card0
 
-    dev-kfd:
-      type: hostPath
-      hostPath: /dev/kfd
-      hostPathType: CharDevice
-      advancedMounts:
-        main:
-          main:
-            - path: /dev/kfd
+    # dev-dri-renderd128:
+    #   type: hostPath
+    #   hostPath: /dev/dri/by-path/pci-0000:09:00.0-render
+    #   hostPathType: CharDevice
+    #   advancedMounts:
+    #     main:
+    #       main:
+    #         - path: /dev/dri/renderD128
+
+    # dev-kfd:
+    #   type: hostPath
+    #   hostPath: /dev/kfd
+    #   hostPathType: CharDevice
+    #   advancedMounts:
+    #     main:
+    #       main:
+    #         - path: /dev/kfd
 
 machine-learning:
   enabled: true
@@ -162,7 +171,7 @@ machine-learning:
             # HIP_VISIBLE_DEVICES: "1"
             # ROCR_VISIBLE_DEVICES: "1"
             # HSA_USE_SVM: "0"
-            HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+            # HSA_OVERRIDE_GFX_VERSION: "11.0.0"
 
           resources:
             requests:
@@ -183,23 +192,32 @@ machine-learning:
       storageClass: local-path
       accessMode: ReadWriteOnce
 
-    dev-dri-card0:
+    dev-dri:
       type: hostPath
-      hostPath: /dev/dri/card0
-      hostPathType: CharDevice
+      hostPath: /dev/dri
+      hostPathType: Directory
       advancedMounts:
         main:
           main:
-            - path: /dev/dri/card0
+            - path: /dev/dri
 
-    dev-dri-renderd128:
-      type: hostPath
-      hostPath: /dev/dri/renderD128
-      hostPathType: CharDevice
-      advancedMounts:
-        main:
-          main:
-            - path: /dev/dri/renderD128
+    # dev-dri-card0:
+    #   type: hostPath
+    #   hostPath: /dev/dri/by-path/pci-0000:09:00.0-card
+    #   hostPathType: CharDevice
+    #   advancedMounts:
+    #     main:
+    #       main:
+    #         - path: /dev/dri/card0
+
+    # dev-dri-renderd128:
+    #   type: hostPath
+    #   hostPath: /dev/dri/by-path/pci-0000:09:00.0-render
+    #   hostPathType: CharDevice
+    #   advancedMounts:
+    #     main:
+    #       main:
+    #         - path: /dev/dri/renderD128
 
     dev-kfd:
       type: hostPath
