@@ -41,6 +41,11 @@ restore_from_config() {
   local config_file="${1:?}"
   local db_path
   local restored_flag
+  local -a extra_args=()
+
+  if test -n "${LITESTREAM_RESTORE_EXTRA_ARGS:-}"; then
+    readarray -t extra_args < <(printf '%s' "$LITESTREAM_RESTORE_EXTRA_ARGS")
+  fi
 
   grep -E "$PATH_REGEX" "$config_file" | while IFS= read -r line; do
     db_path=$(sed -E "s/.*$PATH_REGEX.*/\1/" <<<"$line")
@@ -53,8 +58,11 @@ restore_from_config() {
 
     if test -z "${LITESTREAM_NO_RESTORE:-}"; then
       rm -f "$restored_flag"
+      # bg & wait combo for signal forwarding
       LITESTREAM_LOGGING_LEVEL=debug litestream restore -config="$config_file" \
-        -if-replica-exists -if-db-not-exists -integrity-check=full "$db_path"
+        -if-replica-exists -if-db-not-exists -integrity-check=full \
+        "${extra_args[@]}" "$db_path" &
+      wait
       touch "$restored_flag"
     fi
 
@@ -91,13 +99,20 @@ restore() {
   local db_path="${1:?}"
   local db_uri="${2:?}"
   local restored_flag="$(restored_flag_for "$db_path")"
+  local -a extra_args=()
+
+  if test -n "${LITESTREAM_RESTORE_EXTRA_ARGS:-}"; then
+    readarray -t extra_args < <(printf '%s' "$LITESTREAM_RESTORE_EXTRA_ARGS")
+  fi
 
   if test -z "${LITESTREAM_NO_RESTORE:-}"; then
     rm -f "$restored_flag"
+    # bg & wait combo for signal forwarding
     LITESTREAM_LOGGING_LEVEL=debug LITESTREAM_DB_PATH="$db_path" LITESTREAM_REPLICA_URL="$db_uri" \
       litestream restore -config="/etc/litestream/litestream.yaml" \
-      -if-replica-exists -if-db-not-exists -integrity-check=full "$db_path"
-
+      -if-replica-exists -if-db-not-exists -integrity-check=full \
+      "${extra_args[@]}" "$db_path" &
+    wait
     touch "$restored_flag"
   fi
 
@@ -125,8 +140,21 @@ clear_restored_flag() {
 
 do_startup_actions() {
   if test -n "${LITESTREAM_STARTUP_ENFORCE_RETENTION:-}" || test -n "${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-}"; then
+    # bg & wait combo for signal forwarding
     LITESTREAM_LOGGING_LEVEL=debug litestream replicate -config="$CONFIG_PATH" -once \
       -enforce-retention="${LITESTREAM_STARTUP_ENFORCE_RETENTION:-false}" \
-      -force-snapshot="${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-false}"
+      -force-snapshot="${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-false}" &
+    wait
   fi
 }
+
+socket_exists() {
+  [ -S "$LITESTREAM_SOCKET_PATH" ]
+}
+
+shutdown() {
+  trap - TERM
+  kill -TERM -- -$$ || true
+  wait
+}
+trap shutdown TERM

@@ -22,7 +22,7 @@ controllers:
     statefulset:
       volumeClaimTemplates: []
     pod:
-      terminationGracePeriodSeconds: 180
+      terminationGracePeriodSeconds: 120
       hostUsers: false
       securityContext:
         seccompProfile:
@@ -40,7 +40,9 @@ controllers:
     containers:
       karakeep:
         image:
-          tag: 0.33.1
+          # tag: 0.33.2
+          # https://github.com/karakeep-app/karakeep/pull/3009
+          tag: latest@sha256:29937372d6615959929522daf77fd27be8d363b67de62b715d1270e9d0589b4c
         # Next.js is a plague :(
         resources:
           requests:
@@ -56,7 +58,7 @@ controllers:
         env:
           DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
-          BROWSER_WEB_URL: ws://karakeep-chrome:3000
+          BROWSER_WEB_URL: http://karakeep-chrome:9222
           ASSET_STORE_S3_ENDPOINT: https://ps3-global.sphns.run
           ASSET_STORE_S3_REGION: global
           ASSET_STORE_S3_BUCKET: karakeep
@@ -75,31 +77,40 @@ controllers:
           OAUTH_CLIENT_ID: sphns_q1F-KFdfxuwpzFejpdac311zzc65t0eiT.X1Vu3mE5
           OAUTH_PROVIDER_NAME: Authelia
           OAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING: "true"
-          # 15s
-          OAUTH_TIMEOUT: "15000"
+          OAUTH_TIMEOUT: "15000" # 15s
           OPENAI_API_KEY: clankerstudio
-          # lmstudio on kaos
-          OPENAI_BASE_URL: http://100.64.0.26:11433/v1
+          OPENAI_BASE_URL: http://100.64.0.26:11433/v1 # lmstudio on kaos
           OPENAI_PROXY_URL: http://localhost:8080
           OPENAI_REASONING_EFFORT: none
+          INFERENCE_NUM_WORKERS: "2"
           INFERENCE_TEXT_MODEL: google/gemma-4-12b-qat
           INFERENCE_IMAGE_MODEL: google/gemma-4-12b-qat
-          INFERENCE_CONTEXT_LENGTH: "12288"
-          INFERENCE_MAX_OUTPUT_TOKENS: "4096"
+          INFERENCE_CONTEXT_LENGTH: "16384"
+          INFERENCE_MAX_OUTPUT_TOKENS: "8192"
+          # 2.5 minutes
+          INFERENCE_JOB_TIMEOUT_SEC: "150"
+          EMBEDDING_NUM_WORKERS: "3"
           EMBEDDING_DIMENSIONS: "768"
           EMBEDDING_TEXT_MODEL: google/embeddinggemma-300m-qat
+          EMBEDDING_TEXT_MODEL_DIMENSION_OVERRIDE: "768"
+          EMBEDDING_CONTEXT_LENGTH: "3072"
+          EMBEDDING_ENABLE_AUTO_INDEXING: "true"
           INFERENCE_ENABLE_AUTO_TAGGING: "true"
           INFERENCE_ENABLE_AUTO_SUMMARIZATION: "true"
-          # 2.5 minutes
-          # INFERENCE_JOB_TIMEOUT_SEC: "150"
           # turns out its disabled by default for a reason whoopsie
           # CRAWLER_FULL_PAGE_ARCHIVE: "true"
+          CRAWLER_NUM_WORKERS: "3"
           # 3 minutes
           CRAWLER_JOB_TIMEOUT_SEC: "300"
-          CRAWLER_SCREENSHOT_TIMEOUT_SEC: "30"
+          CRAWLER_SCREENSHOT_TIMEOUT_SEC: "45"
           CRAWLER_MONOLITH_TIMEOUT_SEC: "180"
           HTML_CONTENT_SIZE_INLINE_THRESHOLD_BYTES: "1024"
+          SEARCH_NUM_WORKERS: "3"
+          SEARCH_JOB_TIMEOUT_SEC: "60"
+          ASSET_PREPROCESSING_NUM_WORKERS: "3"
 
+          OTEL_TRACING_ENABLED: "true"
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://zero-order-alloy.monitoring-system:4318/v1/traces
           EVENT_LOGS_ENABLED: "true"
 
         securityContext:
@@ -195,9 +206,12 @@ controllers:
             value: ng/karakeep
           - name: LITESTREAM_SNAPSHOT_INTERVAL
             value: 24h
+          - name: LITESTREAM_RESTORE_EXTRA_ARGS
+            value: |-
+              -parallelism=32
           - name: LITESTREAM_CONFIG
             value: |-
-              shutdown-sync-timeout: 150s
+              shutdown-sync-timeout: 110s
               levels:
                 - interval: 15m  # L1
                 - interval: 1.5h # L2
@@ -207,9 +221,11 @@ controllers:
                 - path: /data/db.db
                   replica:
                     url: "[[replica_url db.db]]"
+                    concurrency: 9
                 - path: /data/queue.db
                   replica:
                     url: "[[replica_url queue.db]]"
+                    concurrency: 12
 
         ports:
           - name: ls-metrics
@@ -223,7 +239,7 @@ controllers:
               exec:
                 command: [bash, /etc/litestream/restore-probe.sh]
               initialDelaySeconds: 10
-              periodSeconds: 5
+              periodSeconds: 10
               failureThreshold: 30
 
         securityContext:
@@ -243,11 +259,11 @@ controllers:
       dnsPolicy: None
       dnsConfig:
         nameservers:
-          - 10.43.14.40 # necronomicon-0
-          - 10.43.203.219 # necronomicon-1
+          - 10.43.45.33 # necros
+          - 10.43.14.33 # nomos
       hostUsers: false
       nodeSelector:
-        kubernetes.io/hostname: sophons-caeneus
+        topology.kubernetes.io/region: ng
       tolerations:
         - key: caeneus.sophons.cloud
           operator: Exists
@@ -258,34 +274,16 @@ controllers:
     containers:
       chrome:
         image:
-          repository: ghcrd.sphns.run/browserless/chromium
-          tag: v2.46.0
-        args: null
-        env:
-          - name: ENABLE_DEBUGGER
-            value: "false"
-          - name: TIMEOUT
-            # 5 minutes
-            value: "300000"
-          - name: CONCURRENT
-            value: "4"
-        probes:
-          liveness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /active
-                port: 3000
-          readiness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /active
-                port: 3000
+          repository: ghcr.io/karakeep-app/karakeep-chrome
+          tag: 151.0.7922.47-r1
+        args:
+          - --disable-gpu
+          - --disable-dev-shm-usage
+          - --disable-blink-features=AutomationControlled
+          - --window-size=1440,900
+          - --hide-scrollbars
         securityContext:
-          readOnlyRootFilesystem: false
+          readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             add: null
@@ -295,13 +293,12 @@ controllers:
             cpu: 100m
           limits:
             cpu: null
-            memory: 1.5Gi
+            memory: 1Gi
 service:
   chrome:
     ports:
-      http: null
-      ws:
-        port: 3000
+      http:
+        port: 9222
 persistence:
   tmp:
     type: emptyDir
@@ -326,6 +323,8 @@ persistence:
         chrome:
           - path: /tmp
             subPath: chrome
+          - path: /var/cache
+            subPath: cache
   litestream-config:
     type: configMap
     name: litestream-config
@@ -335,32 +334,33 @@ persistence:
           - path: /etc/litestream
 
 meilisearch:
-  affinity:
-    nodeAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - preference:
-            matchExpressions:
-              - key: topology.kubernetes.io/region
-                operator: In
-                values:
-                  - ng
-          weight: 100
+  # This ties the instance to a node but eh, S3 storage isn't available, and
+  # this doesn't worsen our existing SLA (which is **fuck all**)
+  nodeSelector:
+    kubernetes.io/hostname: sophons-voltzahl
+
   auth:
     existingMasterKeySecret: karakeep
+  environment:
+    MEILI_MAX_INDEXING_THREADS: 3
+    MEILI_MAX_INDEXING_MEMORY: 200Mi
+    MEILI_EXPERIMENTAL_REDUCE_INDEXING_MEMORY_USAGE: true
+
   resources:
     requests:
       cpu: 50m
-      memory: 32Mi
+      memory: 200Mi
     limits:
-      cpu: 250m
-      memory: 256Mi
-  securityContext:
-    readOnlyRootFilesystem: true
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-        - ALL
+      memory: 512Mi
+
+  podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
+
   persistence:
-    enabled: false
+    enabled: true
+    storageClass: local-path
+
+  serviceMonitor:
+    enabled: true
+    interval: null
