@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://github.com/grafana/k8s-monitoring-helm/raw/refs/tags/k8s-monitoring-4.3.2/charts/k8s-monitoring/values.schema.json
+# yaml-language-server: $schema=https://github.com/grafana/k8s-monitoring-helm/raw/refs/tags/k8s-monitoring-4.4.0/charts/k8s-monitoring/values.schema.json
 cluster:
   name: sophons
 
@@ -139,16 +139,17 @@ collectors:
         enabled: true
       resources:
         requests:
-          cpu: 100m
+          cpu: 75m
           memory: 256Mi
         limits:
-          cpu: 550m
           memory: 512Mi
       extraEnv:
         - name: GOGC
           value: "10"
         - name: GOMEMLIMIT
-          value: 500MiB
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
 
       livenessProbe:
         httpGet:
@@ -275,8 +276,7 @@ alloy-operator:
 
   resources:
     requests:
-      cpu: 25m
+      cpu: 10m
       memory: 64Mi
     limits:
-      cpu: 150m
       memory: 128Mi

@@ -15,13 +15,13 @@ affinity:
         weight: 100
 
 env:
-  GOGC: "10"
+  GOGC: "5"
 resources:
   requests:
     cpu: 100m
-    memory: 128Mi
+    memory: 256Mi
   limits:
-    memory: 512Mi
+    memory: 600Mi
 
 extraSecretMounts:
   - name: oauth-secret

@@ -77,16 +77,16 @@ affinity:
             - key: topology.kubernetes.io/zone
               operator: In
               values:
-                - ng-middle-east
-                - ng-east-1
-        weight: 100
+                - de-east-1
+        weight: 69
       - preference:
           matchExpressions:
             - key: topology.kubernetes.io/zone
               operator: In
               values:
-                - de-east-1
-        weight: 50
+                - ng-middle-east
+                - ng-east-1
+        weight: 67
 
 serviceMonitor:
   enabled: true
