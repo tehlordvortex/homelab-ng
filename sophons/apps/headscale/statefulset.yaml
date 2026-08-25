@@ -23,20 +23,12 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
+                  - key: topology.kubernetes.io/region
+                    operator: NotIn
                     # only nodes with some kind of always publicly routable ip
-                    values:
-                      - sophons-theta
-                      - sophons-voltzahl
-                      - sophons-oduduwa
+                    values: [ng]
 
           preferredDuringSchedulingIgnoredDuringExecution:
-            # - preference:
-            #     matchExpressions:
-            #       - key: node-role.kubernetes.io/control-plane
-            #         operator: DoesNotExist
-            #   weight: 100
             - preference:
                 matchExpressions:
                   - key: kubernetes.io/hostname
@@ -47,10 +39,10 @@ spec:
 
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
+        runAsUser: 65534
+        # runAsGroup: 1000
+        # fsGroup: 1000
+        # fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
 
@@ -73,7 +65,7 @@ spec:
 
       containers:
         - name: headscale
-          image: ghcr.io/juanfont/headscale:v0.29.2
+          image: ghcr.io/juanfont/headscale:v0.29.3@sha256:0e7f1c6e4ce6c2a2a001103ecd3fa645a045adf30ac8a5234fe037b43000cd72
           args: ["serve"]
 
           env:
@@ -122,8 +114,8 @@ spec:
 
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 64Mi
             limits:
               memory: 256Mi
 
@@ -134,7 +126,7 @@ spec:
               drop: [ALL]
 
         - name: headplane
-          image: ghcr.io/tale/headplane:0.7.0
+          image: ghcr.io/tale/headplane:0.7.0@sha256:7bd6523a14567a43eb4ffa1e95e3d95456b8539c9d081757df3f228b9e836fb5
 
           ports:
             - containerPort: 3000
@@ -142,7 +134,7 @@ spec:
 
           env:
             - name: GOMEMLIMIT
-              value: 120MiB
+              value: 128MiB
             - name: HEADPLANE_LOAD_ENV_OVERRIDES
               value: "true"
             - name: HEADPLANE_SERVER__COOKIE_SECRET
@@ -201,7 +193,7 @@ spec:
 
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 256Mi
             limits:
               memory: 256Mi
@@ -229,8 +221,6 @@ spec:
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
               value: ng/headscale
-            - name: LITESTREAM_LOGGING_LEVEL
-              value: debug
             - name: LITESTREAM_RETENTION
               value: 24h
             - name: LITESTREAM_SNAPSHOT_INTERVAL
@@ -289,14 +279,8 @@ spec:
             - ash
             - -c
             - |
-              set -xeu
-              if [ "$NODE_NAME" = "sophons-oduduwa" ]; then
-                alias acurl="curl -4"
-              else
-                alias acurl="curl"
-              fi
-
-              acurl -fsSL -XPOST -H "authorization: bearer $CLOUDFLARE_API_TOKEN" \
+              set -eu
+              curl -fsSL -XPOST -H "authorization: bearer $CLOUDFLARE_API_TOKEN" \
                 https://neckhook.sphns.workers.dev/trigger
           env:
             - name: CLOUDFLARE_API_TOKEN

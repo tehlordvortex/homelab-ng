@@ -1,0 +1,52 @@
+resources:
+  - ../instance
+
+patches:
+  - target:
+      kind: Service
+      name: necronomicon
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: necros
+      - op: replace
+        path: /metadata/labels/app.kubernetes.io~1instance
+        value: necros
+      - op: replace
+        path: /spec/selector/app.kubernetes.io~1instance
+        value: necros
+  - target:
+      kind: StatefulSet
+      name: necronomicon
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: necros
+      - op: replace
+        path: /metadata/labels/app.kubernetes.io~1instance
+        value: necros
+      - op: replace
+        path: /spec/selector/matchLabels/app.kubernetes.io~1instance
+        value: necros
+      - op: replace
+        path: /spec/template/metadata/labels/app.kubernetes.io~1instance
+        value: necros
+      - op: add
+        path: /spec/template/spec/affinity/nodeAffinity/preferredDuringSchedulingIgnoredDuringExecution/-
+        value:
+          preference:
+            matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: In
+                values: [ng]
+          weight: 100
+      - op: add
+        path: /spec/template/spec/initContainers/1/env/-
+        value:
+          name: TS_HOSTNAME
+          value: necros
+      - op: add
+        path: /spec/template/spec/initContainers/1/env/-
+        value:
+          name: TS_KUBE_SECRET
+          value: necros

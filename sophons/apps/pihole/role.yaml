@@ -12,7 +12,7 @@ rules:
     # Create can not be restricted to a resource name.
     verbs: ["create"]
   - apiGroups: [""] # "" indicates the core API group
-    resourceNames: ["necronomicon-0", "necronomicon-1"]
+    resourceNames: ["necros", "nomos"]
     resources: ["secrets"]
     verbs: ["get", "update", "patch"]
   - apiGroups: [""] # "" indicates the core API group

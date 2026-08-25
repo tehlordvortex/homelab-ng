@@ -5,7 +5,7 @@ labels:
     includeSelectors: true
     includeTemplates: true
   - pairs:
-      app.kubernetes.io/version: 0.28.1
+      app.kubernetes.io/version: 0.29.3
     includeTemplates: true
 
 resources:

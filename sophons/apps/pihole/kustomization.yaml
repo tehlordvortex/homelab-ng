@@ -6,19 +6,24 @@ labels:
     includeTemplates: true
 
 resources:
+  - primary
+  - secondary
   - role.yaml
-  - service.yaml
   - rolebinding.yaml
-  - statefulset.yaml
   - serviceaccount.yaml
   - poddisruptionbudget.yaml
 components:
   - ../../common/tailscale
   - ../../common/tailscale/auth
 
+images:
+  - name: ghcr.io/pi-hole/pihole
+    newTag: 2026.07.2
+
 configMapGenerator:
   - name: pihole
     files:
       - config/adlists.list
       - config/blacklist.txt
-      - config/dnsmasq.conf
+      - config/configure.sh
+    envs: [.env]

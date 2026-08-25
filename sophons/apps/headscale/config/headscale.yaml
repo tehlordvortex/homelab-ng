@@ -36,8 +36,8 @@ dns:
   base_domain: ts.vrtx.sh
   nameservers:
     global:
-      - 100.86.90.115 # necronomicon-0
-      - 100.125.253.27 # necronomicon-1
+      - 100.80.9.21 # necros
+      - 100.110.137.75 # nomos
   search_domains: []
 
 oidc:
