@@ -4,10 +4,10 @@ zli = "github:project-zot/zot"
 [tools]
 helm = "3.21.0"
 kubectl = "1.34.1"
-"aqua:sarub0b0/kubetui" = "1.7.1"
+"aqua:sarub0b0/kubetui" = "1.14.0"
 kustomize = "5.8.1"
 age = "1.2.1"
-sops = "3.11.0"
+sops = "3.13.3"
 talosctl = "1.13.4"
 "ubi:cozystack/talm" = "0.16.2"
 cosign = "3.0.2"
@@ -49,7 +49,7 @@ REPO_ROOT = "{{config_root}}"
 KUBECONFIG = "{{config_root}}/kubeconfig"
 TALOSCONFIG = "{{config_root}}/talosconfig"
 HEADSCALE_CLI_ADDRESS = "gghs.vrtx.sh:443"
-TALOS_VERSION = "v1.13.4"
+TALOS_VERSION = "v1.13.9"
 
 [settings]
 npm.bun = true

@@ -38,9 +38,6 @@ run = ["talosctl --nodes=$SOPHONS_ALPHA"]
 [tasks.'talos:prime']
 run = ["talosctl --nodes=$SOPHONS_PRIME"]
 
-[tasks.'talos:oduduwa']
-run = ["talosctl --nodes=$SOPHONS_ODUDUWA"]
-
 [tasks.'talos:caeneus']
 run = ["talosctl --nodes=$SOPHONS_CAENEUS"]
 
@@ -70,11 +67,6 @@ run = ["mise talos:leistung apply-config -f generated/worker.leistung.yaml"]
 depends = ["gen"]
 dir = "{{config_root}}"
 run = ["mise talos:prime apply-config -f generated/worker.prime.yaml"]
-
-[tasks.'apply:oduduwa']
-depends = ["gen"]
-dir = "{{config_root}}"
-run = ["mise talos:oduduwa apply-config -f generated/worker.oduduwa.yaml"]
 
 [tasks.'apply:caeneus']
 depends = ["gen"]
@@ -113,7 +105,6 @@ dir = "{{config_root}}"
 run = [
   { task = "apply:alpha" },
   { task = "apply:prime" },
-  { task = "apply:oduduwa" },
   { task = "apply:caeneus" },
   { task = "apply:leistung" },
 ]

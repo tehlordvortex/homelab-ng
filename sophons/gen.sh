@@ -19,8 +19,13 @@ gen_controlplane() {
   local host_name=$1
   local image=$2
 
-  gen_wgcf $host_name "$patch_dir/wg.cf.sops.yaml"
   gen_wg $host_name "$patch_dir/wg.kluster.sops.yaml"
+
+  set --
+  gen_wgcf $host_name "$patch_dir/wg.cf.sops.yaml"
+  if [ -f "$self_dir/generated/wg.cf.$host_name.yaml" ]; then
+    set -- --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml"
+  fi
 
   talosctl gen config $cluster $endpoint \
     --force --with-examples=false \
@@ -33,8 +38,8 @@ gen_controlplane() {
     --config-patch "@$patch_dir/unshare.seccomp.yaml" \
     --config-patch "@$patch_dir/controlplane.sops.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
-    --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml" \
     --config-patch "@$self_dir/generated/wg.kluster.$host_name.yaml" \
+    "$@" \
     --output-types controlplane \
     --output "$self_dir/generated/controlplane.$host_name.yaml"
 
@@ -48,8 +53,13 @@ gen_worker() {
   local host_name=$1
   local image=$2
 
-  gen_wgcf $host_name "$patch_dir/wg.cf.sops.yaml"
   gen_wg $host_name "$patch_dir/wg.kluster.sops.yaml"
+
+  set --
+  gen_wgcf $host_name "$patch_dir/wg.cf.sops.yaml"
+  if [ -f "$self_dir/generated/wg.cf.$host_name.yaml" ]; then
+    set -- --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml"
+  fi
 
   talosctl gen config $cluster $endpoint \
     --force --with-examples=false \
@@ -61,10 +71,23 @@ gen_worker() {
     --config-patch "@$patch_dir/chrome.seccomp.yaml" \
     --config-patch "@$patch_dir/unshare.seccomp.yaml" \
     --config-patch "@$patch_dir/$host_name.sops.yaml" \
-    --config-patch "@$self_dir/generated/wg.cf.$host_name.yaml" \
     --config-patch "@$self_dir/generated/wg.kluster.$host_name.yaml" \
+    "$@" \
     --output-types worker \
     --output "$self_dir/generated/worker.$host_name.yaml"
+}
+
+add_pubkeys_to_wgcfg() {
+  local name
+  local config="$1"
+  local interface="$(basename "$config" | sed s/.sops.yaml$//)"
+  local enriched="$self_dir/generated/$interface.yaml"
+
+  cp "$config" "$enriched"
+  for name in $(yq '.peers | keys | .[]' "$enriched"); do
+    pubkey=$(yq ".wireguard.privateKeys.$name" "$enriched" | wg pubkey)
+    yq --inplace ".peers.$name.publicKey = \"$pubkey\"" $enriched
+  done
 }
 
 gen_wg() {
@@ -72,13 +95,6 @@ gen_wg() {
   local config="$2"
   local interface="$(basename "$config" | sed s/.sops.yaml$//)"
   local enriched="$self_dir/generated/$interface.yaml"
-
-  local name
-  cp "$config" "$enriched"
-  for name in $(yq '.peers | keys | .[]' "$enriched"); do
-    pubkey=$(yq ".wireguard.privateKeys.$name" "$enriched" | wg pubkey)
-    yq --inplace ".peers.$name.publicKey = \"$pubkey\"" $enriched
-  done
 
   HOST_NAME="$host_name" INTERFACE="$interface" yq '
     env(HOST_NAME) as $selfName |
@@ -112,7 +128,7 @@ gen_wg() {
       ],
       "routes": [$peers[].value | (.addresses + .allowedIPs + (.routes // []))[] | {"destination": .}]
     }
-  ' "$enriched" >"$self_dir/generated/$interface.$host_name.yaml"
+' "$enriched" >"$self_dir/generated/$interface.$host_name.yaml"
 }
 
 gen_wgcf() {
@@ -121,37 +137,39 @@ gen_wgcf() {
   local interface="$(basename "$config" | sed s/.sops.yaml$//)"
   local has_interface="$(HOST_NAME="$host_name" yq '.nodes[env(HOST_NAME)] != null' "$config")"
 
+  if [ "$has_interface" = "false" ]; then return 0; fi
+
   # "routes": [{"gateway":  "fe80::1", "metric": 256}]
   HOST_NAME="$host_name" INTERFACE="$interface" yq '
     .wireguard as $wg |
     .nodes[env(HOST_NAME)] as $self |
+    $self.persistentKeepaliveInterval as $persistentKeepaliveInterval |
     {
       "apiVersion": "v1alpha1",
       "kind": "WireguardConfig",
       "name": env(INTERFACE),
-      "up": false,
+      "up": ($self.up // false),
       "mtu": $wg.mtu,
       "listenPort": $wg.listenPort,
-      "privateKey": $wg.placeholderPrivateKey,
+      "privateKey": $self.privateKey,
+      "addresses": [$self.addresses[] | {"address": .}],
+      "routes": ($self.routes // []),
       "peers": [{
         "publicKey": $wg.publicKey,
         "allowedIPs": ["0.0.0.0/0", "::/0"],
         "endpoint": $wg.endpoint
       } |
-      with(select($self.persistentKeepaliveInterval != null);
-        .persistentKeepaliveInterval = $self.persistentKeepaliveInterval
+      with(select($persistentKeepaliveInterval != null);
+        .persistentKeepaliveInterval = $persistentKeepaliveInterval
       )]
-    } * ((select($self != null) | {
-      "up": true,
-      "privateKey": $self.privateKey,
-      "addresses": [$self.addresses[] | {"address": .}],
-      "routes": []
-    }))
-  ' "$config" >"$self_dir/generated/$interface.$host_name.yaml"
+    }
+' "$config" >"$self_dir/generated/$interface.$host_name.yaml"
 }
 
 rm -r $self_dir/generated
 mkdir -p $self_dir/generated
+
+add_pubkeys_to_wgcfg "$patch_dir/wg.kluster.sops.yaml"
 
 gen_controlplane beta factory.talos.dev/installer/$pi_image:$talos_version
 gen_controlplane theta factory.talos.dev/installer/$vm_image:$talos_version
@@ -159,6 +177,5 @@ gen_controlplane voltzahl factory.talos.dev/installer/$vm_image:$talos_version
 
 gen_worker alpha factory.talos.dev/installer/$pi_image:$talos_version
 gen_worker prime factory.talos.dev/installer/$prime_image:$talos_version
-gen_worker oduduwa factory.talos.dev/installer/$vm_image:$talos_version
 gen_worker caeneus ghcr.io/siderolabs/talos:$talos_version
 gen_worker leistung factory.talos.dev/installer/$vm_image:$talos_version
