@@ -3,10 +3,11 @@ namespace: cfd-system
 images:
   - name: ghcr.io/tehlordvortex/cloudflared-operator/operator
     newName: pz3.sphns.run/library/cloudflared-operator/operator
-    newTag: dev
+    newTag: dev@sha256:b062e37df1fac64ca9341bdc5d42afa7c84d59619aeb7e762125ec5fc5a83f03
 
 resources:
   - https://tig.vrtx.sh/vrtx/cloudflared-operator/yaml/kustomize?ref=main
+  - ciliumclusterwidenetworkpolicy.yaml
 
 patches:
   - target:
@@ -21,16 +22,18 @@ patches:
       - op: add
         path: /spec/template/spec/containers/0/env/-
         value:
+          name: CLOUDFLARED_IMAGE
+          value: docker.io/cloudflare/cloudflared@sha256:0aa26e284f05e6c77ae375b8c9c11d9eb6a448fb7bcd8d40f31cb6176189eb38
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
           name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: http://zero-order-alloy.monitoring-system:4317
-      - op: add
-        path: /spec/template/spec/containers/0/imagePullPolicy
-        value: Always
       - op: add
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
-            cpu: 50m
+            cpu: 10m
             memory: 32Mi
           limits:
             memory: 64Mi

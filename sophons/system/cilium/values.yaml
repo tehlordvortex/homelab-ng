@@ -82,7 +82,9 @@ egressGateway:
 
 envoy:
   enabled: true
-  xdsMode: ads
+  # xdsMode: ads
+  # TODO: https://github.com/cilium/cilium/issues/47624
+  xdsMode: split
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1

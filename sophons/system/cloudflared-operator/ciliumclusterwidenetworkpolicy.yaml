@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumclusterwidenetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: cloudflared-egress
+spec:
+  description: All Cloudflare Tunnels MUST route through Traefik, and only it.
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: cloudflared
+
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: monitoring-system
+            k8s:app.kubernetes.io/name: alloy
+            k8s:app.kubernetes.io/instance: zero-order-alloy
+      toPorts:
+        - ports:
+            - port: cfd-metrics
+              protocol: TCP
+
+  egress:
+    - toCIDRSet:
+        - cidrGroupRef: cloudflare
+
+    - toServices:
+        - k8sService:
+            serviceName: traefik
+            namespace: traefik
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "443"
+              protocol: UDP
+
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: node-local-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP

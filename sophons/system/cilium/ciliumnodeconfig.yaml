@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumnodeconfig_v2.json
 # apiVersion: cilium.io/v2
 # kind: CiliumNodeConfig
 # metadata:
@@ -16,6 +17,7 @@
 #     bpf-map-dynamic-size-ratio: "0.00020"
 #     bpf-lb-acceleration: best-effort
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumnodeconfig_v2.json
 apiVersion: cilium.io/v2
 kind: CiliumNodeConfig
 metadata:
@@ -28,6 +30,7 @@ spec:
   defaults:
     bpf-map-dynamic-size-ratio: "0.000005"
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumnodeconfig_v2.json
 apiVersion: cilium.io/v2
 kind: CiliumNodeConfig
 metadata:
