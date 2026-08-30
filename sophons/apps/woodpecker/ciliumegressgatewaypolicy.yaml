@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumegressgatewaypolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  name: ci-ipv6
+spec:
+  destinationCIDRs: ["::/0"]
+  egressGateway:
+    nodeSelector:
+      matchExpressions:
+        - key: egress.sophons.cloud/ci-ipv6
+          operator: Exists
+
+  selectors:
+    - podSelector:
+        matchLabels:
+          io.kubernetes.pod.namespace: woodpecker-system
+      nodeSelector:
+        matchExpressions:
+          - key: egress.sophons.cloud/ci-ipv6
+            operator: DoesNotExist

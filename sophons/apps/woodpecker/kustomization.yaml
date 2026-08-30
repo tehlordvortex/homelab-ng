@@ -6,6 +6,7 @@ resources:
   - deployment.yaml
   - dnsendpoint.yaml
   - ciliumnetworkpolicy.yaml
+  - ciliumegressgatewaypolicy.yaml
   - persistentvolumeclaim.yaml
   - ../garage/access-keys/infinity-and-beyond
 
@@ -39,6 +40,7 @@ patches:
       spec:
         template:
           spec:
+            terminationGracePeriodSeconds: 120
             hostAliases:
               - ip: 10.43.0.69
                 hostnames:

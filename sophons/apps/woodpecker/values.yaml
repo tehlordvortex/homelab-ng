@@ -84,8 +84,12 @@ server:
           value: 12h
         - name: LITESTREAM_RETENTION
           value: 24h
+        - name: LITESTREAM_RESTORE_EXTRA_ARGS
+          value: |-
+            -parallelism=10
         - name: LITESTREAM_CONFIG
           value: |-
+            shutdown-sync-timeout: 110s
             levels:
               - interval: 15m  # L1
               - interval: 1.5h # L2
