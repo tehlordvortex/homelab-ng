@@ -1,11 +1,19 @@
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
-  name: ggrpc-headscale
+  name: headscale
   namespace: headscale
 spec:
   endpoints:
+    - dnsName: hs.vrtx.sh
+      recordType: CNAME
+      targets: [traefik.noproxy.lb.sphns.run]
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: gghs.vrtx.sh
       recordType: CNAME
-      targets:
-        - hs.vrtx.sh
+      targets: [hs.vrtx.sh]
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"

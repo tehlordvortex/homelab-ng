@@ -21,7 +21,7 @@ resources:
     cpu: 100m
     memory: 256Mi
   limits:
-    memory: 600Mi
+    memory: 400Mi
 
 extraSecretMounts:
   - name: oauth-secret
@@ -42,6 +42,8 @@ grafana.ini:
   server:
     domain: klstrmntr.sophons.cloud
     root_url: https://klstrmntr.sophons.cloud
+    # override the default-enabled because of: https://github.com/grafana/grafana/issues/130649
+    enable_gzip: false
   auth.generic_oauth:
     # For variables see https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#env-provider
     enabled: true

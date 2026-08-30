@@ -7,15 +7,13 @@ spec:
   endpoints:
     - dnsName: z3.sphns.run
       recordType: CNAME
-      targets:
-        - traefik-sango-noproxy.sophons.cloud
+      targets: [traefik.noproxy.lb.sphns.run]
       providerSpecific:
         - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
           value: "false"
     - dnsName: oci.sphns.run
       recordType: CNAME
-      targets:
-        - traefik-sango-noproxy.sophons.cloud
+      targets: [traefik.noproxy.lb.sphns.run]
       providerSpecific:
         - name: "external-dns.alpha.kubernetes.io/cloudflare-proxied"
           value: "false"

@@ -1,7 +1,6 @@
 namespace: ntfy
 resources:
   - service.yaml
-  - cfdtunnel.yaml
   - httproute.yaml
   - statefulset.yaml
   - dnsendpoint.yaml

@@ -4,7 +4,6 @@ resources:
   - service.yaml
   - httproute.yaml
   - deployment.yaml
-  - dnsendpoint.yaml
   - ciliumnetworkpolicy.yaml
   - ciliumegressgatewaypolicy.yaml
   - persistentvolumeclaim.yaml
