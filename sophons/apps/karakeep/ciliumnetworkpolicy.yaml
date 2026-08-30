@@ -19,7 +19,6 @@ spec:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: pihole
             k8s:app.kubernetes.io/name: pihole
-            k8s:app.kubernetes.io/instance: necronomicon
       toPorts:
         - ports:
             - port: "53"
