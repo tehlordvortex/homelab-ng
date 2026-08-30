@@ -1,3 +1,0 @@
-providers:
-  longhorn:
-    url: http://longhorn-backend.longhorn-system.svc.cluster.local:9500

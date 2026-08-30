@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/authelia/chartrepo/refs/tags/authelia-0.10.54/charts/authelia/values.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/authelia/chartrepo/refs/tags/authelia-0.11.6/charts/authelia/values.schema.json
 persistence:
   enabled: false
 
@@ -18,8 +18,8 @@ pod:
           - preference:
               matchExpressions:
                 - key: topology.kubernetes.io/region
-                  operator: In
-                  values: [de, nl]
+                  operator: NotIn
+                  values: [ng]
             weight: 100
 
   securityContext:
@@ -381,6 +381,21 @@ configMap:
             - authorization_code
           token_endpoint_auth_method: client_secret_post
 
+        - client_name: Homepage
+          client_id: "sphns_ApTAfXXKeK9XNyoWiGI-ssQOGVbdJ2HhEx0xKqHIsY"
+          client_secret:
+            path: "/secrets/authelia/oidc.client.homepage.digest"
+          redirect_uris:
+            - https://home.sophons.cloud/api/auth/callback/homepage-oidc
+          scopes:
+            - openid
+            - profile
+            - email
+          response_types:
+            - code
+          grant_types:
+            - authorization_code
+
 secret:
   existingSecret: authelia
   additionalSecrets:
@@ -393,3 +408,4 @@ secret:
         - key: oidc.client.grafana.digest
         - key: oidc.client.zot.digest
         - key: oidc.client.immich.digest
+        - key: oidc.client.homepage.digest

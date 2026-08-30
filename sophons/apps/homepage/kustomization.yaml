@@ -3,21 +3,24 @@ resources:
   - service.yaml
   - httproute.yaml
   - deployment.yaml
-  - dnsendpoint.yaml
   - clusterrole.yaml
   - serviceaccount.yaml
   - traefikservice.yaml
+
+secretGenerator:
+  - name: homepage
+    env: .env
 
 configMapGenerator:
   - name: homepage
     files:
       - config/widgets.yaml
-      - config/settings.yaml
-      - config/services.yaml
       - config/bookmarks.yaml
       - config/kubernetes.yaml
     literals:
-      - proxmox.yaml=""
-      - docker.yaml=""
       - custom.js=""
       - custom.css=""
+      - docker.yaml=""
+      - proxmox.yaml=""
+      - services.yaml=""
+      - settings.yaml=""

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/gateway.networking.k8s.io/httproute_v1.json
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -16,7 +17,53 @@ spec:
     - home.sophons.cloud
 
   rules:
-    - backendRefs:
+    # - matches:
+    #     - path:
+    #         type: RegularExpression
+    #         # favicon/apple-touch-icon
+    #         value: ^\/[^/]+.png
+    #     - path:
+    #         type: PathPrefix
+    #         value: /_next/static
+    #     - path:
+    #         type: Exact
+    #         value: /api/healthcheck
+    #     - path:
+    #         type: Exact
+    #         value: /api/config/custom.css
+    #   backendRefs:
+    #     - group: traefik.io
+    #       kind: TraefikService
+    #       name: homepage
+
+    - # filters: []
+      # - type: ExtensionRef
+      #   extensionRef:
+      #     group: traefik.io
+      #     kind: Middleware
+      #     name: forwardauth-authelia
+      # - type: ExternalAuth
+      #   externalAuth:
+      #     backendRef:
+      #       name: authelia
+      #       namespace: authelia
+      #       port: 80
+
+      #     protocol: HTTP
+      #     http:
+      #       path: /api/authz/ext-authz/
+      #       allowedHeaders:
+      #         - accept
+      #         - cookie
+      #         - location
+      #         - proxy-authorization
+      #         - x-forwarded-proto
+      #       allowedResponseHeaders:
+      #         - Remote-User
+      #         - Remote-Groups
+      #         - Remote-Name
+      #         - Remote-Email
+      backendRefs:
         - group: traefik.io
           kind: TraefikService
           name: homepage

@@ -8,16 +8,9 @@
     nodes:
       show: false
 
-- longhorn:
-    expanded: true
-    total: true
-    labels: true
-    nodes: false
-
 - search:
-    provider: custom
-    url: https://www.ecosia.org/search?q=
+    provider: duckduckgo
     target: _blank
-    suggestionUrl: https://ac.ecosia.org/autocomplete?type=list&q= # Optional
-    showSearchSuggestions: true # Optional
-
+    # url: https://www.ecosia.org/search?q=
+    # suggestionUrl: https://ac.ecosia.org/autocomplete?type=list&q= # Optional
+    # showSearchSuggestions: true # Optional
