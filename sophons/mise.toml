@@ -11,6 +11,10 @@ run = "./gen.sh"
 dir = "./apps/traefik/node-lrps"
 run = "./gen.sh"
 
+[tasks.'gen:cidr-groups']
+dir = "./apps/traefik"
+run = "./gen.sh"
+
 [tasks.'talos:all']
 run = ["talosctl --nodes=$SOPHONS_NODES"]
 
@@ -108,3 +112,6 @@ run = [
   { task = "apply:caeneus" },
   { task = "apply:leistung" },
 ]
+
+[tasks.'helm:kustomized']
+run = "kustokelm"

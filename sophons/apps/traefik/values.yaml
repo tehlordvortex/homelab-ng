@@ -1,37 +1,8 @@
-# yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v41.1.0/traefik/values.schema.json
+# yaml-language-server: $schema=https://github.com/traefik/traefik-helm-chart/raw/refs/tags/v41.4.0/traefik/values.schema.json
 
-versionOverride: 3.7.10
+versionOverride: 3.7.12
 image:
-  digest: sha256:617c253c5d960e257ec153d582cc62f191461baba6863bd6b498ae062d3d5c19
-
-trustedIPs: &trustedIPs
-  - 127.0.0.0/8 # lokalhost
-  - ::1/128
-  # - 10.41.0.0/16 # kluster
-  # - 2001:cafe:41::/56
-  # Cloudflare IPs, Sep 28, 2023
-  - 173.245.48.0/20
-  - 103.21.244.0/22
-  - 103.22.200.0/22
-  - 103.31.4.0/22
-  - 141.101.64.0/18
-  - 108.162.192.0/18
-  - 190.93.240.0/20
-  - 188.114.96.0/20
-  - 197.234.240.0/22
-  - 198.41.128.0/17
-  - 162.158.0.0/15
-  - 104.16.0.0/13
-  - 104.24.0.0/14
-  - 172.64.0.0/13
-  - 131.0.72.0/22
-  - 2400:cb00::/32
-  - 2606:4700::/32
-  - 2803:f800::/32
-  - 2405:b500::/32
-  - 2405:8100::/32
-  - 2a06:98c0::/29
-  - 2c0f:f248::/32
+  digest: sha256:9c2a54d87f76f5c2f5f2682c68394af92fb12c0a2686798d6462a3f84bd78eaf
 
 api:
   insecure: true
@@ -47,6 +18,16 @@ accessLog:
 ingressRoute:
   dashboard:
     enabled: true
+    annotations:
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/description: Traefik Dashboard
+      gethomepage.dev/group: Admin
+      gethomepage.dev/icon: traefik.svg
+      gethomepage.dev/name: Traefik
+      gethomepage.dev/app: traefik
+      gethomepage.dev/widget.type: traefik
+      gethomepage.dev/widget.url: http://traefik.traefik:8080
+      gethomepage.dev/href: http://traefik-internal.sophons.cloud:8080/dashboard
 
 additionalArguments:
   - --serversTransport.maxIdleConnsPerHost=128
@@ -59,16 +40,10 @@ ports:
       default: true
       internal: true
 
-    forwardedHeaders:
-      trustedIPs: *trustedIPs
-
   web:
     port: 80
-    expose:
-      internal: true
-      theta: true
     http:
-      underscoreHeadersStrategy: delete
+      aliasHeadersStrategy: delete
       redirections:
         entryPoint:
           to: websecure
@@ -77,9 +52,6 @@ ports:
       middlewares:
         - crowdsec-crowdsec-bouncer@kubernetescrd
         - traefik-default-compression@kubernetescrd
-
-    forwardedHeaders:
-      trustedIPs: *trustedIPs
 
   websecure:
     port: 443
@@ -95,13 +67,10 @@ ports:
         readTimeout: 600s
         idleTimeout: 600s
     http:
-      underscoreHeadersStrategy: delete
+      aliasHeadersStrategy: delete
       middlewares:
         - crowdsec-crowdsec-bouncer@kubernetescrd
         - traefik-default-compression@kubernetescrd
-
-    forwardedHeaders:
-      trustedIPs: *trustedIPs
 
   ssh:
     port: 22
@@ -249,6 +218,11 @@ updateStrategy:
     maxSurge: 1
 deployment:
   kind: DaemonSet
+  labels:
+    app.kubernetes.io/component: proxy
+  podLabels:
+    app.kubernetes.io/component: proxy
+
   additionalVolumes:
     - name: plugins # volume name must be plugins for helm chart to skip mounting emptyDir
       persistentVolumeClaim:
@@ -257,6 +231,7 @@ deployment:
       image:
         reference: pz3.sphns.run/library/traefik/plugins/github.com/ciaranj/cacheify:dev-409ae70-10
         pullPolicy: IfNotPresent
+
 persistence:
   enabled: false
 additionalVolumeMounts:

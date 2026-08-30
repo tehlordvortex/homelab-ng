@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: traefik-ingress
+  namespace: traefik
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: traefik
+      k8s:app.kubernetes.io/instance: traefik-traefik
+      k8s:app.kubernetes.io/component: proxy
+
+  ingress:
+    - fromEntities: [cluster]
+    - fromCIDRSet:
+        - cidrGroupRef: private-ranges
+
+    # - fromCIDRSet:
+    #     - cidrGroupRef: bunny
+    #     - cidrGroupRef: cloudflare
+    #   toPorts:
+    #     - ports:
+    #         - port: web
+    #           protocol: TCP
+    #         - port: websecure
+    #           protocol: TCP
+    #         - port: websecure-http3
+    #           protocol: UDP
+
+    - toPorts:
+        - ports:
+            - port: ssh
+              protocol: TCP
+            - port: web
+              protocol: TCP
+            - port: websecure
+              protocol: TCP
+            - port: websecure-http3
+              protocol: UDP

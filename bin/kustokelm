@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+
+args=("$@")
+for i in "${!args[@]}"; do
+  case "${args[$i]}" in
+  --values=*)
+    DIR="$(dirname ${args[$i]#*=})"
+    break
+    ;;
+  --values | -f)
+    next_idx=$((i + 1))
+    if [[ $next_idx -lt ${#args[@]} ]]; then
+      DIR="$(dirname ${args[$next_idx]})"
+      break
+    fi
+    ;;
+  esac
+done
+
+helm "$@" \
+  --post-renderer kustomizer --post-renderer-args "$DIR"

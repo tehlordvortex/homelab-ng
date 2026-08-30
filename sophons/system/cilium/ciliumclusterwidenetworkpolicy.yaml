@@ -20,6 +20,22 @@ spec:
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
+  name: dhcpv6
+spec:
+  description: "Allow DHCPv6 responses"
+  nodeSelector:
+    matchLabels:
+      nwpolicy.sophons.cloud/dhcpv6: "true"
+  ingress:
+    - toPorts:
+        - ports:
+            - port: "546"
+              protocol: UDP
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumclusterwidenetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
   name: fayawall
 spec:
   description: "Default node firewall"
@@ -32,42 +48,11 @@ spec:
         - health
         - kube-apiserver
 
-    - fromCIDR:
-        - 10.1.0.0/16
-        - 10.42.0.0/16
-        - 10.69.0.0/16
-        - 10.67.0.0/16
-        - fdf6:9420:fade::/48
-        - 100.64.0.0/10
-        - fd7a:115c:a1e0::/48
-
     - fromCIDRSet:
-        - cidrGroupRef: cloudflare
-      toPorts:
-        - ports:
-            # http
-            - port: "80"
-              protocol: TCP
-            # https
-            - port: "443"
-              protocol: TCP
-            - port: "443"
-              protocol: UDP
+        - cidrGroupRef: private-ranges
 
     - toPorts:
         - ports:
-            # ssh
-            - port: "22"
-              protocol: TCP
-            # Break in case of Cloudflare downtime
-            # http
-            # - ports: "80"
-            #   protocol: TCP
-            # https
-            # - ports: "443"
-            #   protocol: TCP
-            # - ports: "443"
-            #   protocol: UDP
             # etcd-client
             - port: "2379"
               protocol: TCP

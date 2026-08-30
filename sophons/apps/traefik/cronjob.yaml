@@ -1,0 +1,166 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: bunny-pull-zone-sync
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/component: bunny-pull-zone-sync
+spec:
+  schedule: "0 3 * * *" # 3am daily
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: traefik
+        app.kubernetes.io/instance: traefik-traefik
+        app.kubernetes.io/component: bunny-pull-zone-sync
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: traefik
+            app.kubernetes.io/instance: traefik-traefik
+            app.kubernetes.io/component: bunny-pull-zone-sync
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+
+          volumes:
+            - name: tmp
+              emptyDir: {}
+            - name: cert
+              secret:
+                secretName: gateway-tls
+            - name: jq
+              image:
+                reference: ghcr.io/jqlang/jq
+
+          initContainers:
+            - name: extract-hostnames
+              image: docker.io/alpine/openssl
+              # https://stackoverflow.com/questions/20983217/how-to-display-the-subject-alternative-name-of-a-certificate
+              command:
+                - ash
+                - -c
+                - |-
+                  set -euo pipefail
+
+                  # openssl x509 -noout -ext subjectAltName -in /cert/tls.crt |
+                  #   grep -oE 'DNS:[^,]+' | grep -E '^DNS:\*' > /tmp/sans.txt
+
+                  echo "DNS:*.kaos.nexus" >> /tmp/sans.txt
+                  echo "DNS:*.vrtx.sh" >> /tmp/sans.txt
+                  echo "DNS:*.vrtx.run" >> /tmp/sans.txt
+                  echo "DNS:*.sphns.run" >> /tmp/sans.txt
+                  echo "DNS:*.sophons.cloud" >> /tmp/sans.txt
+
+                  echo "SANs:"
+                  cat /tmp/sans.txt
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                - mountPath: /cert
+                  name: cert
+                  readOnly: true
+
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: bunny-pull-zone-sync
+              image: docker.io/alpine/curl
+
+              env:
+                - name: PULL_ZONE_ID
+                  value: "6407919"
+                - name: API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: bunny-auth
+                      key: BUNNY_API_KEY
+
+              command:
+                - ash
+                - -c
+                - |-
+                  set -euo pipefail
+
+                  alias jq="/jq/jq"
+                  alias bcurl="curl -sS -H 'accesskey: $API_KEY'"
+                  crt="$(cat /cert/tls.crt | base64 -w0)"
+                  key="$(cat /cert/tls.key | base64 -w0)"
+
+                  echo "syncing ceritifcates and hostnames for pull zone: $PULL_ZONE_ID"
+
+                  bcurl "https://api.bunny.net/pullzone/$PULL_ZONE_ID" > /tmp/pz.json
+                  jq -r '.Hostnames[].Value' /tmp/pz.json | while read -r host; do
+                    if echo "$host" | grep -qE '\.b-cdn\.net$'; then
+                      echo "skip $host, managed by bunny"
+                      continue
+                    fi
+
+                    if ! grep -qxF "DNS:$host" /tmp/sans.txt; then
+                      echo "remove $host from pull zone"
+
+                      bcurl -X DELETE --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/removeHostname" \
+                        -H 'content-type: application/json' -d '{"Hostname":"'$host'"}'
+                    fi
+                  done
+
+                  cat /tmp/sans.txt | while read -r san; do
+                    host="${san#'DNS:'}"
+                    if ! jq -e --arg host "$host" '.Hostnames | any(.Value == $host)' /tmp/pz.json; then
+                      echo "add $host to pull zone"
+
+                      bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/addHostname" \
+                        -H 'content-type: application/json' -d '{"Hostname":"'$host'"}'
+                    fi
+
+                    prev_crt="$(jq -r --arg host "$host" '.Hostnames[] | select(.Value == $host) | .Certificate' /tmp/pz.json)"
+                    prev_key="$(jq -r --arg host "$host" '.Hostnames[] | select(.Value == $host) | .CertificateKey' /tmp/pz.json)"
+                    if [ "$prev_crt" != "$crt" ] || [ "$prev_key" != "$key" ]; then
+                      echo "sync certificate for $host"
+                      
+                      bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/addCertificate" \
+                        -H 'content-type: application/json' \
+                        -d '{"Hostname":"'$host'","Certificate":"'$crt'","CertificateKey":"'$key'"}'
+                    fi
+
+                    force_ssl="$(jq -r --arg host "$host" '.Hostnames[] | select(.Value == $host) | .ForceSSL' /tmp/pz.json)"
+                    if [ "$force_ssl" != "true" ]; then
+                      echo "enable force ssl for $host"
+
+                      bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/setForceSSL" \
+                        -H 'content-type: application/json' -d '{"Hostname":"'$host'","ForceSSL":true}'
+                    fi
+                  done
+
+                  echo done
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                - mountPath: /cert
+                  name: cert
+                  readOnly: true
+                - mountPath: /jq
+                  name: jq
+                  readOnly: true
+
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]

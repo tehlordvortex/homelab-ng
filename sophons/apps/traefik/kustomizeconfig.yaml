@@ -3,3 +3,7 @@ namereference:
     fieldSpecs:
       - kind: BackendTLSPolicy
         path: spec/validation/caCertificateRefs/name
+
+images:
+  - kind: CronJob
+    path: spec/jobTemplate/spec/template/spec/volumes/image/reference

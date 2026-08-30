@@ -75,7 +75,7 @@ reply() {
 }"
 }
 
-caeneus_domains='^((gimmich|neptune)\\.sophons\\.cloud|ic\\.vrtx\\.sh|(s3ui-global|p?s3-(backup|time-machine)|p?restic-(backup|time-machine))\\.sphns\\.run)$'
+caeneus_domains='^((gimmich|neptune|sparrow|uwuget)\\.sophons\\.cloud|ic\\.vrtx\\.sh|(s3ui-global|p?s3-(backup|time-machine)|p?restic-(backup|time-machine))\\.sphns\\.run)$'
 reply $lan_id $caeneus_domains $lan_caeneus
 reply $ts_id $caeneus_domains $ts_caeneus $ts6_caeneus
 
@@ -85,7 +85,7 @@ voltzahl_domains='^(((ssh\\.)?tig|auth)\\.vrtx\\.sh|p?((s3|restic)-(global|weed|
 # reply $lan_id $voltzahl_domains $pub_voltzahl $pub6_voltzahl
 reply $ts_id $voltzahl_domains $ts_voltzahl $ts6_voltzahl
 
-alpha_domains='^(pds\\.vrtx\\.sh|(hoarder|positron|klstrmntr)\\.sophons\\.cloud)$'
+alpha_domains='^(pds\\.vrtx\\.sh|(home|hoarder|positron|klstrmntr)\\.sophons\\.cloud)$'
 reply $lan_id $alpha_domains $lan_alpha
 reply $ts_id $alpha_domains $ts_alpha $ts6_alpha
 

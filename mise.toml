@@ -56,33 +56,3 @@ npm.bun = true
 
 [tasks.b2]
 run = "docker run --rm -it -e B2_APPLICATION_KEY -e B2_APPLICATION_KEY_ID backblazeit/b2:4.4.2"
-
-[tasks.'helm:kustomized']
-dir = "{{ cwd }}"
-usage = """
-arg "<command>"
-flag "-n --namespace <namespace>"
-flag "-f --values <values>"
-arg "<rest>" var=#true
-"""
-run = """
-eval "rest=(${usage_rest?})"
-helm --namespace {{ usage.namespace }} {{ usage.command }} \
-  --post-renderer kustomizer --post-renderer-args $(dirname "{{ usage.values }}") \
-  --values "{{ usage.values }}" "${rest[@]}"
-"""
-
-[tasks.'helm:diff:kustomized']
-dir = "{{ cwd }}"
-usage = """
-arg "<command>"
-flag "-n --namespace <namespace>"
-flag "-f --values <values>"
-arg "<rest>" var=#true
-"""
-run = """
-eval "rest=(${usage_rest?})"
-helm --namespace {{ usage.namespace }} diff {{ usage.command }} \
-  --post-renderer kustomizer --post-renderer-args $(dirname "{{ usage.values }}") \
-  --values "{{ usage.values }}" "${rest[@]}"
-"""
