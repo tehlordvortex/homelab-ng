@@ -4,8 +4,7 @@ multitenancy_enabled: false
 runtime_config:
   file: /etc/mimir/runtime/mimir.yaml
 limits:
-  compactor_blocks_retention_period: 3d
-  query_ingesters_within: 3h
+  query_ingesters_within: 0
 
 server:
   log_level: info
@@ -17,7 +16,8 @@ common:
   storage:
     backend: s3
     s3:
-      endpoint: ps3-global.sphns.run
+      endpoint: s3-global.garage:3900
+      insecure: true
       bucket_name: monitoring
       trace:
         enabled: true
@@ -35,9 +35,9 @@ blocks_storage:
     stripe_size: 512
     wal_compression_enabled: true
     wal_segment_size_bytes: 16777216 # 16MiB
-    wal_replay_concurrency: 8
+    wal_replay_concurrency: 10
     ship_interval: 10s
-    ship_concurrency: 4
+    ship_concurrency: 6
     head_compaction_interval: 15s
     head_chunks_write_buffer_size_bytes: 524288 # 512KiB
     flush_blocks_on_shutdown: true
@@ -49,12 +49,12 @@ blocks_storage:
     series_hash_cache_max_size_bytes: 134217728 # 128MiB
     index_header:
       lazy_loading_idle_timeout: 10m
-      lazy_loading_concurrency: 4
+      lazy_loading_concurrency: 6
     max_concurrent: 8
-    ignore_blocks_within: 1h
+    ignore_blocks_within: 0
 
 querier:
-  query_store_after: 2h
+  query_store_after: 0
 
 ruler:
   rule_path: /tmp/data-ruler

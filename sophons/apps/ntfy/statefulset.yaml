@@ -27,10 +27,10 @@ spec:
             - weight: 100
               preference:
                 matchExpressions:
-                  - key: topology.kubernetes.io/zone
+                  - key: topology.kubernetes.io/region
                     operator: NotIn
                     # avoid running inside me house if possible
-                    values: [ng-east-1, ng-east-2, ng-middle-east]
+                    values: [ng]
 
       securityContext:
         runAsUser: 65532
@@ -57,7 +57,7 @@ spec:
                 resourceFieldRef:
                   resource: limits.memory
             - name: LITESTREAM_ENDPOINT
-              value: https://ps3-global.sphns.run
+              value: http://s3-global.garage:3900
             - name: LITESTREAM_BUCKET
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
@@ -109,7 +109,7 @@ spec:
 
       containers:
         - name: ntfy
-          image: binwiederhier/ntfy:v2.25
+          image: binwiederhier/ntfy:v2.28
           args: ["serve", "--config=/etc/ntfy/server.yaml"]
 
           ports:

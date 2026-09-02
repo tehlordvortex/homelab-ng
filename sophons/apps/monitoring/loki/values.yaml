@@ -39,7 +39,8 @@ loki:
   storage:
     type: s3
     s3:
-      endpoint: https://ps3-global.sphns.run
+      endpoint: s3-global.garage:3900
+      insecure: true
       s3ForcePathStyle: true
       disable_dualstack: false
     bucketNames:
@@ -53,8 +54,6 @@ gateway:
 
 deploymentMode: SingleBinary
 singleBinary:
-  extraArgs:
-    - -log.level=debug
   terminationGracePeriodSeconds: 180
 
   replicas: 1
@@ -64,22 +63,19 @@ singleBinary:
       operator: Exists
   affinity:
     nodeAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - preference:
-          matchExpressions:
-            - key: topology.kubernetes.io/zone
-              operator: In
-              values:
-                - ng-middle-east
-                - ng-east-1
-        weight: 100
-      - preference:
-          matchExpressions:
-            - key: topology.kubernetes.io/zone
-              operator: In
-              values:
-                - de-east-1
-        weight: 50
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values: [sophons-voltzahl]
+          weight: 69
+        - preference:
+            matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: In
+                values: [ng]
+          weight: 42
 
   resources:
     requests:

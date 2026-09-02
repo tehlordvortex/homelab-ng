@@ -4,6 +4,15 @@ server:
     # 3.17.0 + default-host-userns
     tag: next-6fd88c5dec@sha256:cccc378d214aaac853065cd86f2e5d17843776b259f610c84577dd042f6258ee
 
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: NotIn
+                values: [ng]
+          weight: 69
   tolerations:
     - key: caeneus.sophons.cloud
       operator: Exists
@@ -49,7 +58,7 @@ server:
     ADDON_LOG_S3_COMPONENTS: log-addon,step-compactor
     ADDON_LOG_S3_BUCKET: forge-of-creation
     ADDON_LOG_S3_BUCKET_PREFIX: woodpecker-logs/
-    ADDON_LOG_S3_ENDPOINT: https://ps3-global.sphns.run
+    ADDON_LOG_S3_ENDPOINT: http://s3-global.garage:3900
     ADDON_LOG_S3_MIGRATE_EXISTING_LOGS_ON_DEMAND: true
     ADDON_LOG_S3_DELETE_MIGRATED_LOGS: true
 
@@ -75,7 +84,7 @@ server:
             resourceFieldRef:
               resource: limits.memory
         - name: LITESTREAM_ENDPOINT
-          value: https://ps3-global.sphns.run
+          value: http://s3-global.garage:3900
         - name: LITESTREAM_BUCKET
           value: litestream-ad-infinitum
         - name: LITESTREAM_REPLICA_PATH

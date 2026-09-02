@@ -1,6 +1,7 @@
 namePrefix: mimir-mirage-
 
 resources:
+  - httproute.yaml
   - statefulset.yaml
   - ../config
   - ../../../garage/access-keys/stalker

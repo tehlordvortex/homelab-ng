@@ -1,3 +1,4 @@
 namePrefix: tempo-temporium-
 resources:
+  - httproute.yaml
   - ../../../garage/access-keys/stalker

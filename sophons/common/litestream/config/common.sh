@@ -58,11 +58,9 @@ restore_from_config() {
 
     if test -z "${LITESTREAM_NO_RESTORE:-}"; then
       rm -f "$restored_flag"
-      # bg & wait combo for signal forwarding
       LITESTREAM_LOGGING_LEVEL=debug litestream restore -config="$config_file" \
         -if-replica-exists -if-db-not-exists -integrity-check=full \
-        "${extra_args[@]}" "$db_path" &
-      wait
+        "${extra_args[@]}" "$db_path"
       touch "$restored_flag"
     fi
 
@@ -107,12 +105,10 @@ restore() {
 
   if test -z "${LITESTREAM_NO_RESTORE:-}"; then
     rm -f "$restored_flag"
-    # bg & wait combo for signal forwarding
     LITESTREAM_LOGGING_LEVEL=debug LITESTREAM_DB_PATH="$db_path" LITESTREAM_REPLICA_URL="$db_uri" \
       litestream restore -config="/etc/litestream/litestream.yaml" \
       -if-replica-exists -if-db-not-exists -integrity-check=full \
-      "${extra_args[@]}" "$db_path" &
-    wait
+      "${extra_args[@]}" "$db_path"
     touch "$restored_flag"
   fi
 
@@ -140,11 +136,9 @@ clear_restored_flag() {
 
 do_startup_actions() {
   if test -n "${LITESTREAM_STARTUP_ENFORCE_RETENTION:-}" || test -n "${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-}"; then
-    # bg & wait combo for signal forwarding
     LITESTREAM_LOGGING_LEVEL=debug litestream replicate -config="$CONFIG_PATH" -once \
       -enforce-retention="${LITESTREAM_STARTUP_ENFORCE_RETENTION:-false}" \
-      -force-snapshot="${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-false}" &
-    wait
+      -force-snapshot="${LITESTREAM_STARTUP_FORCE_SNAPSHOT:-false}"
   fi
 }
 
@@ -152,9 +146,16 @@ socket_exists() {
   [ -S "$LITESTREAM_SOCKET_PATH" ]
 }
 
-shutdown() {
+uninstall_trap() {
   trap - TERM
-  kill -TERM -- -$$ || true
+}
+
+shutdown() {
+  uninstall_trap
+  ([ -n "${child:-}" ] && kill -TERM "$child") || true
   wait
 }
-trap shutdown TERM
+
+install_trap() {
+  trap shutdown TERM
+}

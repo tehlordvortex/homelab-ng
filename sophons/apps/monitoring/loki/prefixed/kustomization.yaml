@@ -1,3 +1,4 @@
 namePrefix: lady-loki-
 resources:
+  - httproute.yaml
   - ../../../garage/access-keys/stalker

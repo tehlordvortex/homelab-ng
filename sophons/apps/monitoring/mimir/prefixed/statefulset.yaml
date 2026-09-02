@@ -46,9 +46,9 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
-        - name: seaweedfs-cache
-          hostPath:
-            path: /var/lib/garage/weedfs/cache
+        # - name: seaweedfs-cache
+        #   hostPath:
+        #     path: /var/lib/garage/weedfs/cache
         - name: config
           configMap:
             name: mimir-config

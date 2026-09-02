@@ -88,7 +88,7 @@ patches:
             - -c
             - |-
               set -xeu
-              bucket=https://ps3-global.sphns.run/juiced-%d
+              bucket=http://s3-global.garage:3900/juiced-%d
               juicefs format --no-update --compress=zstd --block-size=1M \
                 --storage=s3 --bucket=$bucket --shards=6 \
                 sqlite3://$META_PATH $VOLUME_NAME
@@ -144,7 +144,7 @@ patches:
             readOnlyRootFilesystem: true
           resources:
             requests:
-              cpu: 150m
+              cpu: 70m
               memory: 128Mi
             limits:
               memory: 512Mi # we respect the OOMkilla
@@ -168,7 +168,7 @@ patches:
                 resourceFieldRef:
                   resource: limits.memory
             - name: LITESTREAM_ENDPOINT
-              value: https://ps3-global.sphns.run
+              value: http://s3-global.garage:3900
             - name: LITESTREAM_BUCKET
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH
@@ -176,7 +176,7 @@ patches:
             - name: LITESTREAM_SNAPSHOT_INTERVAL
               value: 12h
             - name: LITESTREAM_RETENTION
-              value: 24h
+              value: 48h
             # - name: LITESTREAM_STARTUP_ENFORCE_RETENTION
             #   value: "true"
             # - name: LITESTREAM_STARTUP_FORCE_SNAPSHOT
@@ -229,7 +229,7 @@ patches:
 
           resources:
             requests:
-              cpu: 50m
+              cpu: 30m
               memory: 48Mi
             limits:
               memory: 128Mi

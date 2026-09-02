@@ -34,14 +34,15 @@ derp:
 dns:
   magic_dns: true
   base_domain: ts.vrtx.sh
-  search_domains: [lan]
+  search_domains: []
+  # search_domains: [lan]
   nameservers:
     global:
-      # - 100.80.9.21 # necros
+      - 100.80.9.21 # necros
       - 100.110.137.75 # nomos
-    split:
-      lan:
-        - 100.64.0.9 # positron
+    # split:
+    #   lan:
+    #     - 100.64.0.9 # positron
 
 oidc:
   only_start_if_oidc_is_available: false

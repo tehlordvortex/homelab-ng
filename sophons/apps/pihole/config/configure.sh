@@ -79,7 +79,7 @@ caeneus_domains='^((gimmich|neptune|sparrow|uwuget)\\.sophons\\.cloud|ic\\.vrtx\
 reply $lan_id $caeneus_domains $lan_caeneus
 reply $ts_id $caeneus_domains $ts_caeneus $ts6_caeneus
 
-voltzahl_domains='^(((ssh\\.)?tig|auth)\\.vrtx\\.sh|p?((s3|restic)-(global|weed|b2)|oci|z3)\\.sphns\\.run)$'
+voltzahl_domains='^(auth\\.sophons\\.cloud|((ssh\\.)?tig|auth)\\.vrtx\\.sh|p?((s3|restic)-(global|weed|b2)|oci|z3)\\.sphns\\.run)$'
 # for some reason, the first octet of the ipv4 address pihole returns when
 # this is configured is wrong. the correct value is displayed in the UI. bug?
 # reply $lan_id $voltzahl_domains $pub_voltzahl $pub6_voltzahl

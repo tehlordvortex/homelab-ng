@@ -34,10 +34,10 @@ affinity:
 
 resources:
   requests:
-    cpu: 250m
-    memory: 256Mi
+    cpu: 100m
+    memory: 172Mi
   limits:
-    memory: 512Mi
+    memory: 300Mi
 
 persistence:
   enabled: false
@@ -199,8 +199,10 @@ gitea:
       SERVE_DIRECT: true
       MINIO_BASE_PATH: lfs/
     "storage.avatars":
+      SERVE_DIRECT: true
       MINIO_BASE_PATH: avatars/
     "storage.repo-avatars":
+      SERVE_DIRECT: true
       MINIO_BASE_PATH: repo-avatars/
     "storage.repo-archive":
       SERVE_DIRECT: true

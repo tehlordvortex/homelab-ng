@@ -59,7 +59,7 @@ controllers:
           DISABLE_SIGNUPS: "true"
           DB_WAL_MODE: "true"
           BROWSER_WEB_URL: http://karakeep-chrome:9222
-          ASSET_STORE_S3_ENDPOINT: https://ps3-global.sphns.run
+          ASSET_STORE_S3_ENDPOINT: http://s3-global.garage:3900
           ASSET_STORE_S3_REGION: global
           ASSET_STORE_S3_BUCKET: karakeep
           ASSET_STORE_S3_FORCE_PATH_STYLE: "true"
@@ -199,7 +199,7 @@ controllers:
               resourceFieldRef:
                 resource: limits.memory
           - name: LITESTREAM_ENDPOINT
-            value: https://ps3-global.sphns.run
+            value: http://s3-global.garage:3900
           - name: LITESTREAM_BUCKET
             value: litestream-ad-infinitum
           - name: LITESTREAM_REPLICA_PATH

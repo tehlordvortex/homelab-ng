@@ -55,7 +55,7 @@ pod:
             resourceFieldRef:
               resource: limits.memory
         - name: LITESTREAM_ENDPOINT
-          value: https://ps3-global.sphns.run
+          value: http://s3-global.garage:3900
         - name: LITESTREAM_BUCKET
           value: litestream-ad-infinitum
         - name: LITESTREAM_REPLICA_PATH

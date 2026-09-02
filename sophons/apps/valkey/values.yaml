@@ -62,7 +62,7 @@ redis:
     maxmemory: 48mb
     maxmemory-policy: volatile-lru
     repl-diskless-sync: "yes"
-    rdbcompression: "yes"
+    rdbcompression: "no"
     rdbchecksum: "yes"
 
   resources:
@@ -136,11 +136,11 @@ extraInitContainers:
           fieldRef:
             fieldPath: metadata.namespace
       - name: ZSTD_COMPRESS
-        value: "10"
+        value: "19"
       - name: RDB_PATH
         value: /data/dump.rdb
       - name: S3_ENDPOINT
-        value: https://ps3-global.sphns.run
+        value: http://s3-global.garage:3900
       - name: S3_URI
         value: s3://juicestream/redis/$(POD_NAMESPACE)/$(POD_NAME)/dump.rdb
 

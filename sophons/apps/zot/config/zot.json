@@ -64,9 +64,10 @@
         "redirectBlobURL": true,
         "storageDriver": {
           "name": "s3",
+          "secure": false,
           "region": "global",
-          "regionendpoint": "ps3-global.sphns.run",
-          "redirectendpoint": "s3-global.sphns.run",
+          "regionendpoint": "s3-global.garage:3900",
+          "redirectendpoint": "https://s3-global.sphns.run",
           "bucket": "zenlesszonezot",
           "forcepathstyle": true,
           "accesskey": "${GARAGE_ACCESS_KEY_ID}",

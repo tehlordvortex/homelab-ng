@@ -6,7 +6,7 @@ metadata:
 spec:
   configuration:
     destinationPath: s3://pgbooze/immich
-    endpointURL: https://ps3-global.sphns.run
+    endpointURL: http://s3-global.garage:3900
     s3Credentials:
       region:
         name: barman-access-key

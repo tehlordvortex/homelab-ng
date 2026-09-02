@@ -71,7 +71,6 @@ server:
         main:
           ports:
             - containerPort: 2283
-              hostPort: 2283
               name: http
               protocol: TCP
 

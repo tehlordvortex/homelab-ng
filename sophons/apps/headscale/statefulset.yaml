@@ -10,14 +10,6 @@ spec:
   selector: {}
   template:
     spec:
-      priorityClassName: system-node-critical
-
-      tolerations:
-        - key: orunmila.sophons.cloud/ase-orun
-          operator: Exists
-        - key: node.cilium.io/agent-not-ready
-          operator: Exists
-
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -43,22 +35,22 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
-      # do not depend on cluster DNS
-      dnsConfig:
-        nameservers:
-          - 1.1.1.1
-          - 1.0.0.1
-          - 9.9.9.9
-      dnsPolicy: None
-      hostAliases:
-        - ip: 10.43.0.69
-          hostnames:
-            - auth.sophons.cloud
-            - ps3-global.sphns.run
-        - ip: 2001:cafe:43::69
-          hostnames:
-            - auth.sophons.cloud
-            - ps3-global.sphns.run
+      # ~do not depend on cluster DNS~ headscale is no longer a load-bearing boundary (me when i'm Sol)
+      # dnsConfig:
+      #   nameservers:
+      #     - 1.1.1.1
+      #     - 1.0.0.1
+      #     - 9.9.9.9
+      # dnsPolicy: None
+      # hostAliases:
+      #   - ip: 10.43.0.69
+      #     hostnames:
+      #       - auth.sophons.cloud
+      #       - ps3-global.sphns.run
+      #   - ip: 2001:cafe:43::69
+      #     hostnames:
+      #       - auth.sophons.cloud
+      #       - ps3-global.sphns.run
 
       containers:
         - name: headscale
@@ -102,11 +94,15 @@ spec:
               subPath: oidc_client.secret
               readOnly: true
 
+          livenessProbe:
+            exec:
+              command: ["headscale", "health"]
+            initialDelaySeconds: 15
           readinessProbe:
             exec:
               command: ["headscale", "health"]
-            timeoutSeconds: 5
-            failureThreshold: 5
+            # timeoutSeconds: 5
+            # failureThreshold: 5
             initialDelaySeconds: 15
 
           resources:
@@ -171,16 +167,16 @@ spec:
             httpGet:
               path: /admin/healthz
               port: hp-http
-            timeoutSeconds: 5
-            failureThreshold: 5
+            # timeoutSeconds: 5
+            # failureThreshold: 5
             initialDelaySeconds: 15
-          readinessProbe:
-            httpGet:
-              path: /admin/healthz
-              port: hp-http
-            timeoutSeconds: 5
-            failureThreshold: 5
-            initialDelaySeconds: 15
+          # readinessProbe:
+          #   httpGet:
+          #     path: /admin/healthz
+          #     port: hp-http
+          #   timeoutSeconds: 5
+          #   failureThreshold: 5
+          #   initialDelaySeconds: 15
 
           securityContext:
             readOnlyRootFilesystem: true
@@ -213,7 +209,7 @@ spec:
                 resourceFieldRef:
                   resource: limits.memory
             - name: LITESTREAM_ENDPOINT
-              value: https://ps3-global.sphns.run
+              value: http://s3-global.garage:3900
             - name: LITESTREAM_BUCKET
               value: litestream-ad-infinitum
             - name: LITESTREAM_REPLICA_PATH

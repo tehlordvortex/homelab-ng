@@ -1,11 +1,11 @@
 tempo:
-  tag: 2.10.7
+  tag: 2.10.8
   resources:
     requests:
       cpu: 150m
       memory: 256Mi
     limits:
-      memory: 1Gi
+      memory: 1.5Gi
   extraEnv:
     - name: GOGC
       value: "5"
@@ -52,7 +52,8 @@ tempo:
       s3:
         bucket: monitoring
         prefix: tempo/
-        endpoint: ps3-global.sphns.run
+        endpoint: s3-global.garage:3900
+        insecure: true
         forcepathstyle: true
         enable_dual_stack: true
       wal:
@@ -74,19 +75,16 @@ affinity:
     preferredDuringSchedulingIgnoredDuringExecution:
       - preference:
           matchExpressions:
-            - key: topology.kubernetes.io/zone
+            - key: kubernetes.io/hostname
               operator: In
-              values:
-                - de-east-1
+              values: [sophons-voltzahl]
         weight: 69
       - preference:
           matchExpressions:
-            - key: topology.kubernetes.io/zone
+            - key: topology.kubernetes.io/region
               operator: In
-              values:
-                - ng-middle-east
-                - ng-east-1
-        weight: 67
+              values: [ng]
+        weight: 42
 
 serviceMonitor:
   enabled: true
