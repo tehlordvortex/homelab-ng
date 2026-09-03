@@ -3,16 +3,17 @@ image:
   # repository: registry.k8s.io/pause
   # tag: 3.10@sha256:ee6521f290b2168b6e0935a181d4cff9be1ac3f505666ef0e3c98fae8199917a
   repository: docker.io/crowdsecurity/crowdsec
+  tag: v1.8.0@sha256:99eb4df235527e978595ef5ebb30182831686dc875521de67ef39b7659a86897
   pullPolicy: IfNotPresent
+  kubectl:
+    repository: docker.io/alpine/kubectl
+    tag: 1.36.1
+    pullPolicy: IfNotPresent
 
 container_runtime: containerd
 
 tls:
   enabled: false
-  agent:
-    tlsClientAuth: false
-    reflector:
-      namespaces: [logging-system]
 
 config:
   parsers:
@@ -91,6 +92,15 @@ secrets:
     name: crowdsec
 
 lapi:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: NotIn
+                values: [ng]
+          weight: 100
   priorityClassName: system-node-critical
   resources:
     requests:
@@ -124,14 +134,14 @@ lapi:
     - name: BOUNCER_KEY_traefik
       valueFrom:
         secretKeyRef:
-          name: crowdsec
+          name: crowdsec-bouncer-keys
           key: traefikBouncerKey
     - name: ENROLL_INSTANCE_NAME
       value: "sophons"
     - name: ENROLL_TAGS
       value: "k8s linux"
     - name: GOGC
-      value: "25"
+      value: "10"
     - name: GOMEMLIMIT
       valueFrom:
         resourceFieldRef:
@@ -169,7 +179,7 @@ lapi:
             resourceFieldRef:
               resource: limits.memory
         - name: LITESTREAM_ENDPOINT
-          value: https://ps3-global.sphns.run
+          value: http://s3-global.garage:3900
         - name: LITESTREAM_BUCKET
           value: litestream-ad-infinitum
         - name: LITESTREAM_REPLICA_PATH
@@ -276,11 +286,11 @@ agent:
 
   env:
     - name: COLLECTIONS
-      value: "crowdsecurity/traefik crowdsecurity/haproxy crowdsecurity/linux LePresidente/gitea"
+      value: "crowdsecurity/traefik crowdsecurity/linux LePresidente/gitea"
     - name: PARSERS
       value: "crowdsecurity/whitelists"
     - name: GOGC
-      value: "25"
+      value: "10"
     - name: GOMEMLIMIT
       valueFrom:
         resourceFieldRef:
@@ -289,7 +299,7 @@ agent:
   resources:
     requests:
       cpu: 75m
-      memory: 48Mi
+      memory: 64Mi
     limits:
       cpu: null
       memory: 128Mi
@@ -312,16 +322,77 @@ agent:
       url: http://lady-loki.monitoring-system:3100/
       limit: 1000
       query: |-
-        {job="traefik/haproxy"}
-      labels:
-        type: haproxy
-    - source: loki
-      url: http://lady-loki.monitoring-system:3100/
-      limit: 1000
-      query: |-
         {job="forgejo/forgejo"}
       labels:
         type: gitea
+
+  metrics:
+    serviceMonitor:
+      enabled: true
+
+appsec:
+  # see middleware.yaml
+  enabled: true
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  acquisitions:
+    - appsec_configs:
+        - crowdsecurity/appsec-default
+        - crowdsecurity/crs
+      labels:
+        type: appsec
+      listen_addr: 0.0.0.0:7422
+      path: /
+      source: appsec
+      log_level: info
+      auth_timeout: 3s
+      auth_cache_duration: 60s
+      body_read_timeout: 120s
+
+  env:
+    - name: COLLECTIONS
+      value: "crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules crowdsecurity/appsec-crs"
+    - name: GOGC
+      value: "5"
+    - name: GOMEMLIMIT
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
+
+  extraVolumes:
+    - name: tmp
+      emptyDir: {}
+  extraVolumeMounts:
+    - mountPath: /tmp
+      name: tmp
+      subPath: appsec
+
+  resources:
+    requests:
+      cpu: 75m
+      memory: 100Mi
+    limits:
+      cpu: null
+      memory: 256Mi
+
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: [ALL]
+
+  wait_for_lapi:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
 
   metrics:
     serviceMonitor:

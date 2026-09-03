@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: crowdsec-bouncer-keys
+    env: .env

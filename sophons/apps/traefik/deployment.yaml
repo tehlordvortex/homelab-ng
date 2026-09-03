@@ -1,0 +1,106 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anubis
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: anubis
+    app.kubernetes.io/instance: traefik
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: anubis
+      app.kubernetes.io/instance: traefik
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: anubis
+        app.kubernetes.io/instance: traefik
+    spec:
+      hostUsers: false
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: NotIn
+                    values: [ng]
+              weight: 100
+
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      volumes:
+        - name: config
+          configMap:
+            name: anubis-config
+
+      containers:
+        - name: anubis
+          image: ghcr.io/techarohq/anubis:v1.27.0@sha256:8828275668b7bc675679f100970f9714f731388fbbf66ae94de8aca952e3fc4a
+
+          env:
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: POLICY_FNAME
+              value: /etc/anubis/config/policy.yaml
+            - name: BIND
+              value: :8080
+            - name: DIFFICULTY
+              value: "5"
+            - name: ED25519_PRIVATE_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: traefik-secrets
+                  key: ANUBIS_ED25519_PRIVATE_KEY_HEX
+            - name: SERVE_ROBOTS_TXT
+              value: "true"
+            - name: TARGET
+              value: " " # Redirect mode
+            - name: PUBLIC_URL
+              # The `Redirect` function in the golang stdlib will "helpfully" prefix
+              # a relative path with the request URL. This doesn't complicate my genius plan whatsoever.
+              # https://cs.opensource.google/go/go/+/refs/tags/go1.27.1:src/net/http/server.go;l=2419
+              value: /.
+            - name: CUSTOM_REAL_IP_HEADER
+              value: X-Real-Ip
+            - name: COOKIE_HTTP_ONLY
+              value: "true"
+            - name: COOKIE_DYNAMIC_DOMAIN
+              value: "true"
+
+          ports:
+            - containerPort: 8080
+              name: anubis
+            - containerPort: 9090
+              name: metrics
+
+          volumeMounts:
+            - mountPath: /etc/anubis/config
+              name: config
+              readOnly: true
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]

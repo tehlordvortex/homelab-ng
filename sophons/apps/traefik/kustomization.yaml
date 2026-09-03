@@ -8,12 +8,15 @@ resources:
   - cfdtunnel.yaml
   - httproute.yaml
   - middleware.yaml
+  - deployment.yaml
+  - servicemonitor.yaml
   - dnsendpoint.sops.yaml
   - persistentvolumeclaim.yaml
-  # - ciliumnetworkpolicy.yaml
+  - ciliumnetworkpolicy.yaml
   - ciliumlocalredirectpolicy.yaml
   - ciliumegressgatewaypolicy.yaml
   - ciliumcidrgroup.generated.yaml
+  - ../../system/crowdsec/bouncer-keys
 
 images:
   - name: docker.io/alpine/curl
@@ -24,13 +27,18 @@ images:
     newTag: 1.8.2
 
 secretGenerator:
-  - name: bunny-auth
+  - name: traefik-secrets
     env: .env
 
 configMapGenerator:
   - name: positron-ca
     files:
       - ca.crt=config/unifi.ca.crt
+
+  - name: anubis-config
+    files:
+      - policy.yaml=config/anubis.policy.sops.yaml
+
   - name: traefik-grafana-dashboards
     options:
       disableNameSuffixHash: true

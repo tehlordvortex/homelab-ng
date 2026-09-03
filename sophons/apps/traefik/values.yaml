@@ -12,8 +12,10 @@ api:
 
 log:
   level: INFO
+  format: json
 accessLog:
   enabled: true
+  format: json
 
 ingressRoute:
   dashboard:
@@ -30,7 +32,7 @@ ingressRoute:
       gethomepage.dev/href: http://traefik-internal.sophons.cloud:8080/dashboard
 
 additionalArguments:
-  - --serversTransport.maxIdleConnsPerHost=128
+  - --serversTransport.maxIdleConnsPerHost=256
   - --serversTransport.forwardingTimeouts.idleConnTimeout=300s
 
 ports:
@@ -57,7 +59,6 @@ ports:
     port: 443
     expose:
       internal: true
-      theta: true
     http3:
       enabled: true
     transport:
@@ -77,7 +78,6 @@ ports:
     expose:
       default: true
       internal: true
-      theta: true
 
 service:
   enabled: true
@@ -91,6 +91,7 @@ service:
     clusterIPs:
       - 10.43.0.69
       - 2001:cafe:43::69
+    # externalTrafficPolicy: Local
 
   additionalServices:
     internal:
@@ -103,20 +104,6 @@ service:
       spec:
         type: LoadBalancer
         # trafficDistribution: PreferSameNode
-        externalTrafficPolicy: Local
-
-    theta:
-      single: true
-      type: LoadBalancer
-      annotations:
-        metallb.io/address-pool: theta
-        external-dns.alpha.kubernetes.io/hostname: >
-          traefik-theta.sophons.cloud,
-          traefik-sango-theta.sophons.cloud
-      spec:
-        type: LoadBalancer
-        # trafficDistribution: PreferSameNode
-        ipFamilies: ["IPv6"]
         externalTrafficPolicy: Local
 
 providers:
@@ -222,6 +209,7 @@ deployment:
     app.kubernetes.io/component: proxy
   podLabels:
     app.kubernetes.io/component: proxy
+  hostUsers: false
 
   additionalVolumes:
     - name: plugins # volume name must be plugins for helm chart to skip mounting emptyDir
@@ -230,7 +218,9 @@ deployment:
     - name: plugin-cacheify
       image:
         reference: pz3.sphns.run/library/traefik/plugins/github.com/ciaranj/cacheify:dev-409ae70-10
-        pullPolicy: IfNotPresent
+    - name: plugin-crowdsec-bouncer
+      image:
+        reference: pz3.sphns.run/traefik/plugins/github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin@sha256:00c85712b89a9ffc9ae9413887774de482dfe3316d230fd689ac124504f9e723
 
 persistence:
   enabled: false
@@ -250,7 +240,7 @@ startupProbe:
 
 env:
   - name: GOGC
-    value: "30"
+    value: "10"
   - name: GOMEMLIMIT
     valueFrom:
       resourceFieldRef:
@@ -266,10 +256,11 @@ volumes:
   - type: secret
     name: gateway-tls
     mountPath: /etc/traefik/gateway-tls
+  - type: secret
+    name: crowdsec-bouncer-keys
+    mountPath: /etc/traefik/crowdsec
 
 tolerations:
-  - key: orunmila.sophons.cloud/ase-orun
-    operator: Exists
   - key: caeneus.sophons.cloud
     operator: Exists
 
@@ -281,7 +272,7 @@ experimental:
       version: "v1.7.8"
     crowdsec-bouncer-traefik-plugin:
       moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
-      version: "v1.6.0"
+      version: "v1.7.1"
     # cacheify:
     #   moduleName: "github.com/ciaranj/cacheify"
     #   version: "v1.0.0"
@@ -291,6 +282,11 @@ experimental:
       mountPath: /plugins-local/src/github.com/ciaranj/cacheify
       type: localPath
       volumeName: plugin-cacheify
+    crowdsec-bouncer:
+      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      mountPath: /plugins-local/src/github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      type: localPath
+      volumeName: plugin-crowdsec-bouncer
 
 securityContext:
   capabilities:

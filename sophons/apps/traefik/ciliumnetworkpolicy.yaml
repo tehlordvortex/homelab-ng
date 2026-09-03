@@ -16,17 +16,18 @@ spec:
     - fromCIDRSet:
         - cidrGroupRef: private-ranges
 
-    # - fromCIDRSet:
-    #     - cidrGroupRef: bunny
-    #     - cidrGroupRef: cloudflare
-    #   toPorts:
-    #     - ports:
-    #         - port: web
-    #           protocol: TCP
-    #         - port: websecure
-    #           protocol: TCP
-    #         - port: websecure-http3
-    #           protocol: UDP
+    - fromCIDRSet:
+        - cidrGroupRef: bunny
+        - cidrGroupRef: cloudflare
+      toPorts:
+        - ports:
+            - port: web
+              protocol: TCP
+        - ports:
+            - port: websecure
+              protocol: TCP
+            - port: websecure-http3
+              protocol: UDP
 
     - toPorts:
         - ports:
@@ -34,7 +35,16 @@ spec:
               protocol: TCP
             - port: web
               protocol: TCP
+        - ports:
             - port: websecure
               protocol: TCP
             - port: websecure-http3
               protocol: UDP
+          # NOTE: Envoy must always be present in the traffic path, for _all_ clients,
+          # to enforce these so envoy restarts will disrupt traffic. Also fucks with
+          # client IP detection somehow.
+          # serverNames:
+          #   - hs.vrtx.sh
+          #   - gghs.vrtx.sh
+          #   - health.sphns.run
+          #   - gimmich.sophons.cloud

@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: crowdsec-lapi-health
+  namespace: crowdsec
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - health.sphns.run
+
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /crowdsec/lapi
+          method: HEAD
+        - path:
+            type: Exact
+            value: /crowdsec/lapi
+          method: GET
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /health
+      backendRefs:
+        - name: crowdsec-service
+          port: 8080
+
+    - matches:
+        - path:
+            type: Exact
+            value: /crowdsec/agent
+          # TODO: bunny doesn't play nice with this
+          method: HEAD
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /metrics
+      backendRefs:
+        - name: crowdsec-agent-service
+          port: 6060
