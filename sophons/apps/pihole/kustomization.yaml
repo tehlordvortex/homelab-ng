@@ -19,6 +19,8 @@ components:
 images:
   - name: ghcr.io/pi-hole/pihole
     newTag: 2026.07.2
+  - name: docker.io/klutchell/dnscrypt-proxy
+    newTag: 2.1.18
 
 configMapGenerator:
   - name: pihole
@@ -26,4 +28,5 @@ configMapGenerator:
       - config/adlists.list
       - config/blacklist.txt
       - config/configure.sh
+      - config/dnscrypt-proxy.toml
     envs: [.env]

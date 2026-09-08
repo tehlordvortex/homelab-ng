@@ -41,12 +41,12 @@ patches:
                 values: [ng]
           weight: 100
       - op: add
-        path: /spec/template/spec/initContainers/1/env/-
+        path: /spec/template/spec/initContainers/0/env/-
         value:
           name: TS_HOSTNAME
           value: nomos
       - op: add
-        path: /spec/template/spec/initContainers/1/env/-
+        path: /spec/template/spec/initContainers/0/env/-
         value:
           name: TS_KUBE_SECRET
           value: nomos

@@ -60,7 +60,9 @@ spec:
             - name: FTLCONF_dns_listeningMode
               value: "ALL"
             - name: FTLCONF_dns_upstreams
-              value: "1.1.1.1;1.0.0.1;9.9.9.9;149.112.112.112"
+              # value: "1.1.1.1;1.0.0.1;9.9.9.9;149.112.112.112"
+              # value: "1.1.1.1;1.0.0.1"
+              value: "127.0.0.1#5053"
 
           volumeMounts:
             - mountPath: /etc/pihole
@@ -98,10 +100,16 @@ spec:
           readinessProbe:
             exec:
               command:
-                - sh
-                - -c
-                - |
-                  dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+                - dig
+                - +short
+                - +norecurse
+                - +retry=0
+                - "@127.0.0.1"
+                - pi.hole
+                # - sh
+                # - -c
+                # - |
+                #   dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
             # timeoutSeconds: 5
             # failureThreshold: 5
             # initialDelaySeconds: 60
@@ -117,44 +125,6 @@ spec:
             allowPrivilegeEscalation: false
 
       initContainers:
-        - name: cfg-pihole
-          image: ghcr.io/pi-hole/pihole
-          restartPolicy: Always
-          command: [bash, /etc/pihole/configure.sh]
-
-          env:
-            - name: VOLTZAHL_V4
-              valueFrom:
-                configMapKeyRef:
-                  name: pihole
-                  key: voltzahl.v4
-            - name: VOLTZAHL_V6
-              valueFrom:
-                configMapKeyRef:
-                  name: pihole
-                  key: voltzahl.v6
-
-          volumeMounts:
-            - mountPath: /tmp
-              name: tmp
-              subPath: init-cfg-pihole
-            - mountPath: /etc/pihole/configure.sh
-              name: pihole-config
-              subPath: configure.sh
-              readOnly: true
-
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
-
-          resources:
-            requests:
-              memory: 1Mi
-            limits:
-              memory: 32Mi
-
         - name: tailscale
           image: ghcr.io/tailscale/tailscale
           restartPolicy: Always
@@ -233,6 +203,78 @@ spec:
               memory: 48Mi
             limits:
               memory: 128Mi
+
+        - name: dnscrypt-proxy
+          image: docker.io/klutchell/dnscrypt-proxy
+          restartPolicy: Always
+          env:
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+
+          volumeMounts:
+            - mountPath: /config/dnscrypt-proxy.toml
+              name: pihole-config
+              subPath: dnscrypt-proxy.toml
+              readOnly: true
+
+          readinessProbe:
+            exec:
+              command: [dnsprobe, one.one.one.one, 127.0.0.1:5053]
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+        - name: cfg-pihole
+          image: ghcr.io/pi-hole/pihole
+          restartPolicy: Always
+          command: [bash, /etc/pihole/configure.sh]
+
+          env:
+            - name: VOLTZAHL_V4
+              valueFrom:
+                configMapKeyRef:
+                  name: pihole
+                  key: voltzahl.v4
+            - name: VOLTZAHL_V6
+              valueFrom:
+                configMapKeyRef:
+                  name: pihole
+                  key: voltzahl.v6
+
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+              subPath: init-cfg-pihole
+            - mountPath: /etc/pihole/configure.sh
+              name: pihole-config
+              subPath: configure.sh
+              readOnly: true
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+          resources:
+            requests:
+              memory: 1Mi
+            limits:
+              memory: 32Mi
 
       volumes:
         - name: pihole
