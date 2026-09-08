@@ -1,6 +1,21 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
+  name: cilium-trustedips
+  namespace: traefik
+spec:
+  plugin:
+    cilium-trustedips:
+      logLevel: INFO
+      logFormat: json
+      endpointLabelSelector:
+        app.kubernetes.io/name: cloudflared
+      cidrGroupLabelSelector:
+        trusted-reverse-proxy: "true"
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
   name: default-cache
   namespace: traefik
 spec:

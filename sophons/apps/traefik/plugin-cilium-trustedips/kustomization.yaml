@@ -1,0 +1,7 @@
+configMapGenerator:
+  - name: traefik-plugin-cilium-trustedips
+    files:
+      - main.go
+      - xforwarded.go
+      # The extension is important
+      - .traefik.yml=.traefik.yaml

@@ -1,0 +1,15 @@
+namespace: traefik
+namePrefix: dev-
+resources:
+  - ../plugin-cilium-trustedips
+  - deployment.yaml
+labels:
+  - pairs:
+      dev-plugin-resource: "true"
+
+configMapGenerator:
+  - name: plugin-traefik-config
+    options:
+      disableNameSuffixHash: true
+    files:
+      - traefik.dynamic.yaml

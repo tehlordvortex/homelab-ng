@@ -163,3 +163,138 @@ spec:
                 allowPrivilegeEscalation: false
                 capabilities:
                   drop: [ALL]
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trusted-ips-sync
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/component: trusted-ips-sync
+spec:
+  schedule: "0 * * * *" # every hour
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: traefik
+        app.kubernetes.io/instance: traefik-traefik
+        app.kubernetes.io/component: trusted-ips-sync
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: traefik
+            app.kubernetes.io/instance: traefik-traefik
+            app.kubernetes.io/component: trusted-ips-sync
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: traefik-cilium-trusted-ips
+          automountServiceAccountToken: true
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+
+          volumes:
+            - name: tmp
+              emptyDir: {}
+            - name: jq
+              image:
+                reference: ghcr.io/jqlang/jq
+
+          initContainers:
+            - name: fetch-ips
+              image: docker.io/alpine/curl
+
+              command:
+                - ash
+                - -c
+                - |-
+                  set -euo pipefail
+
+                  alias jq="/jq/jq"
+                  alias curl="curl -sS"
+
+                  cf_v4="$(curl https://www.cloudflare.com/ips-v4 | sort)"
+                  cf_v6="$(curl https://www.cloudflare.com/ips-v6 | sort)"
+                  cf_ips="$cf_v4
+                  $cf_v6"
+
+                  bunny_v4="$(curl https://bunnycdn.com/api/system/edgeserverlist | jq -r '.[] | . + "/32"' | sort)"
+                  bunny_v6="$(curl https://bunnycdn.com/api/system/edgeserverlist/IPv6 | jq -r '.[] | . + "/128"' | sort)"
+                  bunny_ips="$bunny_v4
+                  $bunny_v6"
+
+                  tee /tmp/manifests.yaml <<EOT
+                  apiVersion: cilium.io/v2
+                  kind: CiliumCIDRGroup
+                  metadata:
+                    labels:
+                      app.kubernetes.io/managed-by: traefik-cilium-trusted-ips
+                      trusted-reverse-proxy: "true"
+                    name: cloudflare
+                  spec:
+                    externalCIDRs:
+                  $(echo "$cf_ips" | sed 's/^/  - /')
+                  ---
+                  apiVersion: cilium.io/v2
+                  kind: CiliumCIDRGroup
+                  metadata:
+                    labels:
+                      app.kubernetes.io/managed-by: traefik-cilium-trusted-ips
+                      trusted-reverse-proxy: "true"
+                    name: bunny
+                  spec:
+                    externalCIDRs:
+                  $(echo "$bunny_ips" | sed 's/^/  - /')
+                  EOT
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                - mountPath: /jq
+                  name: jq
+                  readOnly: true
+
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: trusted-ips-sync
+              image: docker.io/alpine/kubectl
+
+              command:
+                - ash
+                - -c
+                - |-
+                  set -euo pipefail
+
+                  cat >/tmp/manifests.old.yaml <<EOT
+                  $(kubectl get ciliumcidrgroup/cloudflare -o yaml)
+                  ---
+                  $(kubectl get ciliumcidrgroup/bunny -o yaml)
+                  EOT
+
+                  diff /tmp/manifests.old.yaml /tmp/manifests.yaml || true
+
+                  cat /tmp/manifests.yaml | kubectl apply -f - --server-side \
+                    --force-conflicts --field-manager=traefik-cilium-trusted-ips
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]

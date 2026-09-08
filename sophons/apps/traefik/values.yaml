@@ -41,6 +41,9 @@ ports:
     expose:
       default: true
       internal: true
+    http:
+      middlewares:
+        - traefik_default-compression@kubernetescrd
 
   web:
     port: 80
@@ -52,8 +55,9 @@ ports:
           scheme: https
           permanent: true
       middlewares:
-        - crowdsec-crowdsec-bouncer@kubernetescrd
-        - traefik-default-compression@kubernetescrd
+        - traefik_cilium-trustedips@kubernetescrd
+        - crowdsec_crowdsec-bouncer@kubernetescrd
+        - traefik_default-compression@kubernetescrd
 
   websecure:
     port: 443
@@ -70,8 +74,13 @@ ports:
     http:
       aliasHeadersStrategy: delete
       middlewares:
-        - crowdsec-crowdsec-bouncer@kubernetescrd
-        - traefik-default-compression@kubernetescrd
+        # WARN: do not remove without turning off insecure forwardedHeaders
+        - traefik_cilium-trustedips@kubernetescrd
+        - crowdsec_crowdsec-bouncer@kubernetescrd
+        - traefik_default-compression@kubernetescrd
+    forwardedHeaders:
+      # WARN: must be false if cilium-trustedips middleware isn't enabled
+      insecure: true
 
   ssh:
     port: 22
@@ -108,6 +117,7 @@ service:
 
 providers:
   kubernetesCRD:
+    safeNaming: true
     nativeLBByDefault: true
     allowCrossNamespace: true
   kubernetesIngress:
@@ -221,6 +231,9 @@ deployment:
     - name: plugin-crowdsec-bouncer
       image:
         reference: pz3.sphns.run/traefik/plugins/github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin@sha256:00c85712b89a9ffc9ae9413887774de482dfe3316d230fd689ac124504f9e723
+    - name: plugin-cilium-trustedips
+      configMap:
+        name: traefik-plugin-cilium-trustedips
 
 persistence:
   enabled: false
@@ -247,8 +260,8 @@ env:
         resource: limits.memory
 resources:
   requests:
-    cpu: 100m
-    memory: 172Mi
+    cpu: 75m
+    memory: 100Mi
   limits:
     memory: 512Mi
 
@@ -266,16 +279,16 @@ tolerations:
 
 experimental:
   abortOnPluginFailure: true
-  plugins:
-    souin:
-      moduleName: "github.com/darkweak/souin"
-      version: "v1.7.8"
-    crowdsec-bouncer-traefik-plugin:
-      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
-      version: "v1.7.1"
-    # cacheify:
-    #   moduleName: "github.com/ciaranj/cacheify"
-    #   version: "v1.0.0"
+  # plugins:
+  #   souin:
+  #     moduleName: "github.com/darkweak/souin"
+  #     version: "v1.7.8"
+  #   crowdsec-bouncer-traefik-plugin:
+  #     moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+  #     version: "v1.7.1"
+  #   cacheify:
+  #     moduleName: "github.com/ciaranj/cacheify"
+  #     version: "v1.0.0"
   localPlugins:
     cacheify:
       moduleName: github.com/ciaranj/cacheify
@@ -287,6 +300,11 @@ experimental:
       mountPath: /plugins-local/src/github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
       type: localPath
       volumeName: plugin-crowdsec-bouncer
+    cilium-trustedips:
+      moduleName: pluginciliumtrustedips
+      mountPath: /plugins-local/src/pluginciliumtrustedips
+      type: localPath
+      volumeName: plugin-cilium-trustedips
 
 securityContext:
   capabilities:

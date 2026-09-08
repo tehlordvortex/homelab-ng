@@ -1,0 +1,15 @@
+displayName: Cilium TrustedIPs
+type: middleware
+iconPath: .assets/icon.png
+
+import: pluginciliumtrustedips
+
+summary: Determine trusted reverse proxies from Cilium CRDs
+
+testData:
+  logLevel: DEBUG
+  staticTrustedCIDRs: ["10.0.0.0/8"]
+  endpointLabelSelector:
+    app.kubernetes.io/name: cloudflared
+  cidrGroupLabelSelector:
+    trusted-reverse-proxy: "true"
