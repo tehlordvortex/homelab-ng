@@ -1,7 +1,13 @@
 commonLabels:
   cluster.garage.sophons.cloud: global
 
+environment:
+  - name: RUST_LOG
+    value: warn
+
 garage:
+  noClusterRole: true
+
   blockSize: "2097152" # 2MiB
   compressionLevel: "3"
   metadataAutoSnapshotInterval: "1h"
@@ -9,6 +15,9 @@ garage:
   s3:
     api:
       region: global
+      bindAddr: "[::]:4900"
+    web:
+      bindAddr: "[::]:4902"
 
   additionalTopLevelConfig: |
     block_ram_buffer_max = "768MiB"
@@ -23,15 +32,20 @@ persistence:
     storageClass: local-path
     size: 1Ti # ignored
 
+extraVolumes:
+  - name: traefik-config
+    configMap:
+      name: traefik-garage-config
+
 image:
-  repository: dxflrs/garage
+  repository: docker.io/dxflrs/garage
 
 resources:
   requests:
-    cpu: 150m
+    cpu: 125m
     memory: 128Mi
   limits:
-    memory: 1Gi
+    memory: 800Mi
 
 nodeSelector:
   hugeloads.sophons.cloud/garage: "true"
@@ -41,27 +55,25 @@ deployment:
   kind: StatefulSet
   replicaCount: 3
 
-tolerations:
-  - key: orunmila.sophons.cloud/ase-orun
-    operator: Exists
-  - key: node.kubernetes.io/not-ready
-    operator: Exists
-    effect: NoExecute
-  - key: node.kubernetes.io/unreachable
-    operator: Exists
-    effect: NoExecute
-  - key: node.kubernetes.io/disk-pressure
-    operator: Exists
-    effect: NoSchedule
-  - key: node.kubernetes.io/memory-pressure
-    operator: Exists
-    effect: NoSchedule
-  - key: node.kubernetes.io/pid-pressure
-    operator: Exists
-    effect: NoSchedule
-  - key: node.kubernetes.io/unschedulable
-    operator: Exists
-    effect: NoSchedule
+# tolerations:
+#   - key: node.kubernetes.io/not-ready
+#     operator: Exists
+#     effect: NoExecute
+#   - key: node.kubernetes.io/unreachable
+#     operator: Exists
+#     effect: NoExecute
+#   - key: node.kubernetes.io/disk-pressure
+#     operator: Exists
+#     effect: NoSchedule
+#   - key: node.kubernetes.io/memory-pressure
+#     operator: Exists
+#     effect: NoSchedule
+#   - key: node.kubernetes.io/pid-pressure
+#     operator: Exists
+#     effect: NoSchedule
+#   - key: node.kubernetes.io/unschedulable
+#     operator: Exists
+#     effect: NoSchedule
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -74,10 +86,11 @@ tolerations:
 
 priorityClassName: system-node-critical
 
-securityContext:
-  allowPrivilegeEscalation: false
+podSecurityContext:
   seccompProfile:
     type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
 
 monitoring:
   metrics:

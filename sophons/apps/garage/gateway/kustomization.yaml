@@ -24,3 +24,102 @@ patches:
               - name: configmap
                 configMap:
                   name: global-garage-config
+
+            containers:
+              - name: garage
+                ports:
+                  - containerPort: 3900
+                    $patch: delete
+                  - containerPort: 3902
+                    $patch: delete
+
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: global-gateway-garage
+      $patch: delete
+
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: global-gateway-garage-headless
+      spec:
+        ports:
+          - port: 3900
+            protocol: TCP
+            targetPort: 3900
+          - port: 3902
+            protocol: TCP
+            targetPort: 3902
+
+  - target:
+      kind: StatefulSet
+      name: global-gateway-garage
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/-
+        value:
+          name: proxy
+          image: docker.io/library/traefik:3.7.12
+          args:
+            - --ping=true
+            - --log.level=INFO
+            - --log.format=json
+            - --accesslog=true
+            - --accesslog.format=json
+            - --accesslog.fields.defaultmode=keep
+            - --accesslog.fields.headers.defaultmode=drop
+
+            - --entryPoints.traefik.address=:8080/tcp
+            - --entryPoints.s3api.address=:3900/tcp
+            - --entryPoints.s3web.address=:3902/tcp
+
+            - --entryPoints.s3api.http.aliasHeadersStrategy=delete
+            - --entryPoints.s3web.http.aliasHeadersStrategy=delete
+
+            - --entryPoints.s3api.forwardedHeaders.trustedIPs=10.41.0.0/16,2001:cafe:41::/56
+            - --entryPoints.s3web.forwardedHeaders.trustedIPs=10.41.0.0/16,2001:cafe:41::/56
+
+            - --entryPoints.s3api.transport.respondingTimeouts.readTimeout=600s
+
+            - --providers.file.filename=/etc/traefik/dynamic.yaml
+            - --providers.file.watch=true
+
+          env:
+            - name: GOGC
+              value: "10"
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+
+          ports:
+            - name: s3-api
+              containerPort: 3900
+            - name: web-api
+              containerPort: 3902
+
+          volumeMounts:
+            - mountPath: /etc/traefik
+              name: traefik-config
+              readOnly: true
+
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              memory: 200Mi
+
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]

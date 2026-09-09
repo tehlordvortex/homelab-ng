@@ -12,10 +12,12 @@ spec:
   ports:
     - name: s3-api
       protocol: TCP
+      appProtocol: kubernetes.io/h2c
       port: 3900
       targetPort: 3900
     - name: web-api
       protocol: TCP
+      appProtocol: kubernetes.io/h2c
       port: 3902
       targetPort: 3902
     - name: admin
@@ -34,7 +36,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: s3-website
+  name: s3-global-nogw
   namespace: garage
   labels:
     app.kubernetes.io/instance: global
@@ -42,12 +44,48 @@ metadata:
     cluster.garage.sophons.cloud: global
 spec:
   ports:
+    - name: s3-api
+      protocol: TCP
+      appProtocol: kubernetes.io/h2c
+      port: 3900
+      targetPort: 3900
     - name: web-api
       protocol: TCP
+      appProtocol: kubernetes.io/h2c
       port: 3902
       targetPort: 3902
+    - name: admin
+      protocol: TCP
+      port: 3903
+      targetPort: 3903
   selector:
     app.kubernetes.io/name: garage
+    app.kubernetes.io/instance: global
+  # trafficDistribution: PreferSameNode
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: RequireDualStack
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.36.2/service-v1.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3-website
+  namespace: garage
+  labels:
+    app.kubernetes.io/instance: global
+    app.kubernetes.io/name: garage
+    cluster.garage.sophons.cloud: global
+spec:
+  selector:
+    app.kubernetes.io/name: garage
+  ports:
+    - name: web-api
+      protocol: TCP
+      appProtocol: kubernetes.io/h2c
+      port: 3902
+      targetPort: 3902
   trafficDistribution: PreferSameNode
   ipFamilies:
     - IPv4

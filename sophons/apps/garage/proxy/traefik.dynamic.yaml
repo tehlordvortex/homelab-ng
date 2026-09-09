@@ -1,0 +1,24 @@
+http:
+  routers:
+    s3api:
+      entryPoints:
+        - s3api
+      rule: "PathPrefix(`/`)"
+      service: s3api
+
+    s3web:
+      entryPoints:
+        - s3web
+      rule: "PathPrefix(`/`)"
+      service: s3web
+
+  services:
+    s3api:
+      loadBalancer:
+        servers:
+          - url: http://[::1]:4900
+
+    s3web:
+      loadBalancer:
+        servers:
+          - url: http://[::1]:4902

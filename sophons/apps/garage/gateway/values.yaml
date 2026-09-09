@@ -1,8 +1,14 @@
 commonLabels:
   cluster.garage.sophons.cloud: global
 
+environment:
+  - name: RUST_LOG
+    value: warn
+
 garage:
+  noClusterRole: true
   kubernetesSkipCrd: true
+
   existingRpcSecret: garage
   existingConfigMap: global-garage-config
 
@@ -13,6 +19,11 @@ persistence:
   data:
     storageClass: local-path
 
+extraVolumes:
+  - name: traefik-config
+    configMap:
+      name: traefik-garage-config
+
 image:
   repository: dxflrs/garage
 
@@ -21,14 +32,15 @@ resources:
     cpu: 50m
     memory: 128Mi
   limits:
-    memory: 1Gi
+    memory: 800Mi
 
 priorityClassName: system-node-critical
 
-securityContext:
-  allowPrivilegeEscalation: false
+podSecurityContext:
   seccompProfile:
     type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
 
 deployment:
   kind: StatefulSet
