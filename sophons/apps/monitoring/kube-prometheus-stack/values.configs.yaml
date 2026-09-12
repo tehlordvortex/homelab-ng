@@ -4,9 +4,41 @@ crds:
 defaultRules:
   create: true
   rules:
+    etcd: false
     alertmanager: false
     prometheus: false
     prometheusOperator: false
+    windows: false
+    kubeProxy: false
+
+    configReloaders: true
+    general: true
+    k8sContainerCpuUsageSecondsTotal: true
+    k8sContainerMemoryCache: true
+    k8sContainerMemoryRss: true
+    k8sContainerMemorySwap: true
+    k8sContainerResource: true
+    k8sContainerMemoryWorkingSetBytes: true
+    k8sPodOwner: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: false
+    kubeApiserverHistogram: false
+    kubeApiserverSlos: false
+    kubeControllerManager: true
+    kubelet: true
+    kubePrometheusGeneral: false
+    kubePrometheusNodeRecording: false
+    kubernetesApps: false
+    kubernetesResources: false
+    kubernetesStorage: false
+    kubernetesSystem: true
+    kubeStateMetrics: true
+    kubeSchedulerAlerting: true
+    kubeSchedulerRecording: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
 
 prometheusOperator:
   enabled: false

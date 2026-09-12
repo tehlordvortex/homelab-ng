@@ -1,0 +1,14 @@
+{
+  "Rules": [
+    {
+      "ID": "loki-chunk-expiration",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "loki/fake/"
+      },
+      "Expiration": {
+        "Days": 14
+      }
+    }
+  ]
+}

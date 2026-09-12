@@ -32,7 +32,6 @@ spec:
                     operator: In
                     values:
                       - de-east-1
-                      - ng-middle-east
                       - ng-east-1
           preferredDuringSchedulingIgnoredDuringExecution:
             - preference:
@@ -272,7 +271,9 @@ spec:
             - name: GOGC
               value: "5"
             - name: GOMEMLIMIT
-              value: 2048MiB
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
           envFrom:
             - secretRef:
                 name: stalker-access-key
@@ -320,7 +321,9 @@ spec:
 
           resources:
             requests:
-              cpu: 500m
+              cpu: 1000m
               memory: 1.5Gi
             limits:
+              # cpu limits considered harmful, but pls mimir, stop bullying your fellow pods
+              cpu: 4000m
               memory: 3Gi

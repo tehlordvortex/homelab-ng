@@ -52,7 +52,7 @@ tempo:
       s3:
         bucket: monitoring
         prefix: tempo/
-        endpoint: s3-global.garage:3900
+        endpoint: s3-global-nogw.garage:3900
         insecure: true
         forcepathstyle: true
         enable_dual_stack: true

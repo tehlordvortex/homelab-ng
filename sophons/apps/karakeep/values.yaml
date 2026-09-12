@@ -109,8 +109,6 @@ controllers:
           SEARCH_JOB_TIMEOUT_SEC: "60"
           ASSET_PREPROCESSING_NUM_WORKERS: "3"
 
-          OTEL_TRACING_ENABLED: "true"
-          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://zero-order-alloy.monitoring-system:4318/v1/traces
           EVENT_LOGS_ENABLED: "true"
 
         securityContext:

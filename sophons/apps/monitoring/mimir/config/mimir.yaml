@@ -9,14 +9,14 @@ limits:
 server:
   log_level: info
   http_listen_port: 9009
-  grpc_server_num_workers: 16
-  grpc_server_max_concurrent_streams: 25
+  grpc_server_num_workers: 8
+  grpc_server_max_concurrent_streams: 32
 
 common:
   storage:
     backend: s3
     s3:
-      endpoint: s3-global.garage:3900
+      endpoint: s3-global-nogw.garage:3900
       insecure: true
       bucket_name: monitoring
       trace:
@@ -32,14 +32,11 @@ blocks_storage:
     dir: /data/ingester
     retention_period: 3h
     close_idle_tsdb_timeout: 3h
-    stripe_size: 512
+    stripe_size: 2048
     wal_compression_enabled: true
-    wal_segment_size_bytes: 16777216 # 16MiB
-    wal_replay_concurrency: 10
-    ship_interval: 10s
-    ship_concurrency: 6
-    head_compaction_interval: 15s
-    head_chunks_write_buffer_size_bytes: 524288 # 512KiB
+    wal_segment_size_bytes: 33554432 # 32MiB
+    wal_replay_concurrency: 6
+    head_chunks_write_buffer_size_bytes: 1048576 # 1MiB
     flush_blocks_on_shutdown: true
   bucket_store:
     sync_dir: /tmp/tsdb-sync
@@ -49,8 +46,8 @@ blocks_storage:
     series_hash_cache_max_size_bytes: 134217728 # 128MiB
     index_header:
       lazy_loading_idle_timeout: 10m
-      lazy_loading_concurrency: 6
-    max_concurrent: 8
+      lazy_loading_concurrency: 4
+    max_concurrent: 4
     ignore_blocks_within: 0
 
 querier:
@@ -73,7 +70,7 @@ compactor:
   cleanup_interval: 5m
   deletion_delay: 4h
 distributor:
-  reusable_ingester_push_workers: 16
+  reusable_ingester_push_workers: 6
   ring:
     kvstore:
       store: inmemory

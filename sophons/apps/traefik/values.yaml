@@ -355,11 +355,3 @@ metrics:
           annotations:
             summary: "Traefik Down"
             description: "{{ $labels.pod }} on {{ $labels.nodename }} is down"
-
-tracing:
-  otlp:
-    enabled: true
-    grpc:
-      enabled: true
-      endpoint: zero-order-alloy.monitoring-system:4317
-      insecure: true

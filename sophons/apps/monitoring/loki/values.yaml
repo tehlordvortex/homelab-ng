@@ -39,7 +39,7 @@ loki:
   storage:
     type: s3
     s3:
-      endpoint: s3-global.garage:3900
+      endpoint: s3-global-nogw.garage:3900
       insecure: true
       s3ForcePathStyle: true
       disable_dualstack: false
@@ -68,7 +68,7 @@ singleBinary:
             matchExpressions:
               - key: kubernetes.io/hostname
                 operator: In
-                values: [sophons-voltzahl]
+                values: [sophons-theta]
           weight: 69
         - preference:
             matchExpressions:

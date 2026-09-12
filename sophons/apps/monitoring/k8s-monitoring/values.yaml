@@ -24,14 +24,15 @@ destinations:
 
 podLogsViaLoki:
   enabled: true
+  collector: pureblood
   gatherMethod: volumes
-  # collector: alloy-logsntraces
 
 nodeLogs:
   enabled: false
 
 applicationObservability:
   enabled: true
+  collector: alloy
   receivers:
     otlp:
       grpc:
@@ -41,6 +42,7 @@ applicationObservability:
 
 clusterMetrics:
   enabled: true
+  collector: alloy
   controlPlane:
     enabled: true
 
@@ -72,9 +74,11 @@ clusterMetrics:
 
 clusterEvents:
   enabled: true
+  collector: alloy
 
 hostMetrics:
   enabled: true
+  collector: alloy
 
   linuxHosts:
     enabled: true
@@ -82,6 +86,7 @@ hostMetrics:
 
 prometheusOperatorObjects:
   enabled: true
+  collector: alloy
 
 telemetryServices:
   node-exporter:
@@ -91,13 +96,23 @@ telemetryServices:
     deploy: true
 
     priorityClassName: system-node-critical
-    tolerations:
-      - key: caeneus.sophons.cloud
-        operator: Exists
-    nodeSelector:
-      topology.kubernetes.io/region: ng
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+                - key: topology.kubernetes.io/region
+                  operator: NotIn
+                  values: [ng]
+            weight: 100
+    # tolerations:
+    #   - key: caeneus.sophons.cloud
+    #     operator: Exists
+    # nodeSelector:
+    #   topology.kubernetes.io/region: ng
 
 integrations:
+  collector: alloy
   alloy:
     instances:
       - name: alloy
@@ -128,21 +143,94 @@ integrations:
 
 collectors:
   alloy:
-    presets: [filesystem-log-reader, daemonset, clustered]
-    liveDebugging:
-      enabled: true
+    presets: [statefulset, clustered]
+    # liveDebugging:
+    #   enabled: true
 
     controller:
-      priorityClassName: system-node-critical
+      replicas: 3
+      priorityClassName: system-cluster-critical
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: alloy
+              app.kubernetes.io/instance: zero-order-alloy
+          maxSkew: 1
+          minDomains: 3
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: NotIn
+                    values: [ng]
+              weight: 100
+
     alloy:
       clustering:
         enabled: true
       resources:
         requests:
-          cpu: 75m
-          memory: 256Mi
+          cpu: 150m
+          memory: 350Mi
         limits:
-          memory: 512Mi
+          memory: 600Mi
+      extraEnv:
+        - name: GOGC
+          value: "5"
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+
+      livenessProbe:
+        httpGet:
+          path: /metrics
+          port: 12345
+          scheme: HTTP
+        # initialDelaySeconds: 15
+        # failureThreshold: 5
+        # timeoutSeconds: 5
+      # timeoutSeconds: 5 # readiness probe
+      enableReporting: false
+
+    configReloader:
+      resources:
+        requests:
+          cpu: 10m
+        limits:
+          memory: 64Mi
+      customArgs:
+        - --watched-dir=/etc/alloy
+        - --reload-url=http://localhost:12345/-/reload
+        # - --reload-timeout=45s
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+        seccompProfile:
+          type: RuntimeDefault
+
+  pureblood:
+    presets: [filesystem-log-reader, daemonset]
+    # liveDebugging:
+    #   enabled: true
+
+    controller:
+      priorityClassName: system-node-critical
+    alloy:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 100Mi
+        limits:
+          memory: 256Mi
       extraEnv:
         - name: GOGC
           value: "10"
@@ -156,22 +244,22 @@ collectors:
           path: /metrics
           port: 12345
           scheme: HTTP
-        initialDelaySeconds: 15
-        failureThreshold: 5
-        timeoutSeconds: 5
-      timeoutSeconds: 5 # readiness probe
+        # initialDelaySeconds: 15
+        # failureThreshold: 5
+        # timeoutSeconds: 5
+      # timeoutSeconds: 5 # readiness probe
       enableReporting: false
 
     configReloader:
       resources:
         requests:
-          cpu: 25m
+          cpu: 10m
         limits:
           memory: 64Mi
       customArgs:
         - --watched-dir=/etc/alloy
         - --reload-url=http://localhost:12345/-/reload
-        - --reload-timeout=45s
+        # - --reload-timeout=45s
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534

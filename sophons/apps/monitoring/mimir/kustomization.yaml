@@ -16,7 +16,16 @@ labels:
 
 images:
   - name: docker.io/grafana/mimir
-    newTag: 3.1.0
+    newTag: 3.1.5
+
+configMapGenerator:
+  - name: mimir-dashboards
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "true"
+    files:
+      - https://github.com/grafana/mimir/raw/refs/tags/mimir-3.1.0/operations/mimir-mixin-compiled/dashboards/mimir-overview.json
 
 resources:
   - prefixed

@@ -4,6 +4,7 @@ metadata:
   name: mimir-mirage
   namespace: monitoring-system
 spec:
+  jobLabel: app.kubernetes.io/name
   selector: {}
   endpoints:
     - port: prometheus
