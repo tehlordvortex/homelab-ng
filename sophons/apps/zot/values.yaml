@@ -3,7 +3,7 @@ image:
   # repository: ghcrd.sphns.run/tehlordvortex/project-zot/zot
   repository: pz3.sphns.run/project-zot/zot
   # 2.1.20 + redisworksfineasasubpathdriveridkwhyitsnotlikethat
-  tag: dev-7eb7c25e-1@sha256:915a1aa0d7a60c12169e9bbc2f2db25d14f408dca9af12eb3334176c1bc9ef70
+  tag: latest@sha256:160108214b7f0dc46b97a921c12dc09e429560eef4bc3e56686bc3ab66c1f8cf
 
 replicaCount: 2
 podDisruptionBudget:

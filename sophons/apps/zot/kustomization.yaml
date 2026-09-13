@@ -11,6 +11,13 @@ configMapGenerator:
   - name: zenlesszonezot
     files:
       - config.json=config/zot.json
+  - name: zot-dashboard
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "true"
+    files:
+      - zot.json=https://grafana.com/api/dashboards/20501/revisions/2/download
 
 secretGenerator:
   - name: z3
