@@ -6,7 +6,7 @@ additionalEnv:
 
 resources:
   requests:
-    cpu: 50m
+    cpu: 10m
     memory: 32Mi
   limits:
     memory: 64Mi

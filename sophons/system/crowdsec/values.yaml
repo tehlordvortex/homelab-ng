@@ -195,7 +195,7 @@ lapi:
         - name: LITESTREAM_CONFIG
           value: |-
             levels:
-              - interval: 15m  # L1
+              - interval: 10m  # L1
               - interval: 1.5h # L2
               - interval: 6h   # L3
 

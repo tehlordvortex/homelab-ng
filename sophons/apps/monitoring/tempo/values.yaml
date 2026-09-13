@@ -2,10 +2,10 @@ tempo:
   tag: 2.10.8
   resources:
     requests:
-      cpu: 150m
-      memory: 256Mi
+      cpu: 50m
+      memory: 128Mi
     limits:
-      memory: 1.5Gi
+      memory: 512Mi
   extraEnv:
     - name: GOGC
       value: "5"
@@ -75,15 +75,15 @@ affinity:
     preferredDuringSchedulingIgnoredDuringExecution:
       - preference:
           matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values: [sophons-voltzahl]
-        weight: 69
-      - preference:
-          matchExpressions:
             - key: topology.kubernetes.io/region
               operator: In
               values: [ng]
+        weight: 69
+      - preference:
+          matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values: [sophons-voltzahl]
         weight: 42
 
 serviceMonitor:

@@ -18,6 +18,15 @@ spec:
     spec:
       terminationGracePeriodSeconds: 120
       serviceAccountName: bluesky-pds
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [sophons-theta, sophons-voltzahl]
+              weight: 67
 
       securityContext:
         runAsNonRoot: true

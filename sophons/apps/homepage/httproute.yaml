@@ -61,6 +61,5 @@ spec:
       #         - Remote-Name
       #         - Remote-Email
       backendRefs:
-        - group: traefik.io
-          kind: TraefikService
-          name: homepage
+        - name: homepage
+          port: 3000

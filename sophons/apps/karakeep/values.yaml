@@ -32,11 +32,17 @@ controllers:
           preferredDuringSchedulingIgnoredDuringExecution:
             - preference:
                 matchExpressions:
-                  - key: topology.kubernetes.io/region
+                  - key: kubernetes.io/hostname
                     operator: In
-                    values:
-                      - ng
-              weight: 100
+                    values: [sophons-theta, sophons-voltzahl]
+              weight: 67
+            # - preference:
+            #     matchExpressions:
+            #       - key: topology.kubernetes.io/region
+            #         operator: In
+            #         values:
+            #           - ng
+            #   weight: 100
     containers:
       karakeep:
         image:

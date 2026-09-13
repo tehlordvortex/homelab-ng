@@ -16,7 +16,7 @@ podDisruptionBudget:
   minAvailable: 2
 topologySpreadConstraints:
   enabled: true
-  topologyKey: topology.kubernetes.io/zone
+  topologyKey: kubernetes.io/hostname
   whenUnsatisfiable: DoNotSchedule
 additionalAffinities:
   nodeAffinity:
@@ -136,7 +136,7 @@ extraInitContainers:
           fieldRef:
             fieldPath: metadata.namespace
       - name: ZSTD_COMPRESS
-        value: "19"
+        value: "11"
       - name: RDB_PATH
         value: /data/dump.rdb
       - name: S3_ENDPOINT

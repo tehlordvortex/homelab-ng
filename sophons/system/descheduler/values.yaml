@@ -42,8 +42,8 @@ deschedulerPolicy:
               memory: 40
               pods: 40
             targetThresholds:
-              cpu: 70
-              memory: 70
+              cpu: 90
+              memory: 80
               pods: 80
             metricsUtilization:
               source: KubernetesMetrics
