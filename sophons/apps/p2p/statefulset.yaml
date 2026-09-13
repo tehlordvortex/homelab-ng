@@ -1,0 +1,177 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/statefulset-apps-v1.json
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sparrow
+  namespace: pp2pp
+spec:
+  selector:
+    matchLabels: {}
+  template:
+    metadata:
+      labels: {}
+    spec:
+      hostUsers: false
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
+
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: torrents-media-less-big-boi
+
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 10.43.45.33 # necros
+          - 10.43.14.33 # nomos
+
+      initContainers:
+        - name: gluetun
+          image: docker.io/qmcgaw/gluetun
+          restartPolicy: Always
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - "(ip rule del table 51820; ip -6 rule del table 51820) || true"
+
+          envFrom:
+            - secretRef:
+                name: sparrow-tunnel
+          env:
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            - name: PUID
+              # otherwise it can't update the file _after_ writing it?
+              value: "0"
+            - name: FIREWALL_INPUT_PORTS
+              value: "8080"
+            - name: HEALTH_RESTART_VPN
+              value: off
+            - name: DNS_UPSTREAM_RESOLVER_TYPE
+              value: dot
+            - name: DNS_UPSTREAM_RESOLVERS
+              value: cloudflare security,quad9 secured
+            - name: VPN_TYPE
+              value: wireguard
+            - name: VPN_PORT_FORWARDING
+              value: on
+            - name: PORT_FORWARD_ONLY
+              value: on
+            - name: VPN_PORT_FORWARDING_UP_COMMAND
+              value: |-
+                /bin/sh -c \
+                  'wget -O- -q --content-on-error --retry-connrefused --tries=0 --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8080/api/v2/app/setPreferences'
+            # - name: VPN_PORT_FORWARDING_DOWN_COMMAND
+            #   value: |-
+            #     /bin/sh -c 'wget -O- -q --content-on-error --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8080/api/v2/app/setPreferences'
+
+          livenessProbe:
+            exec:
+              command: [/gluetun-entrypoint, healthcheck]
+            initialDelaySeconds: 15
+            timeoutSeconds: 3
+
+          volumeMounts:
+            - mountPath: /tmp/gluetun
+              subPath: gluetun
+              name: tmp
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+              devic.es/tun: 1
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add:
+                # otherwise our command never runs because the chown fails, whoohoo!
+                - CHOWN
+                # icmp healthchecks
+                # - NET_RAW
+                - NET_ADMIN
+
+      containers:
+        - name: qbittorrent
+          image: docker.io/qbittorrentofficial/qbittorrent-nox
+          # image: docker.io/library/alpine:3.24.1
+          # command: [sleep, infinity]
+          lifecycle:
+            postStart:
+              exec:
+                # stale lockfiles cause the container to just exit on startup
+                # a stale lockfile is created by _any_ unclean termination
+                command: [rm, -f, /config/qBittorrent/config/lockfile]
+
+          env:
+            - name: TZ
+              value: Africa/Lagos
+            - name: QBT_LEGAL_NOTICE
+              value: confirm
+            - name: QBT_WEBUI_PORT
+              value: "8080"
+            - name: QBT_CONFIG_PATH
+              value: /config
+            - name: QBT_DOWNLOADS_PATH
+              value: /downloads
+
+          volumeMounts:
+            - mountPath: /config
+              name: sparrow-config
+            - mountPath: /downloads
+              name: downloads
+            - mountPath: /tmp
+              subPath: qbittorrent
+              name: tmp
+
+          ports:
+            - containerPort: 8080
+              name: webui
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: webui
+
+          resources:
+            requests:
+              cpu: 150m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+
+  volumeClaimTemplates:
+    - metadata:
+        name: sparrow-config
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 100Mi

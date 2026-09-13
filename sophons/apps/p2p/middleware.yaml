@@ -1,0 +1,10 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: forwardauth-authelia
+  namespace: pp22pp
+spec:
+  chain:
+    middlewares:
+      - name: forwardauth-authelia
+        namespace: authelia

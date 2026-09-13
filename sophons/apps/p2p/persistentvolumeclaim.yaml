@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/persistentvolume-v1.json
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pp22pp-torrents-media-less-big-boi
+spec:
+  storageClassName: ""
+  claimRef:
+    namespace: pp22pp
+    name: torrents-media-less-big-boi
+  capacity:
+    storage: 1Ti
+  volumeMode: Filesystem
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Delete
+  local:
+    path: /mnt/less-big-boi/media/Torrents
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - sophons-caeneus
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/persistentvolumeclaim-v1.json
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: torrents-media-less-big-boi
+  namespace: pp22pp
+spec:
+  storageClassName: ""
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Ti
+  volumeName: pp22pp-torrents-media-less-big-boi

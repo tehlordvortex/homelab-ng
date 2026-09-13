@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: sparrow
+  namespace: pp22pp
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: webui
+      protocol: TCP
+      name: webui

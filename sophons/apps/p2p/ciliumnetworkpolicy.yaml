@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: sparrow-lockdown
+  namespace: pp22pp
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: qbittorrent
+      k8s:app.kubernetes.io/instance: sparrow
+
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: traefik
+            k8s:app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: webui
+              protocol: TCP
+
+  egress:
+    - toEntities: [world]
+
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: pihole
+            k8s:app.kubernetes.io/name: pihole
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
