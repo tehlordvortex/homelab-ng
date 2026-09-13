@@ -130,6 +130,13 @@ httpRoute:
   hostnames:
     - tig.vrtx.sh
 
+  filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: traefik.io
+        kind: Middleware
+        name: forwardauth-anubis
+
 tcpRoute:
   enabled: true
   parentRefs:
@@ -156,7 +163,12 @@ gitea:
 
   config:
     log:
-      LEVEL: trace
+      LEVEL: debug
+      # STACKTRACE_LEVEL: trace
+      LOGGER_DEFAULT_MODE: console
+      LOGGER_ROUTER_MODE: console
+      LOGGER_XORM_MODE: console
+      LOGGER_ACCESS_MODE: console
 
     server:
       DOMAIN: tig.vrtx.sh
@@ -192,33 +204,36 @@ gitea:
       MINIO_USE_SSL: true
       MINIO_BUCKET: forge-of-creation
       MINIO_LOCATION: global
-    "storage.attachments":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: attachments/
-    "storage.lfs":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: lfs/
-    "storage.avatars":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: avatars/
-    "storage.repo-avatars":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: repo-avatars/
-    "storage.repo-archive":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: repo-archive/
-    "storage.packages":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: packages/
-    "storage.actions_log":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: actions_log/
-    "storage.actions_artifacts":
-      SERVE_DIRECT: true
-      MINIO_BASE_PATH: actions_artifacts/
+    # "storage.attachments":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: attachments/
+    # "storage.lfs":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: lfs/
+    # "storage.avatars":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: avatars/
+    # "storage.repo-avatars":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: repo-avatars/
+    # "storage.repo-archive":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: repo-archive/
+    # "storage.packages":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: packages/
+    # "storage.actions_log":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: actions_log/
+    # "storage.actions_artifacts":
+    #   # SERVE_DIRECT: true
+    #   MINIO_BASE_PATH: actions_artifacts/
 
     actions:
       ENABLED: false
+
+    metrics:
+      ENABLED: true
 
     packages:
       CHUNKED_UPLOAD_PATH: /tmp/package-upload
@@ -231,11 +246,11 @@ gitea:
     security:
       REVERSE_PROXY_TRUSTED_PROXIES: 10.41.0.0/16,2001:cafe:41::/56
 
-    metrics:
-      enabled: true
-      serviceMonitor:
-        enabled: true
-
   additionalConfigSources:
     - secret:
         secretName: forge-of-creation-forgejo-config
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
