@@ -26,6 +26,8 @@ images:
     newTag: 3.5.8
   - name: ghcr.io/jqlang/jq
     newTag: 1.8.2
+  - name: docker.io/alpine/kubectl
+    newTag: 1.36.1
 
 secretGenerator:
   - name: traefik-secrets
@@ -39,6 +41,11 @@ configMapGenerator:
   - name: anubis-config
     files:
       - policy.yaml=config/anubis.policy.sops.yaml
+
+  - name: bunny-sync
+    files:
+      - sync.sh=config/bunny-sync.sh
+      - hostnames.sh=config/bunny-hostnames.sh
 
   - name: traefik-grafana-dashboards
     options:

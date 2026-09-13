@@ -8,6 +8,9 @@ spec:
     cilium-trustedips:
       logLevel: INFO
       logFormat: json
+      staticTrustedCIDRs:
+        - 100.64.0.0/10
+        - fd7a:115c:a1e0::/48
       endpointLabelSelector:
         app.kubernetes.io/name: cloudflared
       cidrGroupLabelSelector:

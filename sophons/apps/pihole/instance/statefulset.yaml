@@ -33,96 +33,14 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
-      containers:
+      volumes:
         - name: pihole
-          image: ghcr.io/pi-hole/pihole
-
-          ports:
-            - containerPort: 53
-              protocol: TCP
-              name: dns-tcp
-            - containerPort: 53
-              protocol: UDP
-              name: dns-udp
-            - containerPort: 80
-              protocol: TCP
-              name: http
-
-          env:
-            - name: TZ
-              value: Africa/Lagos
-            - name: PIHOLE_UID
-              value: "1000"
-            - name: PIHOLE_GID
-              value: "1000"
-            - name: FTLCONF_webserver_api_password
-              value: ""
-            - name: FTLCONF_dns_listeningMode
-              value: "ALL"
-            - name: FTLCONF_dns_upstreams
-              # value: "1.1.1.1;1.0.0.1;9.9.9.9;149.112.112.112"
-              # value: "1.1.1.1;1.0.0.1"
-              value: "127.0.0.1#5053"
-
-          volumeMounts:
-            - mountPath: /etc/pihole
-              name: pihole
-            - mountPath: /etc/pihole/adlists.list
-              name: pihole-config
-              subPath: adlists.list
-              readOnly: true
-            - mountPath: /etc/pihole/blacklist.txt
-              name: pihole-config
-              subPath: blacklist.txt
-              readOnly: true
-
-          # startupProbe:
-          #   exec:
-          #     command:
-          #       - sh
-          #       - -c
-          #       - |
-          #         dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
-          #   timeoutSeconds: 5
-          #   failureThreshold: 35
-          #   initialDelaySeconds: 30
-
-          # livenessProbe:
-          #   exec:
-          #     command:
-          #       - sh
-          #       - -c
-          #       - |
-          #         dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
-          #   timeoutSeconds: 5
-          #   failureThreshold: 5
-
-          readinessProbe:
-            exec:
-              command:
-                - dig
-                - +short
-                - +norecurse
-                - +retry=0
-                - "@127.0.0.1"
-                - pi.hole
-                # - sh
-                # - -c
-                # - |
-                #   dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
-            # timeoutSeconds: 5
-            # failureThreshold: 5
-            # initialDelaySeconds: 60
-
-          resources:
-            requests:
-              cpu: 75m
-              memory: 48Mi
-            limits:
-              memory: 256Mi
-
-          securityContext:
-            allowPrivilegeEscalation: false
+          emptyDir: {}
+        - name: pihole-config
+          configMap:
+            name: pihole
+        - name: tmp
+          emptyDir: {}
 
       initContainers:
         - name: tailscale
@@ -244,16 +162,16 @@ spec:
           command: [bash, /etc/pihole/configure.sh]
 
           env:
-            - name: VOLTZAHL_V4
+            - name: PUBLIC_V4
               valueFrom:
                 configMapKeyRef:
                   name: pihole
-                  key: voltzahl.v4
-            - name: VOLTZAHL_V6
+                  key: public.v4
+            - name: PUBLIC_V6
               valueFrom:
                 configMapKeyRef:
                   name: pihole
-                  key: voltzahl.v6
+                  key: public.v6
 
           volumeMounts:
             - mountPath: /tmp
@@ -264,23 +182,134 @@ spec:
               subPath: configure.sh
               readOnly: true
 
-          securityContext:
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
-
           resources:
             requests:
               memory: 1Mi
             limits:
               memory: 32Mi
 
-      volumes:
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+        - name: download-blocklist
+          image: docker.io/alpine/curl
+          args:
+            - --compressed
+            - --fail-with-body
+            - "--header=host: mirrors"
+            - --output=/tmp/adlists.combined.list
+            - http://s3-global-nogw.garage:3902/pihole/adlists.combined.list
+
+          volumeMounts:
+            - mountPath: /tmp
+              subPath: pihole
+              name: tmp
+
+          resources:
+            requests:
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+
+      containers:
         - name: pihole
-          emptyDir: {}
-        - name: pihole-config
-          configMap:
-            name: pihole
-        - name: tmp
-          emptyDir: {}
+          image: ghcr.io/pi-hole/pihole
+
+          ports:
+            - containerPort: 53
+              protocol: TCP
+              name: dns-tcp
+            - containerPort: 53
+              protocol: UDP
+              name: dns-udp
+            - containerPort: 80
+              protocol: TCP
+              name: http
+
+          env:
+            - name: TZ
+              value: Africa/Lagos
+            - name: PIHOLE_UID
+              value: "1000"
+            - name: PIHOLE_GID
+              value: "1000"
+            - name: FTLCONF_webserver_api_password
+              value: ""
+            - name: FTLCONF_dns_listeningMode
+              value: "ALL"
+            - name: FTLCONF_dns_upstreams
+              # value: "1.1.1.1;1.0.0.1;9.9.9.9;149.112.112.112"
+              # value: "1.1.1.1;1.0.0.1"
+              value: "127.0.0.1#5053"
+
+          volumeMounts:
+            - mountPath: /tmp
+              subPath: pihole
+              name: tmp
+            - mountPath: /etc/pihole
+              name: pihole
+            - mountPath: /etc/pihole/adlists.list
+              name: pihole-config
+              subPath: adlists.list
+              readOnly: true
+            - mountPath: /etc/pihole/blacklist.txt
+              name: pihole-config
+              subPath: blacklist.txt
+              readOnly: true
+
+          # startupProbe:
+          #   exec:
+          #     command:
+          #       - sh
+          #       - -c
+          #       - |
+          #         dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+          #   timeoutSeconds: 5
+          #   failureThreshold: 35
+          #   initialDelaySeconds: 30
+
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - sh
+          #       - -c
+          #       - |
+          #         dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+          #   timeoutSeconds: 5
+          #   failureThreshold: 5
+
+          readinessProbe:
+            exec:
+              command:
+                - dig
+                - +short
+                - +norecurse
+                - +retry=0
+                - "@127.0.0.1"
+                - pi.hole
+                # - sh
+                # - -c
+                # - |
+                #   dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1
+            # timeoutSeconds: 5
+            # failureThreshold: 5
+            # initialDelaySeconds: 60
+
+          resources:
+            requests:
+              cpu: 75m
+              memory: 48Mi
+            limits:
+              memory: 256Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false

@@ -1,14 +1,14 @@
 http:
   routers:
     s3api:
-      entryPoints:
-        - s3api
+      entryPoints: [s3api]
+      middlewares: [compress]
       rule: "PathPrefix(`/`)"
       service: s3api
 
     s3web:
-      entryPoints:
-        - s3web
+      entryPoints: [s3web]
+      middlewares: [compress]
       rule: "PathPrefix(`/`)"
       service: s3web
 
@@ -22,3 +22,7 @@ http:
       loadBalancer:
         servers:
           - url: http://[::1]:4902
+
+  middlewares:
+    compress:
+      compress: {}

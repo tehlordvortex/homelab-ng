@@ -8,10 +8,10 @@ labels:
 resources:
   - primary
   - secondary
-  - role.yaml
-  - rolebinding.yaml
-  - serviceaccount.yaml
+  - rbac.yaml
+  - cronjob.yaml
   - poddisruptionbudget.yaml
+  - ../garage/access-keys/cheapasscloudfront
 components:
   - ../../common/tailscale
   - ../../common/tailscale/auth
@@ -19,14 +19,31 @@ components:
 images:
   - name: ghcr.io/pi-hole/pihole
     newTag: 2026.07.2
+  # - name: dhi.io/awscli
+  #   newTag: 2.36.44-debian13
+  - name: docker.io/library/alpine
+    newTag: 3.24.1
+  - name: docker.io/alpine/kubectl
+    newTag: 1.36.1
+  - name: docker.io/alpine/curl
+    newTag: 8.21.0
   - name: docker.io/klutchell/dnscrypt-proxy
     newTag: 2.1.18
 
 configMapGenerator:
   - name: pihole
+    options:
+      disableNameSuffixHash: true
     files:
-      - config/adlists.list
       - config/blacklist.txt
       - config/configure.sh
-      - config/dnscrypt-proxy.toml
+      - dnscrypt-proxy.toml=config/dnscrypt-proxy.sops.toml
+    literals:
+      - adlists.list=file:///tmp/adlists.combined.list
     envs: [.env]
+
+  - name: pihole-adlists
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config/adlists.list

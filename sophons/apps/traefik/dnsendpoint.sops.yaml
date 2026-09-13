@@ -9,7 +9,7 @@ spec:
       recordType: A
       # enc!
       targets:
-        - ENC[AES256_GCM,data:ZVm4pBGYGVqkaKjEZg==,iv:IVfjTB//wWmmvvR7/2f8YvihmDMbbuQizJw4Wu5FRNI=,tag:EDut6MG8M+rCz0kRp7ri2w==,type:str]
+        - ENC[AES256_GCM,data:YN9ZlPwVIVX5mVzsyw==,iv:7R5L4g4gf803l5ARvbs8tv9i77vDP4lalw1DzYDHvJg=,tag:OpWIlWfy7TkzoATtr5y03g==,type:str]
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
@@ -27,38 +27,45 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
+    - dnsName: bunnymc.lb.sphns.run
+      recordType: CNAME
+      targets:
+        - mc-m0l7fw1c60.b-cdn.net
+      providerSpecific:
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"
     - dnsName: '*.kaos.nexus'
       recordType: CNAME
       targets:
-        - sphns.b-cdn.net
+        - mc-m0l7fw1c60.b-cdn.net
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
     - dnsName: '*.vrtx.sh'
       recordType: CNAME
       targets:
-        - sphns.b-cdn.net
+        - mc-m0l7fw1c60.b-cdn.net
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
     - dnsName: '*.vrtx.run'
       recordType: CNAME
       targets:
-        - sphns.b-cdn.net
+        - mc-m0l7fw1c60.b-cdn.net
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
     - dnsName: '*.sphns.run'
       recordType: CNAME
       targets:
-        - sphns.b-cdn.net
+        - mc-m0l7fw1c60.b-cdn.net
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
     - dnsName: '*.sophons.cloud'
       recordType: CNAME
       targets:
-        - sphns.b-cdn.net
+        - mc-m0l7fw1c60.b-cdn.net
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
@@ -84,24 +91,24 @@ sops:
   age:
     - enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBkWDln
-        T2Y1M3hIVGZENDBhNXJ0VHYwUnBWc0FSQWZPOGNlTERGTVQ2ODJnCnJ3cFd0TVhN
-        NWxHN29scW0vRjFFQnAyTGl0VmhRaldkT3U3NHZCdUJ1VFUKLS0tIHNoVStzb1Vl
-        MENSaUxSbkxQQWRrVEk2Sm81SEp1c280djRac01zSGtUQnMKEX4GJHsgtshDvA2A
-        Z9hbwA9Mvgo14ddPYkfrYN/Jld0GL/zGQ/lkGfcxQsrnMfik1vcVvIryCmcoW55/
-        zHRTFg==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyB3LzN6
+        Si84d3hCVGhaOGJya2RZY2FaUldJUHhkQ0IrMjVxeEQxUS9XeHdzCjB1VDQ1WS9M
+        bll2S0tOKzJwMU0vNktjUVYzQmpIVzlTbGZGNjluQ0tTZWcKLS0tIGlTN0tmRHVO
+        ZC9sb0hPOHgxQUNFTzRXSHFmV3pmeTlqR0VYK0Q0dXNwY28K6SMDtJZl6kALL0RG
+        cnONtsEexPODuO9SKL+X9tTD4Pm1FW8ws6RnRfiyutdIFCQ6M/wCcfG6f0clUrwy
+        /drKbQ==
         -----END AGE ENCRYPTED FILE-----
       recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
     - enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAxM0duMTBCb05MRGRQUHUz
-        MjFEeUtHcEM3RGV4cW04eHpydjFLVlI4enhNClc1WnpFSlRnMWV1RG44ckxwWm45
-        MDFFaE1yUXZBVWhYMDlwNWVuR1pEK0kKLS0tIDlPUFJvVG44cSs0bVNWdWMwN3Fi
-        NHRDWEdxZE1mWGtrS2tkVnRIaWlKYmMKZwMlUxALQgxTYnyPD4fEmcQKMNOwSxuu
-        4AcfRNc+EfmIqMXimqh8rdU7mNRsXHtbDD5/mNqjeY0dqWjDEGLjVA==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBGYXF1OEw1VzlZVWh1T1Jo
+        dW9yUjJUVVpOc1MxSzdSbHpqVEdrR0lOYms0CnkwN1ovenNSYTZDMHVENHhLamlo
+        aEFicDNkTkVuVkpsRGxxU0dqckQrUTAKLS0tIG9YZTRXQUFjcnc0RlRsSk1vM2Za
+        UDVhSk1naGorYmg5Y1VySUdsWFVNVXcK42M32U0Eh6qSY2/vzt26jBKtatBk3FXx
+        WC5jsyC5z8IjfX8JR2uflMKBQkkMf9PNLkHaKJ/BzLGQp3kcDo2+cA==
         -----END AGE ENCRYPTED FILE-----
       recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
   encrypted_comment_regex: enc!
-  lastmodified: "2026-09-02T19:53:58Z"
-  mac: ENC[AES256_GCM,data:Nnvo2F7mYqcV/xGi0BZM/qRZdCXk0neyx/wm4aQfD3FcemOOiR5iFDP3EA2O+RL08fSmGRQPXEZ2b+SZxpFryUrV5bfrnAzLheNYPlA+CXmPxDUeKI+GR0GiHH81co+NZqTEzGLcxaCLFvCdCDmCs3ZOfkppBC03Kw5/gDk0xAw=,iv:A61AcnGOWwaEnpRQQs9SEWzyCu2RIpiSB7z3v7hassE=,tag:d/BBTo7aBr10X3xxlauylQ==,type:str]
+  lastmodified: "2026-09-13T07:18:18Z"
+  mac: ENC[AES256_GCM,data:afun/ZsQUbaCiykHpMfZ7ua6LbvaxqTfifRMyvLdDNXqkpEcZphmdtuA3O+SzE1FEg315TO9QthuABuoAb4ahHCSchQ3+35XXUAm+rP0JmKjk7z6Wh1V7kTm1XrzFPegLhVcvM/KxDtvne0lcnvbRhRjMjdwkgc7n+MQ372sglU=,iv:BYETj8MAFHxjVfylIrMeetV7VlY2q65I3BkdSOwQhcA=,tag:18IpPKQqXYpNZ2UdNXt8qw==,type:str]
   version: 3.13.3

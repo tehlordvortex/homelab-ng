@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/role.json
+# Copyright (c) Tailscale Inc & AUTHORS
+# SPDX-License-Identifier: BSD-3-Clause
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tailscale
+  namespace: pihole
+rules:
+  - apiGroups: [""] # "" indicates the core API group
+    resources: ["secrets"]
+    # Create can not be restricted to a resource name.
+    verbs: ["create"]
+  - apiGroups: [""] # "" indicates the core API group
+    resourceNames: ["necros", "nomos"]
+    resources: ["secrets"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: [""] # "" indicates the core API group
+    resources: ["events"]
+    verbs: ["get", "create", "patch"]
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/role.json
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pihole-gravity
+  namespace: pihole
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["pihole-gravity"]
+    verbs: ["patch"]
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    resourceNames: ["necros", "nomos"]
+    verbs: ["get", "patch", "update", "watch"]
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/rolebinding.json
+# Copyright (c) Tailscale Inc & AUTHORS
+# SPDX-License-Identifier: BSD-3-Clause
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tailscale
+  namespace: pihole
+subjects:
+  - kind: ServiceAccount
+    name: pihole
+roleRef:
+  kind: Role
+  name: tailscale
+  apiGroup: rbac.authorization.k8s.io
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/rolebinding.json
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pihole-gravity
+  namespace: pihole
+subjects:
+  - kind: ServiceAccount
+    name: pihole-gravity
+roleRef:
+  kind: Role
+  name: pihole-gravity
+  apiGroup: rbac.authorization.k8s.io
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/serviceaccount.json
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pihole
+  namespace: pihole
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/serviceaccount.json
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pihole-gravity
+  namespace: pihole

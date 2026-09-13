@@ -1,0 +1,164 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pihole-gravity
+  namespace: pihole
+  labels:
+    app.kubernetes.io/name: pihole
+    app.kubernetes.io/component: gravity
+spec:
+  schedule: "0 3 * * *" # 3am daily
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pihole
+        app.kubernetes.io/component: gravity
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: pihole
+            app.kubernetes.io/component: gravity
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: pihole-gravity
+          hostUsers: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+
+          volumes:
+            - name: tmp
+              emptyDir: {}
+            - name: adlists
+              configMap:
+                name: pihole-adlists
+
+          initContainers:
+            - name: download
+              image: docker.io/alpine/curl
+              command:
+                - /bin/ash
+                - -c
+                - |-
+                  set -euo pipefail
+                  list_file="/tmp/lists/combined.list"
+
+                  mkdir -p /tmp/lists
+                  cat /etc/pihole/adlists.list | while read -r adlist filename; do
+                    echo "downloading and appending $adlist to $list_file"
+                    curl -o- -fsS --compressed "$adlist" >>"$list_file"
+                  done
+                  du -h "$list_file"
+
+                  echo "deduping $list_file"
+                  sort -o "$list_file" -u "$list_file"
+                  du -h "$list_file"
+
+                  curl -o- -fsSI -H 'host: mirrors' http://s3-global.garage:3902/pihole/adlists.combined.list |
+                    grep -iE '^etag:' | awk '{ print $2 }' >/tmp/old_etag
+                  md5sum "$list_file" | awk '{print "\""$1"\""}' >/tmp/new_etag
+
+                  old_etag="$(cat /tmp/old_etag)"
+                  new_etag="$(cat /tmp/new_etag)"
+                  echo "old etag: $old_etag"
+                  echo "new etag: $new_etag"
+
+                  if [ "$old_etag" = "$new_etag" ]; then
+                    echo "no changes to adlists, further actions will be skipped"
+                    touch /tmp/skip
+                  fi
+
+              env:
+                - name: ADLISTS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: pihole-adlists
+                      key: adlists.list
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                - mountPath: /etc/pihole
+                  name: adlists
+                  readOnly: true
+
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+
+            - name: upload
+              image: docker.io/library/alpine
+              command:
+                - /bin/ash
+                - -c
+                - |-
+                  set -euo pipefail
+
+                  if [ -f /tmp/skip ]; then exit 0; fi
+
+                  apk add --no-cache aws-cli
+                  aws s3 cp --endpoint-url="$S3_ENDPOINT" /tmp/lists/combined.list "$S3_URI"
+
+              envFrom:
+                - secretRef:
+                    name: cheapasscloudfront-access-key
+              env:
+                - name: S3_ENDPOINT
+                  value: "http://s3-global-nogw.garage:3900"
+                - name: "S3_URI"
+                  value: "s3://mirrors/pihole/adlists.combined.list"
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  readOnly: true
+
+              securityContext:
+                runAsNonRoot: false
+                runAsUser: 0
+                runAsGroup: 0
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: restart-instances
+              image: docker.io/alpine/kubectl
+              command:
+                - /bin/ash
+                - -c
+                - |-
+                  set -euo pipefail
+
+                  if [ -f /tmp/skip ]; then exit 0; fi
+
+                  echo "$INSTANCES" | while read -r instance; do
+                    echo "restarting $instance"
+                    kubectl rollout restart -n pihole "statefulset/$instance"
+                    kubectl rollout status -n pihole "statefulset/$instance" --timeout=180s
+                  done
+
+              env:
+                - name: INSTANCES
+                  value: |-
+                    nomos
+                    necros
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                  readOnly: true
+
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]

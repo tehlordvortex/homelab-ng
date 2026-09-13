@@ -39,37 +39,29 @@ spec:
             - name: cert
               secret:
                 secretName: gateway-tls
+            - name: bunny-sync
+              configMap:
+                name: bunny-sync
             - name: jq
               image:
                 reference: ghcr.io/jqlang/jq
 
           initContainers:
-            - name: extract-hostnames
+            - name: hostnames
               image: docker.io/alpine/openssl
-              # https://stackoverflow.com/questions/20983217/how-to-display-the-subject-alternative-name-of-a-certificate
-              command:
-                - ash
-                - -c
-                - |-
-                  set -euo pipefail
-
-                  # openssl x509 -noout -ext subjectAltName -in /cert/tls.crt |
-                  #   grep -oE 'DNS:[^,]+' | grep -E '^DNS:\*' > /tmp/sans.txt
-
-                  echo "DNS:*.kaos.nexus" >> /tmp/sans.txt
-                  echo "DNS:*.vrtx.sh" >> /tmp/sans.txt
-                  echo "DNS:*.vrtx.run" >> /tmp/sans.txt
-                  echo "DNS:*.sphns.run" >> /tmp/sans.txt
-                  echo "DNS:*.sophons.cloud" >> /tmp/sans.txt
-
-                  echo "SANs:"
-                  cat /tmp/sans.txt
+              command: [/bin/ash, /bunny-sync/hostnames.sh]
+              env:
+                - name: DNS_NAMES
+                  value: ""
 
               volumeMounts:
                 - mountPath: /tmp
                   name: tmp
                 - mountPath: /cert
                   name: cert
+                  readOnly: true
+                - mountPath: /bunny-sync
+                  name: bunny-sync
                   readOnly: true
 
               securityContext:
@@ -79,8 +71,9 @@ spec:
                   drop: [ALL]
 
           containers:
-            - name: bunny-pull-zone-sync
+            - name: sync
               image: docker.io/alpine/curl
+              command: [/bin/ash, /bunny-sync/sync.sh]
 
               env:
                 - name: PULL_ZONE_ID
@@ -91,62 +84,85 @@ spec:
                       name: traefik-secrets
                       key: BUNNY_API_KEY
 
-              command:
-                - ash
-                - -c
-                - |-
-                  set -euo pipefail
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
+                - mountPath: /jq
+                  name: jq
+                  readOnly: true
+                - mountPath: /cert
+                  name: cert
+                  readOnly: true
+                - mountPath: /bunny-sync
+                  name: bunny-sync
+                  readOnly: true
 
-                  alias jq="/jq/jq"
-                  alias bcurl="curl -sS -H 'accesskey: $API_KEY'"
-                  crt="$(cat /cert/tls.crt | base64 -w0)"
-                  key="$(cat /cert/tls.key | base64 -w0)"
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: bunny-mc-pull-zone-sync
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/component: bunny-mc-pull-zone-sync
+spec:
+  schedule: "0 3 * * *" # 3am daily
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: traefik
+        app.kubernetes.io/instance: traefik-traefik
+        app.kubernetes.io/component: bunny-mc-pull-zone-sync
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: traefik
+            app.kubernetes.io/instance: traefik-traefik
+            app.kubernetes.io/component: bunny-mc-pull-zone-sync
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
 
-                  echo "set ipFamilyPolicy: DualStackPreferIPv6 (2)"
-                  bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID" \
-                    -H 'content-type: application/json' -d '{"IpFamilyPolicy":2}' > /tmp/pz.json
+          volumes:
+            - name: tmp
+              emptyDir: {}
+            - name: cert
+              secret:
+                secretName: gateway-tls
+            - name: bunny-sync
+              configMap:
+                name: bunny-sync
+            - name: jq
+              image:
+                reference: ghcr.io/jqlang/jq
 
-                  echo "syncing ceritifcates and hostnames for pull zone: $PULL_ZONE_ID"
-                  # bcurl "https://api.bunny.net/pullzone/$PULL_ZONE_ID" > /tmp/pz.json
-                  jq -r '.Hostnames[].Value' /tmp/pz.json | while read -r host; do
-                    if echo "$host" | grep -qE '\.b-cdn\.net$'; then
-                      echo "skip $host, managed by bunny"
-                      continue
-                    fi
-
-                    if ! grep -qxF "DNS:$host" /tmp/sans.txt; then
-                      echo "remove $host from pull zone"
-
-                      bcurl -X DELETE --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/removeHostname" \
-                        -H 'content-type: application/json' -d '{"Hostname":"'$host'"}'
-                    fi
-                  done
-
-                  cat /tmp/sans.txt | while read -r san; do
-                    host="${san#'DNS:'}"
-                    if ! jq -e --arg host "$host" '.Hostnames | any(.Value == $host)' /tmp/pz.json >/dev/null; then
-                      echo "add $host to pull zone"
-
-                      bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/addHostname" \
-                        -H 'content-type: application/json' -d '{"Hostname":"'$host'"}'
-                    fi
-
-                    echo "sync certificate for $host"
-                    
-                    bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/addCertificate" \
-                      -H 'content-type: application/json' \
-                      -d '{"Hostname":"'$host'","Certificate":"'$crt'","CertificateKey":"'$key'"}'
-
-                    force_ssl="$(jq -r --arg host "$host" '.Hostnames[] | select(.Value == $host) | .ForceSSL' /tmp/pz.json)"
-                    if [ "$force_ssl" != "true" ]; then
-                      echo "enable force ssl for $host"
-
-                      bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID/setForceSSL" \
-                        -H 'content-type: application/json' -d '{"Hostname":"'$host'","ForceSSL":true}'
-                    fi
-                  done
-
-                  echo done
+          initContainers:
+            - name: hostnames
+              image: docker.io/alpine/openssl
+              command: [/bin/ash, /bunny-sync/hostnames.sh]
+              env:
+                - name: DNS_NAMES
+                  value: |-
+                    DNS:*.vrtx.sh
+                    DNS:*.vrtx.run
+                    DNS:*.sphns.run
+                    DNS:*.kaos.nexus
+                    DNS:*.sophons.cloud
 
               volumeMounts:
                 - mountPath: /tmp
@@ -154,8 +170,41 @@ spec:
                 - mountPath: /cert
                   name: cert
                   readOnly: true
+                - mountPath: /bunny-sync
+                  name: bunny-sync
+                  readOnly: true
+
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+
+          containers:
+            - name: sync
+              image: docker.io/alpine/curl
+              command: [/bin/ash, /bunny-sync/sync.sh]
+
+              env:
+                - name: PULL_ZONE_ID
+                  value: "6550649"
+                - name: API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: traefik-secrets
+                      key: BUNNY_API_KEY
+
+              volumeMounts:
+                - mountPath: /tmp
+                  name: tmp
                 - mountPath: /jq
                   name: jq
+                  readOnly: true
+                - mountPath: /cert
+                  name: cert
+                  readOnly: true
+                - mountPath: /bunny-sync
+                  name: bunny-sync
                   readOnly: true
 
               securityContext:

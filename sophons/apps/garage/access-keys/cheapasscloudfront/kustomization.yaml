@@ -1,0 +1,3 @@
+secretGenerator:
+  - name: cheapasscloudfront-access-key
+    env: .env

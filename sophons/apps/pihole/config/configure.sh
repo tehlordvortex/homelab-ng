@@ -9,10 +9,10 @@ ts6_caeneus=fd7a:115c:a1e0:f742:2344:721:9806:34ed
 lan_alpha=10.42.69.4
 ts_alpha=100.100.27.65
 ts6_alpha=fd7a:115c:a1e0:7c55:ba3c:60c8:a480:41f2
-pub_voltzahl=$VOLTZAHL_V4
-pub6_voltzahl=$VOLTZAHL_V6
-ts_voltzahl=100.97.190.2
-ts6_voltzahl=fd7a:115c:a1e0:fb03:7e99:473a:628f:35
+pub_public=$PUBLIC_V4
+pub6_public=$PUBLIC_V6
+ts_public=100.87.29.219
+ts6_public=fd7a:115c:a1e0:27d4:92b8:b4ec:86c8:76b9
 
 until curl -sS -o- localhost/api/auth 2>&1 >/dev/null; do
   echo "waiting for pihole..."
@@ -63,9 +63,9 @@ ctee localhost/api/clients -d "{
 }"
 
 reply() {
-  local group=$1
-  local domain=$2
-  local v4=$3
+  local group="$1"
+  local domain="$2"
+  local v4="$3"
   local v6="${4:-::}"
 
   ctee localhost/api/domains/deny/regex -d "{
@@ -79,13 +79,13 @@ caeneus_domains='^((gimmich|neptune|sparrow|uwuget)\\.sophons\\.cloud|ic\\.vrtx\
 reply $lan_id $caeneus_domains $lan_caeneus
 reply $ts_id $caeneus_domains $ts_caeneus $ts6_caeneus
 
-voltzahl_domains='^(auth\\.sophons\\.cloud|((ssh\\.)?tig|auth)\\.vrtx\\.sh|p?((s3|restic)-(global|weed|b2)|oci|z3)\\.sphns\\.run)$'
-# for some reason, the first octet of the ipv4 address pihole returns when
-# this is configured is wrong. the correct value is displayed in the UI. bug?
-# reply $lan_id $voltzahl_domains $pub_voltzahl $pub6_voltzahl
-reply $ts_id $voltzahl_domains $ts_voltzahl $ts6_voltzahl
+public_domains='^((auth|ntfy)\\.sophons\\.cloud|((ssh\\.)?tig|auth|pds)\\.vrtx\\.sh|p?((s3|restic)-(global|weed|b2)|oci|z3)\\.sphns\\.run)$'
+# TODO: for some reason, the first octet of the ipv4 address pihole
+# returns when this is configured is wrong. the correct value is displayed in the UI. bug?
+# reply $lan_id $public_domains "$pub_public" "$pub6_public"
+reply $ts_id $public_domains $ts_public $ts6_public
 
-alpha_domains='^(pds\\.vrtx\\.sh|(home|hoarder|positron|klstrmntr|s3ui-global|weed)\\.sophons\\.cloud)$'
+alpha_domains='^((home|hoarder|positron|klstrmntr|s3ui-global|weed)\\.sophons\\.cloud)$'
 reply $lan_id $alpha_domains $lan_alpha
 reply $ts_id $alpha_domains $ts_alpha $ts6_alpha
 
