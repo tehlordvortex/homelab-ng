@@ -17,11 +17,11 @@ spec:
           image: ghcr.io/tehlordvortex/wgexporter:dev
           imagePullPolicy: Always
           args:
-            - -i
-            - wg.cf
+            # - -i
+            # - wg.cf
             # TODO: Less warning spam
-            - -i
-            - wg.dbg
+            # - -i
+            # - wg.dbg
             - -i
             - wg.kluster
           env:
@@ -36,10 +36,10 @@ spec:
 
           resources:
             requests:
-              cpu: "15m"
+              cpu: 5m
               memory: "16Mi"
             limits:
-              memory: "48Mi"
+              memory: "50Mi"
 
           securityContext:
             capabilities:
