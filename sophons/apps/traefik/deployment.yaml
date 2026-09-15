@@ -104,3 +104,119 @@ spec:
             readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/deployment-apps-v1.json
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ddns
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: ddns
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ddns
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ddns
+    spec:
+      serviceAccountName: ddns
+      hostUsers: false
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: topology.kubernetes.io/region
+                    operator: In
+                    values: [ng]
+
+      hostAliases:
+        - ip: 10.42.0.1
+          hostnames: [unifi.local]
+
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: bunny-edge-dns
+          configMap:
+            name: bunny-edge-dns
+
+      containers:
+        - name: deno
+          image: ghcr.io/denoland/deno
+          args:
+            - run
+            - --allow-env
+            - --allow-net
+            - --allow-read
+            - /bunny/ddns.worker.ts
+
+          env:
+            - name: DENO_DIR
+              value: "/tmp/.deno_cache"
+
+            - name: ISP_NAME
+              value: Starlink
+            - name: UNIFI_BASE_URL
+              value: "https://unifi.local"
+            - name: UNIFI_GATEWAY
+              value: positron
+            - name: UNIFI_CA_CRT
+              valueFrom:
+                configMapKeyRef:
+                  name: positron-ca
+                  key: ca.crt
+            - name: UNIFI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: traefik-secrets
+                  key: UNIFI_USERNAME
+            - name: UNIFI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: traefik-secrets
+                  key: UNIFI_PASSWORD
+
+            - name: DNS_ZONE_ID
+              value: "852605"
+            - name: DNS_RECORD_IDS
+              value: "23427427,23807643"
+            - name: BUNNY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: traefik-secrets
+                  key: BUNNY_API_KEY
+
+          ports:
+            - containerPort: 8080
+              name: ddns
+
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /bunny
+              name: bunny-edge-dns
+              readOnly: true
+
+          resources:
+            requests:
+              cpu: 1m
+              memory: 16Mi
+            limits:
+              memory: 48Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]

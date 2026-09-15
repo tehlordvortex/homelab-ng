@@ -52,7 +52,12 @@ spec:
               command: [/bin/ash, /bunny-sync/hostnames.sh]
               env:
                 - name: DNS_NAMES
-                  value: ""
+                  value: |-
+                    DNS:*.vrtx.sh
+                    DNS:*.vrtx.run
+                    DNS:*.sphns.run
+                    DNS:*.kaos.nexus
+                    DNS:*.sophons.cloud
 
               volumeMounts:
                 - mountPath: /tmp
@@ -114,6 +119,7 @@ metadata:
     app.kubernetes.io/instance: traefik-traefik
     app.kubernetes.io/component: bunny-mc-pull-zone-sync
 spec:
+  suspend: true
   schedule: "0 3 * * *" # 3am daily
   concurrencyPolicy: Forbid
   jobTemplate:
@@ -157,12 +163,7 @@ spec:
               command: [/bin/ash, /bunny-sync/hostnames.sh]
               env:
                 - name: DNS_NAMES
-                  value: |-
-                    DNS:*.vrtx.sh
-                    DNS:*.vrtx.run
-                    DNS:*.sphns.run
-                    DNS:*.kaos.nexus
-                    DNS:*.sophons.cloud
+                  value: ""
 
               volumeMounts:
                 - mountPath: /tmp
@@ -224,7 +225,7 @@ metadata:
     app.kubernetes.io/instance: traefik-traefik
     app.kubernetes.io/component: trusted-ips-sync
 spec:
-  schedule: "0 * * * *" # every hour
+  schedule: "0 */3 * * *" # every 3 hours
   concurrencyPolicy: Forbid
   jobTemplate:
     metadata:

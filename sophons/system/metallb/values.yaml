@@ -1,17 +1,47 @@
-# yaml-language-server: $schema=https://github.com/metallb/metallb/raw/refs/heads/main/charts/metallb/values.schema.json
+# yaml-language-server: $schema=https://github.com/metallb/metallb/raw/refs/tags/v0.16.1/charts/metallb/values.schema.json
+
+loadBalancerClass: io.metallb
+prometheus:
+  rbacPrometheus: false
+  serviceMonitor:
+    enabled: true
+
+frrk8s:
+  enabled: false
+
+controller:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 100Mi
+    limits:
+      memory: 128Mi
 
 speaker:
+  frr:
+    enabled: false
+
   tolerations:
     - key: prime.sophons.cloud
       operator: Exists
     - key: caeneus.sophons.cloud
       operator: Exists
+
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
           - matchExpressions:
               - key: kubernetes.io/hostname
-                operator: NotIn
-                values:
-                  - sophons-oduduwa
+                operator: In
+                values: [sophons-prime]
+          - matchExpressions:
+              - key: l2ad.metallb.sophons.cloud/internal-pools
+                operator: Exists
+
+  resources:
+    requests:
+      cpu: 5m
+      memory: 48Mi
+    limits:
+      memory: 100Mi

@@ -29,7 +29,8 @@ ingressRoute:
       gethomepage.dev/app: traefik
       gethomepage.dev/widget.type: traefik
       gethomepage.dev/widget.url: http://traefik.traefik:8080
-      gethomepage.dev/href: http://traefik-internal.sophons.cloud:8080/dashboard
+      # TODO: expose this on a proper hostname with auth
+      # gethomepage.dev/href: http://traefik-internal.sophons.cloud:8080/dashboard
 
 additionalArguments:
   - --serversTransport.maxIdleConnsPerHost=256
@@ -40,13 +41,14 @@ ports:
     port: 8080
     expose:
       default: true
-      internal: true
     http:
       middlewares:
         - traefik_default-compression@kubernetescrd
 
   web:
     port: 80
+    expose:
+      nat-ula: true
     http:
       aliasHeadersStrategy: delete
       redirections:
@@ -62,7 +64,7 @@ ports:
   websecure:
     port: 443
     expose:
-      internal: true
+      nat-ula: true
     http3:
       enabled: true
     transport:
@@ -86,7 +88,7 @@ ports:
     port: 22
     expose:
       default: true
-      internal: true
+      nat-ula: true
 
 service:
   enabled: true
@@ -103,17 +105,16 @@ service:
     # externalTrafficPolicy: Local
 
   additionalServices:
-    internal:
+    nat-ula:
       single: true
       annotations:
-        metallb.io/address-pool: internal
-        external-dns.alpha.kubernetes.io/hostname: >
-          traefik-internal.sophons.cloud
-        external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+        metallb.io/loadBalancerIPs: fd67::69
       spec:
         type: LoadBalancer
-        # trafficDistribution: PreferSameNode
+        loadBalancerClass: io.metallb
+        ipFamilies: ["IPv6"]
         externalTrafficPolicy: Local
+        trafficDistribution: PreferSameNode
 
 providers:
   kubernetesCRD:

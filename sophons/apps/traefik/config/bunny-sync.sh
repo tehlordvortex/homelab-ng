@@ -2,14 +2,14 @@
 set -euo pipefail
 
 alias jq="/jq/jq"
-alias bcurl="curl -sS -H 'accesskey: $API_KEY'"
+alias bcurl="curl --fail-with-body -sS -H 'accesskey: $API_KEY'"
 crt="$(cat /cert/tls.crt | base64 -w0)"
 key="$(cat /cert/tls.key | base64 -w0)"
 
-# echo "set ipFamilyPolicy: DualStackPreferIPv6 (2)"
-echo "set ipFamilyPolicy: DualStack (1)"
+echo "set ipFamilyPolicy: DualStackPreferIPv6 (2)"
+# echo "set ipFamilyPolicy: DualStack (1)"
 bcurl -X POST --url "https://api.bunny.net/pullzone/$PULL_ZONE_ID" \
-  -H 'content-type: application/json' -d '{"IpFamilyPolicy":1}' >/tmp/pz.json
+  -H 'content-type: application/json' -d '{"IpFamilyPolicy":2}' >/tmp/pz.json
 
 echo "syncing ceritifcates and hostnames for pull zone: $PULL_ZONE_ID"
 # bcurl "https://api.bunny.net/pullzone/$PULL_ZONE_ID" > /tmp/pz.json

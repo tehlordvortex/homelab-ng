@@ -5,30 +5,14 @@ metadata:
   namespace: metallb-system
 spec:
   ipAddressPools:
+    - nat-ula
     - internal
-    - starlink
   nodeSelectors:
     - matchLabels:
-        kubernetes.io/hostname: sophons-beta
-    - matchLabels:
-        kubernetes.io/hostname: sophons-kaos
-  interfaces:
-    - end0.42
-    - enp1s0
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: kaos
-  namespace: metallb-system
-spec:
-  ipAddressPools:
-    - kaos
-  nodeSelectors:
-    - matchLabels:
-        kubernetes.io/hostname: sophons-caeneus
+        l2ad.metallb.sophons.cloud/internal-pools: "true"
   interfaces:
     - eth0
+    - end0.42
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -43,15 +27,3 @@ spec:
         kubernetes.io/hostname: sophons-prime
   interfaces:
     - end0.42
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: theta
-  namespace: metallb-system
-spec:
-  ipAddressPools:
-    - theta
-  nodeSelectors:
-    - matchLabels:
-        kubernetes.io/hostname: sophons-theta

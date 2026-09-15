@@ -28,6 +28,8 @@ images:
     newTag: 1.8.2
   - name: docker.io/alpine/kubectl
     newTag: 1.36.1
+  - name: ghcr.io/denoland/deno
+    newTag: alpine-2.9.6
 
 secretGenerator:
   - name: traefik-secrets
@@ -46,6 +48,10 @@ configMapGenerator:
     files:
       - sync.sh=config/bunny-sync.sh
       - hostnames.sh=config/bunny-hostnames.sh
+
+  - name: bunny-edge-dns
+    files:
+      - config/ddns.worker.ts
 
   - name: traefik-grafana-dashboards
     options:
