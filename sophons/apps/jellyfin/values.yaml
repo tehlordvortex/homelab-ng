@@ -1,3 +1,6 @@
+image:
+  tag: "12.0"
+
 httpRoute:
   enabled: true
   annotations:
@@ -44,6 +47,26 @@ securityContext:
     drop: [ALL]
     add: [SYS_ADMIN]
 
+# extraInitContainers:
+#   - name: restore-db
+#     image: docker.io/library/busybox:1.38
+#     command:
+#       - sh
+#       - -c
+#       - |-
+#         set -e
+
+#         if [ -f /numedia/jellyfin.rec.db ]; then
+#           rm -f /config/data/jellyfin.db-*
+#           mv /numedia/jellyfin.rec.db /config/data/jellyfin.db
+#         fi
+
+#     volumeMounts:
+#       - name: config
+#         mountPath: /config
+#       - name: numedia
+#         mountPath: /numedia
+
 persistence:
   config:
     storageClass: local-path
@@ -53,9 +76,12 @@ persistence:
     enabled: true
     storageClass: local-path
 
-extraVolumes:
+volumes:
   - name: tmp
     emptyDir: {}
+  - name: numedia
+    persistentVolumeClaim:
+      claimName: neptune-jellyfin-numedia
   - name: hwa-kfd
     hostPath:
       type: CharDevice
@@ -69,9 +95,11 @@ extraVolumes:
       type: CharDevice
       path: /dev/dri/renderD129
 
-extraVolumeMounts:
+volumeMounts:
   - name: tmp
     mountPath: /tmp
+  - name: numedia
+    mountPath: /numedia
   - name: hwa-kfd
     mountPath: /dev/kfd
   - name: hwa-card

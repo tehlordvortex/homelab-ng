@@ -25,6 +25,33 @@ spec:
               values:
                 - sophons-caeneus
 ---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/persistentvolume-v1.json
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jellyfin-neptune-jellyfin-numedia
+spec:
+  claimRef:
+    namespace: jellyfin
+    name: neptune-jellyfin-numedia
+  capacity:
+    storage: 2Ti
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: ""
+  local:
+    path: /mnt/less-big-boi/media/Libraries
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - sophons-caeneus
+---
 # yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/persistentvolumeclaim-v1.json
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -39,3 +66,18 @@ spec:
     requests:
       storage: 2Ti
   volumeName: jellyfin-neptune-jellyfin-media
+---
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.35.2/persistentvolumeclaim-v1.json
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: neptune-jellyfin-numedia
+  namespace: jellyfin
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 2Ti
+  volumeName: jellyfin-neptune-jellyfin-numedia
