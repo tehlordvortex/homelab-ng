@@ -10,6 +10,7 @@ metadata:
     metallb.io/address-pool: internal
 spec:
   type: LoadBalancer
+  loadBalancerClass: io.metallb
   ports:
     - name: dns-tcp
       port: 53
