@@ -35,7 +35,7 @@ patches:
           args: ["/db/redka.db"]
           env:
             - name: GOGC
-              value: "25"
+              value: "10"
             - name: GOMEMLIMIT
               valueFrom:
                 resourceFieldRef:
@@ -47,11 +47,11 @@ patches:
 
           startupProbe:
             exec:
-              command: [sh, -c, "valkey-cli PING || exit 1"]
+              command: [valkey-cli, PING]
 
           livenessProbe:
             exec:
-              command: [sh, -c, "valkey-cli PING || exit 1"]
+              command: [valkey-cli, PING]
 
           volumeMounts:
             - name: data
@@ -69,10 +69,10 @@ patches:
 
           resources:
             requests:
-              cpu: 50m
-              memory: 32Mi
+              cpu: 40m
+              memory: 48Mi
             limits:
-              memory: 72Mi
+              memory: 128Mi
       - op: add
         path: /spec/template/spec/initContainers/0
         value:
@@ -144,7 +144,7 @@ patches:
             readOnlyRootFilesystem: true
           resources:
             requests:
-              cpu: 70m
+              cpu: 100m
               memory: 128Mi
             limits:
               memory: 512Mi # we respect the OOMkilla
@@ -229,7 +229,7 @@ patches:
 
           resources:
             requests:
-              cpu: 30m
+              cpu: 40m
               memory: 48Mi
             limits:
               memory: 128Mi

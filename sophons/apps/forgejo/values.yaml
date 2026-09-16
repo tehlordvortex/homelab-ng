@@ -34,10 +34,10 @@ affinity:
 
 resources:
   requests:
-    cpu: 100m
+    cpu: 120m
     memory: 172Mi
   limits:
-    memory: 300Mi
+    memory: 512Mi
 
 persistence:
   enabled: false
@@ -83,6 +83,8 @@ replicaCount: 1
 deployment:
   terminationGracePeriodSeconds: 120
   env:
+    - name: GOGC
+      value: "10"
     - name: GOMEMLIMIT
       valueFrom:
         resourceFieldRef:
