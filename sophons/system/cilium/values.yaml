@@ -43,6 +43,7 @@ cni:
 #   hostNetwork:
 #     enabled: false
 
+preferIpv6: true
 ipv6:
   enabled: true
 ipam:
@@ -82,9 +83,9 @@ egressGateway:
 
 envoy:
   enabled: true
-  # xdsMode: ads
+  xdsMode: ads
   # TODO: https://github.com/cilium/cilium/issues/47624
-  xdsMode: split
+  # xdsMode: split
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1
