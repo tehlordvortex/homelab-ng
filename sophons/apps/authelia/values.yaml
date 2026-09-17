@@ -396,6 +396,16 @@ configMap:
           grant_types:
             - authorization_code
 
+  access_control:
+    default_policy: two_factor
+    rules:
+      - domain: sparrow.sophons.cloud
+        policy: bypass
+        networks:
+          - 10.0.0.0/8
+          - 100.64.0.0/10
+          - fd7a:115c:a1e0::/48
+
 secret:
   existingSecret: authelia
   additionalSecrets:

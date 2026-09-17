@@ -15,3 +15,12 @@ components:
   - ../../common/litestream/templ-config
   - ../../common/tailscale
   - ../../common/tailscale/ephemeral-auth
+
+patches:
+  - target:
+      kind: StatefulSet
+      name: karakeep-meilisearch
+    patch: |-
+      - op: add
+        path: /spec/template/spec/hostUsers
+        value: false

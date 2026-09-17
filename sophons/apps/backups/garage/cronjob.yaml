@@ -39,13 +39,24 @@ spec:
             - key: caeneus.sophons.cloud
               operator: Exists
           affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: garage
+                        app.kubernetes.io/instance: global
+                        app.kubernetes.io/component: backup-crypt-b2
+                  weight: 100
+
             nodeAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
                 - preference:
                     matchExpressions:
                       - key: topology.kubernetes.io/region
-                        operator: In
-                        values: [de]
+                        operator: NotIn
+                        values: [ng]
                   weight: 100
 
           initContainers:
@@ -220,6 +231,17 @@ spec:
               type: RuntimeDefault
 
           affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: garage
+                        app.kubernetes.io/instance: global
+                        app.kubernetes.io/component: backup-crypt-b2
+                  weight: 100
+
             podAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
                 - podAffinityTerm:

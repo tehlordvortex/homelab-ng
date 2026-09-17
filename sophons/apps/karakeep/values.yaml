@@ -27,6 +27,10 @@ controllers:
       securityContext:
         seccompProfile:
           type: RuntimeDefault
+
+      tolerations:
+        - key: caeneus.sophons.cloud
+          operator: Exists
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -34,8 +38,14 @@ controllers:
                 matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: In
-                    values: [sophons-theta, sophons-voltzahl]
+                    values: [sophons-caeneus]
               weight: 67
+            - preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [sophons-theta, sophons-voltzahl]
+              weight: 42
             # - preference:
             #     matchExpressions:
             #       - key: topology.kubernetes.io/region
@@ -43,6 +53,7 @@ controllers:
             #         values:
             #           - ng
             #   weight: 100
+
     containers:
       karakeep:
         image:
@@ -110,6 +121,7 @@ controllers:
           CRAWLER_JOB_TIMEOUT_SEC: "300"
           CRAWLER_SCREENSHOT_TIMEOUT_SEC: "45"
           CRAWLER_MONOLITH_TIMEOUT_SEC: "180"
+          CRAWLER_PARSER_MEM_LIMIT_MB: 1024
           HTML_CONTENT_SIZE_INLINE_THRESHOLD_BYTES: "1024"
           SEARCH_NUM_WORKERS: "3"
           SEARCH_JOB_TIMEOUT_SEC: "60"
@@ -260,17 +272,27 @@ controllers:
             memory: 100Mi
   chrome:
     pod:
+      hostUsers: false
+
       dnsPolicy: None
       dnsConfig:
         nameservers:
           - 10.43.45.33 # necros
           - 10.43.14.33 # nomos
-      hostUsers: false
       nodeSelector:
         topology.kubernetes.io/region: ng
       tolerations:
         - key: caeneus.sophons.cloud
           operator: Exists
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [sophons-caeneus]
+              weight: 67
       securityContext:
         seccompProfile:
           type: RuntimeDefault
