@@ -1,0 +1,265 @@
+log:
+  level: debug
+
+storage:
+  rootDirectory: /tmp/zot-b2
+  remoteCache: true
+  redirectBlobURL: true
+  fastRestart: true
+  storageDriver:
+    name: s3
+    region: eu-central-003
+    regionendpoint: s3.eu-central-003.backblazeb2.com
+    bucket: sophons
+    rootdirectory: /zenlesszonezot
+    forcepathstyle: true
+    accesskey: ${B2_ACCESS_KEY_ID}
+    secretkey: ${B2_SECRET_ACCESS_KEY}
+  cacheDriver:
+    name: redis
+    addr:
+      - valkeyrie-redis-ha.alpha-centauri-system:26379
+    master_name: valkeyrie
+    keyprefix: z3:k
+  retention:
+    dryRun: false
+    delay: 24h
+    policies:
+      - repositories:
+          - /mirror/**
+        deleteReferrers: true
+        deleteUntagged: true
+        keepTags:
+          - pulledWithin: 720h
+            pushedWithin: 720h
+        keepUntagged:
+          pulledWithin: 720h
+          pushedWithin: 720h
+      - keepTags:
+          - patterns:
+              - .*
+  subPaths:
+    /p:
+      rootDirectory: /tmp/zot-garage
+      remoteCache: true
+      redirectBlobURL: true
+      storageDriver:
+        name: s3
+        secure: false
+        region: global
+        regionendpoint: s3-global-nogw.garage:3900
+        redirectendpoint: https://s3-global.sphns.run
+        bucket: zenlesszonezot
+        forcepathstyle: true
+        accesskey: ${GARAGE_ACCESS_KEY_ID}
+        secretkey: ${GARAGE_SECRET_ACCESS_KEY}
+      cacheDriver:
+        name: redis
+        addr:
+          - valkeyrie-redis-ha.alpha-centauri-system:26379
+        master_name: valkeyrie
+        keyprefix: z3:k
+
+http:
+  address: 0.0.0.0
+  port: "5000"
+  readTimeout: "0"
+  writeTimeout: "0"
+  compat:
+    - docker2s2
+  externalUrl: https://zenlesszonezot.sophons.cloud
+
+  auth:
+    sessionDriver:
+      name: redis
+      addr:
+        - valkeyrie-redis-ha.alpha-centauri-system:26379
+      master_name: valkeyrie
+      keyprefix: z3:s
+
+    apikey: true
+    htpasswd:
+      path: /secrets/z3/htpasswd
+
+    bearer:
+      realm: https://oci.sphns.run/zot/auth/token
+      service: oci.sphns.run
+      oidc:
+        - issuer: https://ic.vrtx.sh/.identity
+          audiences: [zot, oci.sphns.run]
+          claimMapping:
+            username: claims.sub
+            groups: "['ci']"
+        - issuer: https://controlplane.sophons.cloud:6443
+          certificateAuthorityFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          audiences: [zot, oci.sphns.run]
+          claimMapping:
+            # not guaranteed to be present e.g. with the kubelet token
+            # variables:
+            #   - name: namespace
+            #     expression: claims['kubernetes.io/serviceaccount/namespace']
+            #   - name: name
+            #     expression: claims['kubernetes.io/serviceaccount/service-account.name']
+            username: "'k8s:' + claims.sub"
+            groups: "['k8s']"
+
+    openid:
+      providers:
+        oidc:
+          credentialsFile: /secrets/z3/oidc.json
+          issuer: https://auth.sophons.cloud
+          scopes:
+            - openid
+            - profile
+            - email
+            - groups
+          claimMapping:
+            username: preferred_username
+            groups: groups
+
+  accessControl:
+    metrics:
+      anonymousPolicy:
+        - read
+    groups:
+      readers:
+        users:
+          - push
+          - kluzter
+      writers:
+        users:
+          - push
+    repositories:
+      "**":
+        policies:
+          - groups:
+              - k8s
+              - readers
+            actions:
+              - read
+          - groups:
+              - writers
+            actions:
+              - create
+              - update
+      library/**:
+        policies:
+          - groups:
+              - writers
+            actions:
+              - create
+              - update
+        anonymousPolicy:
+          - read
+        defaultPolicy:
+          - read
+      cloudflare/workerd:
+        policies:
+          - groups:
+              - k8s
+              - readers
+            actions:
+              - read
+          - groups:
+              - woodpecker:org:1:repo:1
+              - writers
+            actions:
+              - read
+              - create
+              - update
+    adminPolicy:
+      groups:
+        - admins
+      actions:
+        - read
+        - create
+        - update
+        - delete
+
+extensions:
+  search:
+    enable: true
+  ui:
+    enable: true
+
+  sync:
+    enable: true
+    credentialsFile: /secrets/z3/sync-auth.json
+    DownloadDir: /tmp/zot/sync
+    registries:
+      - &common_config
+        urls:
+          - https://ghcr.io
+        content:
+          - prefix: /browserless/chromium
+            tags:
+              excludeRegex: .*
+            destination: /mirror/ghcr.io
+          - prefix: /immich-app/immich-machine-learning
+            tags:
+              excludeRegex: .*-rocm$
+            destination: /mirror/ghcr.io
+          - prefix: "**"
+            destination: /mirror/ghcr.io
+        onDemand: true
+        preserveDigest: true
+        # https://github.com/project-zot/zot/pull/4322
+        reqConcurrent: 32
+        reqPerSec: 100
+        # https://github.com/project-zot/zot/pull/4328
+        manifestCheckInterval: 1h
+        # https://github.com/project-zot/zot/pull/4335
+        disableHTTP2: true
+      - <<: *common_config
+        urls:
+          - https://dhi.io
+        content:
+          - prefix: "**"
+            destination: /mirror/dhi.io
+      - <<: *common_config
+        urls:
+          - https://registry-1.docker.io
+        content:
+          - prefix: "**"
+            destination: /mirror/docker.io
+      - <<: *common_config
+        urls:
+          - https://quay.io
+        content:
+          - prefix: "**"
+            destination: /mirror/quay.io
+      - <<: *common_config
+        urls:
+          - https://registry.k8s.io
+        content:
+          - prefix: "**"
+            destination: /mirror/registry.k8s.io
+      - <<: *common_config
+        urls:
+          - https://gcr.io
+        content:
+          - prefix: "**"
+            destination: /mirror/gcr.io
+      - <<: *common_config
+        urls:
+          - https://public.ecr.aws
+        content:
+          - prefix: "**"
+            destination: /mirror/public.ecr.aws
+      - <<: *common_config
+        urls:
+          - https://code.forgejo.org
+        content:
+          - prefix: "**"
+            destination: /mirror/code.forgejo.org
+      - <<: *common_config
+        urls:
+          - https://codeberg.org
+        content:
+          - prefix: "**"
+            destination: /mirror/codeberg.org
+
+  metrics:
+    enable: true
+    prometheus:
+      path: /metrics

@@ -25,3 +25,4 @@ customization:
       - siderolabs/iscsi-tools
       - siderolabs/util-linux-tools
       - siderolabs/binfmt-misc
+      - siderolabs/harbor-credential-provider

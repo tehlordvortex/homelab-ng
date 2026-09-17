@@ -43,12 +43,18 @@ services:
       - etc-kubernetes:/etc/kubernetes
       - usr-libexec-kubernetes:/usr/libexec/kubernetes
       - opt:/opt
+      - ./bin:/usr/local/lib/kubelet/credentialproviders:ro
       - /dev/dri/by-path:/dev/dri/by-path
       - /run/media/vrtx/big-boi/backups/backups/garage:/var/lib/garage/backup/big-boi
       - /run/media/vrtx/less-big-boi/backups/garage:/var/lib/garage/backup/less-big-boi
       - /run/media/vrtx/big-boi/time-machine:/mnt/big-boi/time-machine
       - /run/media/vrtx/big-boi/everything-else:/mnt/big-boi/everything-else
       - /run/media/vrtx/less-big-boi/media:/mnt/less-big-boi/media
+      # - /run/media/vrtx/big-boi/backups/backups/garage:/var/mnt/garage-backup-big-boi
+      # - /run/media/vrtx/less-big-boi/backups/garage:/var/mnt/garage-backup-less-big-boi
+      - /run/media/vrtx/big-boi/time-machine:/var/mnt/big-boi-time-machine
+      # - /run/media/vrtx/big-boi/everything-else:/var/mnt/big-boi-everything-else
+      # - /run/media/vrtx/less-big-boi/media:/var/mnt/less-big-boi-media
     environment:
       - PLATFORM=container
     devices:

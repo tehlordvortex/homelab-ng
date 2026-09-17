@@ -1,120 +1,270 @@
 cluster:
-  allowSchedulingOnControlPlanes: true
-  apiServer:
-    # enc!
-    certSANs:
-      - ENC[AES256_GCM,data:TP7ev79AI7XciA==,iv:q+VnqbwvQxSAUHwpeftIICc0UkrkPvH9eAQMyNjw4Es=,tag:q86KSfo9R3Qgh6xh6r1NfA==,type:str]
-      - ENC[AES256_GCM,data:sK4aPJeGtTcWLw==,iv:7YPbtZ2Yx3M6pgmaSHX7P2e4ilw7iTR77I/RlQhLA6c=,tag:oo5+QXvia2XZLSPWXc0sBw==,type:str]
-      - ENC[AES256_GCM,data:2hRgMsuNwm1x/Aga8A==,iv:+6DthxCFT8jOzQXytBYEqL2GW7dhBoOWarWsKF23inM=,tag:Ws9Fv+ig+ghbuxcF5QxOHw==,type:str]
-      - ENC[AES256_GCM,data:GRDqRTlCeIHSoyHdJK83/J+F9vI=,iv:0khUADaCgG3RO1RYkDv+GiIDcQxQNyxGHRiu/82I8ck=,tag:f5aCQDZDpCCzxtJMYLZUnw==,type:str]
-      - ENC[AES256_GCM,data:povAZLKBwEki8Mtongc45M1+6olCJgrU,iv:9eMT60ebeo+7FBTPqa55p4/GD9R13vTPEwIx7wCvsiA=,tag:tUyd8xPJYbtX3g42bKgM3g==,type:str]
-      - ENC[AES256_GCM,data:Mr6m9fmpaj2wGqPVdg/qVd2DvtCE58ln,iv:RwxEGCrUoDkzfBYGhiThdiZU+Vv5LHCDi7RI3boY5kE=,tag:KdY1L8xpcsw0oqJPM06vJg==,type:str]
-      - ENC[AES256_GCM,data:BxN+htI6u2qiRmqpEUvEurTsyEYjNxm/7p4=,iv:sgWqAlCaJR9XSj0GIUf8PZvtnIVq1bb/skUrckNMl6U=,tag:+3BL2D5BPSKVb62Olr3pVw==,type:str]
-    resources:
-      requests:
-        cpu: 300m
-        memory: 1.5Gi
-      limits:
-        memory: 2Gi
-    extraArgs:
-      feature-gates: MutablePVNodeAffinity=true
-      # https://github.com/kubernetes/kubernetes/pull/88567
-      goaway-chance: ".01"
-      authentication-config: /var/lib/kube-apiserver/authentication.yaml
-    extraVolumes:
-      - hostPath: /var/lib/kube-apiserver
-        mountPath: /var/lib/kube-apiserver
-        readonly: true
-  scheduler:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 64Mi
-      limits:
-        memory: 256Mi
-  controllerManager:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        memory: 512Mi
   etcd:
     # listenSubnets defaults to advertisedSubnets if not set explicitly
     # enc!
     advertisedSubnets:
-      - ENC[AES256_GCM,data:fQDxNdF7qsRguYnEjqfTdy2BHmFy8A==,iv:tJLa2ZrjPgSvBJrB34aMTGnbF5Zb7kf8dRWcbs5k8U8=,tag:j2Bd5XKVUVQm23CVzX5i6A==,type:str]
-      - ENC[AES256_GCM,data:ESZC/nUcIxJjKFGea95tNJoCMkQDzxf5DufQkCDXVGN5nNfMYNWWy5zrESPf4CCPZFk=,iv:ssOEh2ez3bmx1CbCLLCOiLY7Xg+t7cp+DPtYsydg1rc=,tag:F/abnn2+XYRAXSwhUNfkFQ==,type:comment]
-      - ENC[AES256_GCM,data:XtrdxwMQPHl3jud9FRA=,iv:pwT72kRw5S1dHZUgnLfVe4Efvg17NgtHin2xur3qP5w=,tag:8fb+j9rWSRpCSyZEytFHGA==,type:comment]
-      - ENC[AES256_GCM,data:VWtVVcXGEbCZRhWVszJTzkHQcwgtvA==,iv:75bi9fFKcfhCjJ0NJ8fIRXPfjuoDVUoDkJ9cMNCV2Lk=,tag:LnkSXAB5hjWGzZzW7rsUlQ==,type:str]
-      - ENC[AES256_GCM,data:SK0wJ6TXkbV6ovizjhbGLb2fxBXm,iv:OXkvELswulGJIyvI6lpE2nW2gJIkw/on9RvGJ8rYosA=,tag:WW0stETPBomXoouVAgEtSQ==,type:str]
+      - ENC[AES256_GCM,data:p1OSacp3BzBGLE1ZKQJ3LNfqRpC1xA==,iv:bCJstSskQcQSTzdSeSD5GfEhlIG67PJmpheg60POYKw=,tag:r4r97wiOIDyJjmE/uCwkSA==,type:str]
+      - ENC[AES256_GCM,data:ZQSdOm/vJhDinY5pUBiEJfQZYpbnHxVAef9bmdtABoBnw3j/E0Cl6YpAOw3q7+eV+u4=,iv:FFZ3zIvUKW0YNURgEOHbd07F+klgA0e/ZCxfc6QrWV4=,tag:BMhapNnZshkigPb1oDrsdg==,type:comment]
+      - ENC[AES256_GCM,data:oW3n59vRCN85GZW6p9g=,iv:NUJXzj8/WDtSeZXywb44AnOSt1VvpZdnrGmMwejz8oc=,tag:2WfY8RUK9NFNnr86qmRZPg==,type:comment]
+      - ENC[AES256_GCM,data:TNLkJWWYtB1rW1N8ISdcL8Gt/ZXaLA==,iv:1UcF88YWSRpYePWETJr6itzIKEQHHQeaHo4vzX5W9bA=,tag:9J+VNBtrwMGRDQc+jxU1Gg==,type:str]
+      - ENC[AES256_GCM,data:WOeJc0Nf1rE+7D88kzMb+NmUg93s,iv:s1s1wbNTlv2aJiINJ8A2TB6ROmraTzNypBscisNd4/c=,tag:AvZVaC/N6mzrkYQymuajYA==,type:str]
     # enc!
     listenSubnets:
-      - ENC[AES256_GCM,data:5l6IXhPhwuwOXDqGxNGfEpC6Ug==,iv:CBnU/jMXXn+t2IRqbsR8wnc+EQXerMKAc6VcV8v9qZs=,tag:JdHox3dKAsLDEyIkSCU9BQ==,type:str]
-      - ENC[AES256_GCM,data:OsO+7GDXOfgw+7fnOq1czOCwgAXkZQ==,iv:GTaybKJkHraivU7WIqSMmyMJSuoniIKG9vgRidnAr5c=,tag:Nmol6j+TzxYiB4kkotz5rw==,type:str]
-      - ENC[AES256_GCM,data:qHPtMdtMq0ITOJlZi7BHUFqkCjiReQAwI0J0RR2nejGiU8kTrEekrgFwTC3o/LRTL/Y=,iv:fx+khfOusaC2T8lNd+pEsdE9fsVFEx9z3tNi2KrCgp0=,tag:/+HtNODTCiccDSMX8lNp6Q==,type:comment]
-      - ENC[AES256_GCM,data:l+8GxjQSUEAJMBpmspg=,iv:WgSTl1VY7LsX5Hscc0dB5m1ONS8PAVZXIYfqnnxfZSA=,tag:KhxKKkyUWEvrDj7XVl2Hng==,type:comment]
-      - ENC[AES256_GCM,data:G0pJdYAQAZUvVMadOVdO3TCckma9mQ==,iv:LPsFnXiB3pM4EMV98mUbzJrF9+JxL9BSZHVfF3ngQBA=,tag:VMgPkAPqKzhUDoc73wWoog==,type:str]
-      - ENC[AES256_GCM,data:STUurC99/uHZcqJIJrBB/2xL302W,iv:Ow02N17AD00ONt6iahFM3V3OoY6z3upsfJnVe7P47cU=,tag:4Ajm+LAEdxDmzKrZh16pbg==,type:str]
+      - ENC[AES256_GCM,data:K50RzR+1WRY4GsZ16MU8LL0eDw==,iv:wDy3jkQvV/u82g1cIVlDE2SWs5ncrhILHm5G6v42YzE=,tag:daUxMFWxvnwwdhTVqRGASQ==,type:str]
+      - ENC[AES256_GCM,data:lbkYkd72pNGZyZzQw35nx0KERjYycA==,iv:ABqX8wxnD0FgZgeaZras6wSU6sEtDpi2XECaMyCYdHw=,tag:eyR2CO0oi5RVMF4qreCTFg==,type:str]
+      - ENC[AES256_GCM,data:/oJ92ZoMPQ//ZFOZy6o5OvA5PlN3KWtC6RciUWYoLXY4Wp8PUjrT/KKPoxoZvwUj9CI=,iv:Xj2o7M+jMzIiqiafp51n+6g0+Z3enOMCYISMxxnollQ=,tag:Hw+QgJL2VjfdNvh3/6CfVQ==,type:comment]
+      - ENC[AES256_GCM,data:qtUyNGRs7e4ByWhX7ps=,iv:s5Xk0Jr5EqICs4y1THwNC+fWQPxwUnVfu8BZSdTxcas=,tag:DHb24ijzPqLbW2Fda7ZVmQ==,type:comment]
+      - ENC[AES256_GCM,data:bFqwcARZxN5F1QwUhy5+0nFyHmDFjA==,iv:hxXvvuGd4XoAeWj4GGXVMLKPWTyxAlusLe8W805KrcM=,tag:HOFgaI5X3zsc4o5Dh3O4zw==,type:str]
+      - ENC[AES256_GCM,data:8RVi1FHXhf6Y+l6aFb2rgi0qj9WW,iv:1yJC0s4lLvwNtXEWgJrFj1CjUn3E+DZK5bdZVfu/Q4w=,tag:SMBJz8ZhyxYMZwyxz406ng==,type:str]
     extraArgs:
       heartbeat-interval: 5000
       election-timeout: 50000
       listen-metrics-urls: http://0.0.0.0:2381
-machine:
-  files:
-    - path: /var/lib/kube-apiserver/authentication.yaml
-      op: create
-      permissions: 438
-      content: |-
-        apiVersion: apiserver.config.k8s.io/v1
-        kind: AuthenticationConfiguration
-        jwt:
-        - issuer:
-            # url must not conflict with issuer configured in --service-account-issuer.
-            url: https://ic.vrtx.sh/.identity
-            audiences: [kubernetes]
-          claimMappings:
-            # username represents an option for the username attribute.
-            # This is the only required attribute.
-            username:
-              # Mutually exclusive with username.expression.
-              claim: sub
-              # if username.claim is set, username.prefix is required.
-              # Explicitly set it to "" if no prefix is desired.
-              prefix: ""
-          userValidationRules:
-            # expression is a CEL expression that evaluates to a boolean.
-            # all the expressions must evaluate to true for the user to be valid.
-          - expression: "user.username.startsWith('woodpecker:')"
-  features:
-    kubernetesTalosAPIAccess:
-      enabled: true
-      allowedRoles:
-        - os:etcd:backup
-      allowedKubernetesNamespaces:
-        - kube-system
 sops:
   age:
-    - recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
-      enc: |
+    - enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBoUzBP
-        WFl0MDVwaGRmendnRERSRUFCSHpTTW1UUDBQVW1nVnFxRFZ2LzFjCmdqcEE0N3Rn
-        eER3WGVJcFJLbmhCNjd6Q0YzNG1LMWVrbi9aUVFIRjNOK28KLS0tIGtkNXRxRzlJ
-        dlJOUjJuTlRvSStDVFVDTy9ISHhJemxmeENUMFBnY3pSdHMKeNQD4hQEt9FmpEqZ
-        RMoaITmOmBXbHUa3fS2DTsa0DucOBJvoovlECnWQo3DtQavTHqL82VFnFL9YDs8y
-        BLjp7w==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBGcWw2
+        OHA3MGlaZDIzOVhIVVFtdDNuNFVDWjZqLzZyYVJLczFVUGxyaGxFCnd0NVpydFpt
+        WlVBeXppczJYL251VkxEaVk2WjhtV1IzL3JJSmIrSWhDNGsKLS0tIGp5bmdoVnJE
+        M1o2aFROM3NwWmE0b29YcW5SRVRNeTdXYktBMklvSWcwNDQKip2IbBjL0LnF+TQz
+        gtud7OR87f7W6P5U5xl0cbsYKJAy6kSeLFQpZfhfN08M61yJqKUZHft1S5DN6vDk
+        ZcqsSw==
         -----END AGE ENCRYPTED FILE-----
-    - recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
-      enc: |
+      recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+    - enc: |
         -----BEGIN AGE ENCRYPTED FILE-----
-        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBVcDRmckdlUnR6eTlWS2p3
-        TW1XVjBub3dQQURiVWRFM1JYZnM3MGNsd21BCld6aFZ2REd6R1NQSWtHVWQzZUkr
-        bW56T0d6ZUx0MnhtWGhqeDA2V3pOcU0KLS0tIFV4TGwvVzhUdCtrcWhMRjNPM0ZC
-        OWJrWDgyMWI2YXRiTUJ6ZCtwQm4vREkKzGXtrCSfRW1oIWZoaPOJOi2hyyiOWcGr
-        rlcLwEPUZyiL92UUa91qH0aWyXBxGCf/deiqMw/QYJNJpwFqvA/AiA==
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvbDN1S1k5QkNSL3hHTmZt
+        RjhTZ3FDbGM0akVWeDRVM2pHdTNEazNqL2hZCmlvWVNqSm1VUDhERG5HTDE1MFlW
+        Z0dLNHBmVXltUVhRMXFXbTc2VGxaeEEKLS0tIG1RSVZ5S3Z2U082eDdWd1Mxandm
+        aGNXTUF2aTZxSDZmTjkxTTdZV0ZmS0EK192H9KjZIA0xZsxomr8ixWY1BqKN6To2
+        Kl2iIeLpuYuWqLWQEBAXzkzE7oNj9jXT+IXuta3vH3BnR0peyy1pvA==
         -----END AGE ENCRYPTED FILE-----
-  lastmodified: "2026-08-10T19:27:25Z"
-  mac: ENC[AES256_GCM,data:LbP6e9O1Yq8y66aOPcCleoKqZd+xaVh41i1Sq59tHYFSNqUZHE4+ve02yQMCCxLoxnl4oK2BPXwi/d4SY6GUR4gUbSem6UUKCnuMkQL54UtCauS3Ofw2xK/7ZWW8NDU1KJvr7STVIFfIwcNBUT9xPjbxieMhzTbXv7KB1NXf2Uw=,iv:YvP0MCjWv0cUWUqjQH8AMiTsqtw2s/K1Cv252E3yTmE=,tag:hoTQU8nnbZCclbvg8pdiLA==,type:str]
+      recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
   encrypted_comment_regex: enc!
-  version: 3.11.0
+  lastmodified: "2026-09-17T15:42:13Z"
+  mac: ENC[AES256_GCM,data:8VjXslaHEhs5i0qPs9qdxIkxjqDfGLl37VD13ad8mlnTXDgumnFRE+PlfW+icAw94HPJwp/xstFLhxk058iCkL1BOp3XDAoSHOC/Fbe1hAofBdDh7YULFtLE19y+3i40YoC7P8Dj1t3jVZNOAnvAQYPU8BjGQZrhlDoAUpuEZzI=,iv:Q23QfFDMxl0X6wACgvH6n+dNi7fNxpgTC4WVe+TEQww=,tag:2NEcvW9CHBZLLoLlXBKkgQ==,type:str]
+  version: 3.13.3
+---
+apiVersion: v1alpha1
+kind: KubeProxyConfig
+enabled: false
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBGcWw2
+        OHA3MGlaZDIzOVhIVVFtdDNuNFVDWjZqLzZyYVJLczFVUGxyaGxFCnd0NVpydFpt
+        WlVBeXppczJYL251VkxEaVk2WjhtV1IzL3JJSmIrSWhDNGsKLS0tIGp5bmdoVnJE
+        M1o2aFROM3NwWmE0b29YcW5SRVRNeTdXYktBMklvSWcwNDQKip2IbBjL0LnF+TQz
+        gtud7OR87f7W6P5U5xl0cbsYKJAy6kSeLFQpZfhfN08M61yJqKUZHft1S5DN6vDk
+        ZcqsSw==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvbDN1S1k5QkNSL3hHTmZt
+        RjhTZ3FDbGM0akVWeDRVM2pHdTNEazNqL2hZCmlvWVNqSm1VUDhERG5HTDE1MFlW
+        Z0dLNHBmVXltUVhRMXFXbTc2VGxaeEEKLS0tIG1RSVZ5S3Z2U082eDdWd1Mxandm
+        aGNXTUF2aTZxSDZmTjkxTTdZV0ZmS0EK192H9KjZIA0xZsxomr8ixWY1BqKN6To2
+        Kl2iIeLpuYuWqLWQEBAXzkzE7oNj9jXT+IXuta3vH3BnR0peyy1pvA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+  encrypted_comment_regex: enc!
+  lastmodified: "2026-09-17T15:42:13Z"
+  mac: ENC[AES256_GCM,data:8VjXslaHEhs5i0qPs9qdxIkxjqDfGLl37VD13ad8mlnTXDgumnFRE+PlfW+icAw94HPJwp/xstFLhxk058iCkL1BOp3XDAoSHOC/Fbe1hAofBdDh7YULFtLE19y+3i40YoC7P8Dj1t3jVZNOAnvAQYPU8BjGQZrhlDoAUpuEZzI=,iv:Q23QfFDMxl0X6wACgvH6n+dNi7fNxpgTC4WVe+TEQww=,tag:2NEcvW9CHBZLLoLlXBKkgQ==,type:str]
+  version: 3.13.3
+---
+apiVersion: v1alpha1
+kind: KubeAPIServerConfig
+extraArgs:
+  feature-gates: MutablePVNodeAffinity=true
+  # https://github.com/kubernetes/kubernetes/pull/88567
+  goaway-chance: ".01"
+resources:
+  requests:
+    cpu: 300m
+    memory: 1.5Gi
+  limits:
+    memory: 2Gi
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBGcWw2
+        OHA3MGlaZDIzOVhIVVFtdDNuNFVDWjZqLzZyYVJLczFVUGxyaGxFCnd0NVpydFpt
+        WlVBeXppczJYL251VkxEaVk2WjhtV1IzL3JJSmIrSWhDNGsKLS0tIGp5bmdoVnJE
+        M1o2aFROM3NwWmE0b29YcW5SRVRNeTdXYktBMklvSWcwNDQKip2IbBjL0LnF+TQz
+        gtud7OR87f7W6P5U5xl0cbsYKJAy6kSeLFQpZfhfN08M61yJqKUZHft1S5DN6vDk
+        ZcqsSw==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvbDN1S1k5QkNSL3hHTmZt
+        RjhTZ3FDbGM0akVWeDRVM2pHdTNEazNqL2hZCmlvWVNqSm1VUDhERG5HTDE1MFlW
+        Z0dLNHBmVXltUVhRMXFXbTc2VGxaeEEKLS0tIG1RSVZ5S3Z2U082eDdWd1Mxandm
+        aGNXTUF2aTZxSDZmTjkxTTdZV0ZmS0EK192H9KjZIA0xZsxomr8ixWY1BqKN6To2
+        Kl2iIeLpuYuWqLWQEBAXzkzE7oNj9jXT+IXuta3vH3BnR0peyy1pvA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+  encrypted_comment_regex: enc!
+  lastmodified: "2026-09-17T15:42:13Z"
+  mac: ENC[AES256_GCM,data:8VjXslaHEhs5i0qPs9qdxIkxjqDfGLl37VD13ad8mlnTXDgumnFRE+PlfW+icAw94HPJwp/xstFLhxk058iCkL1BOp3XDAoSHOC/Fbe1hAofBdDh7YULFtLE19y+3i40YoC7P8Dj1t3jVZNOAnvAQYPU8BjGQZrhlDoAUpuEZzI=,iv:Q23QfFDMxl0X6wACgvH6n+dNi7fNxpgTC4WVe+TEQww=,tag:2NEcvW9CHBZLLoLlXBKkgQ==,type:str]
+  version: 3.13.3
+---
+apiVersion: v1alpha1
+kind: KubeSchedulerConfig
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBGcWw2
+        OHA3MGlaZDIzOVhIVVFtdDNuNFVDWjZqLzZyYVJLczFVUGxyaGxFCnd0NVpydFpt
+        WlVBeXppczJYL251VkxEaVk2WjhtV1IzL3JJSmIrSWhDNGsKLS0tIGp5bmdoVnJE
+        M1o2aFROM3NwWmE0b29YcW5SRVRNeTdXYktBMklvSWcwNDQKip2IbBjL0LnF+TQz
+        gtud7OR87f7W6P5U5xl0cbsYKJAy6kSeLFQpZfhfN08M61yJqKUZHft1S5DN6vDk
+        ZcqsSw==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvbDN1S1k5QkNSL3hHTmZt
+        RjhTZ3FDbGM0akVWeDRVM2pHdTNEazNqL2hZCmlvWVNqSm1VUDhERG5HTDE1MFlW
+        Z0dLNHBmVXltUVhRMXFXbTc2VGxaeEEKLS0tIG1RSVZ5S3Z2U082eDdWd1Mxandm
+        aGNXTUF2aTZxSDZmTjkxTTdZV0ZmS0EK192H9KjZIA0xZsxomr8ixWY1BqKN6To2
+        Kl2iIeLpuYuWqLWQEBAXzkzE7oNj9jXT+IXuta3vH3BnR0peyy1pvA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+  encrypted_comment_regex: enc!
+  lastmodified: "2026-09-17T15:42:13Z"
+  mac: ENC[AES256_GCM,data:8VjXslaHEhs5i0qPs9qdxIkxjqDfGLl37VD13ad8mlnTXDgumnFRE+PlfW+icAw94HPJwp/xstFLhxk058iCkL1BOp3XDAoSHOC/Fbe1hAofBdDh7YULFtLE19y+3i40YoC7P8Dj1t3jVZNOAnvAQYPU8BjGQZrhlDoAUpuEZzI=,iv:Q23QfFDMxl0X6wACgvH6n+dNi7fNxpgTC4WVe+TEQww=,tag:2NEcvW9CHBZLLoLlXBKkgQ==,type:str]
+  version: 3.13.3
+---
+apiVersion: v1alpha1
+kind: KubeControllerManagerConfig
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBGcWw2
+        OHA3MGlaZDIzOVhIVVFtdDNuNFVDWjZqLzZyYVJLczFVUGxyaGxFCnd0NVpydFpt
+        WlVBeXppczJYL251VkxEaVk2WjhtV1IzL3JJSmIrSWhDNGsKLS0tIGp5bmdoVnJE
+        M1o2aFROM3NwWmE0b29YcW5SRVRNeTdXYktBMklvSWcwNDQKip2IbBjL0LnF+TQz
+        gtud7OR87f7W6P5U5xl0cbsYKJAy6kSeLFQpZfhfN08M61yJqKUZHft1S5DN6vDk
+        ZcqsSw==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvbDN1S1k5QkNSL3hHTmZt
+        RjhTZ3FDbGM0akVWeDRVM2pHdTNEazNqL2hZCmlvWVNqSm1VUDhERG5HTDE1MFlW
+        Z0dLNHBmVXltUVhRMXFXbTc2VGxaeEEKLS0tIG1RSVZ5S3Z2U082eDdWd1Mxandm
+        aGNXTUF2aTZxSDZmTjkxTTdZV0ZmS0EK192H9KjZIA0xZsxomr8ixWY1BqKN6To2
+        Kl2iIeLpuYuWqLWQEBAXzkzE7oNj9jXT+IXuta3vH3BnR0peyy1pvA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+  encrypted_comment_regex: enc!
+  lastmodified: "2026-09-17T15:42:13Z"
+  mac: ENC[AES256_GCM,data:8VjXslaHEhs5i0qPs9qdxIkxjqDfGLl37VD13ad8mlnTXDgumnFRE+PlfW+icAw94HPJwp/xstFLhxk058iCkL1BOp3XDAoSHOC/Fbe1hAofBdDh7YULFtLE19y+3i40YoC7P8Dj1t3jVZNOAnvAQYPU8BjGQZrhlDoAUpuEZzI=,iv:Q23QfFDMxl0X6wACgvH6n+dNi7fNxpgTC4WVe+TEQww=,tag:2NEcvW9CHBZLLoLlXBKkgQ==,type:str]
+  version: 3.13.3
+---
+apiVersion: v1alpha1
+kind: KubeAuthenticationConfig
+configuration:
+  anonymous:
+    conditions:
+      - path: /livez
+      - path: /readyz
+      - path: /healthz
+      - path: /openid/v1/jwks
+      - path: /.well-known/openid-configuration
+    enabled: true
+  jwt:
+    - issuer:
+        # url must not conflict with issuer configured in --service-account-issuer.
+        url: https://ic.vrtx.sh/.identity
+        audiences:
+          - kubernetes
+      claimMappings:
+        # username represents an option for the username attribute.
+        # This is the only required attribute.
+        username:
+          # Mutually exclusive with username.expression.
+          claim: sub
+          # if username.claim is set, username.prefix is required.
+          # Explicitly set it to "" if no prefix is desired.
+          prefix: ""
+      userValidationRules:
+        # expression is a CEL expression that evaluates to a boolean.
+        # all the expressions must evaluate to true for the user to be valid.
+        - expression: user.username.startsWith('woodpecker:')
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBGcWw2
+        OHA3MGlaZDIzOVhIVVFtdDNuNFVDWjZqLzZyYVJLczFVUGxyaGxFCnd0NVpydFpt
+        WlVBeXppczJYL251VkxEaVk2WjhtV1IzL3JJSmIrSWhDNGsKLS0tIGp5bmdoVnJE
+        M1o2aFROM3NwWmE0b29YcW5SRVRNeTdXYktBMklvSWcwNDQKip2IbBjL0LnF+TQz
+        gtud7OR87f7W6P5U5xl0cbsYKJAy6kSeLFQpZfhfN08M61yJqKUZHft1S5DN6vDk
+        ZcqsSw==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvbDN1S1k5QkNSL3hHTmZt
+        RjhTZ3FDbGM0akVWeDRVM2pHdTNEazNqL2hZCmlvWVNqSm1VUDhERG5HTDE1MFlW
+        Z0dLNHBmVXltUVhRMXFXbTc2VGxaeEEKLS0tIG1RSVZ5S3Z2U082eDdWd1Mxandm
+        aGNXTUF2aTZxSDZmTjkxTTdZV0ZmS0EK192H9KjZIA0xZsxomr8ixWY1BqKN6To2
+        Kl2iIeLpuYuWqLWQEBAXzkzE7oNj9jXT+IXuta3vH3BnR0peyy1pvA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+  encrypted_comment_regex: enc!
+  lastmodified: "2026-09-17T15:42:13Z"
+  mac: ENC[AES256_GCM,data:8VjXslaHEhs5i0qPs9qdxIkxjqDfGLl37VD13ad8mlnTXDgumnFRE+PlfW+icAw94HPJwp/xstFLhxk058iCkL1BOp3XDAoSHOC/Fbe1hAofBdDh7YULFtLE19y+3i40YoC7P8Dj1t3jVZNOAnvAQYPU8BjGQZrhlDoAUpuEZzI=,iv:Q23QfFDMxl0X6wACgvH6n+dNi7fNxpgTC4WVe+TEQww=,tag:2NEcvW9CHBZLLoLlXBKkgQ==,type:str]
+  version: 3.13.3
+---
+apiVersion: v1alpha1
+kind: KubeTalosAPIAccessConfig
+allowedRoles:
+  - os:etcd:backup
+allowedKubernetesNamespaces:
+  - kube-system
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IDNEQlRBdyBGcWw2
+        OHA3MGlaZDIzOVhIVVFtdDNuNFVDWjZqLzZyYVJLczFVUGxyaGxFCnd0NVpydFpt
+        WlVBeXppczJYL251VkxEaVk2WjhtV1IzL3JJSmIrSWhDNGsKLS0tIGp5bmdoVnJE
+        M1o2aFROM3NwWmE0b29YcW5SRVRNeTdXYktBMklvSWcwNDQKip2IbBjL0LnF+TQz
+        gtud7OR87f7W6P5U5xl0cbsYKJAy6kSeLFQpZfhfN08M61yJqKUZHft1S5DN6vDk
+        ZcqsSw==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7yyj/sVuDdc6kGEeipVtC0EBaeACTFWHZ9MH77XsFq vrtx@kaos
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAvbDN1S1k5QkNSL3hHTmZt
+        RjhTZ3FDbGM0akVWeDRVM2pHdTNEazNqL2hZCmlvWVNqSm1VUDhERG5HTDE1MFlW
+        Z0dLNHBmVXltUVhRMXFXbTc2VGxaeEEKLS0tIG1RSVZ5S3Z2U082eDdWd1Mxandm
+        aGNXTUF2aTZxSDZmTjkxTTdZV0ZmS0EK192H9KjZIA0xZsxomr8ixWY1BqKN6To2
+        Kl2iIeLpuYuWqLWQEBAXzkzE7oNj9jXT+IXuta3vH3BnR0peyy1pvA==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1kum4z0unkunza7kxt4ma7v8k38ggvtjhx6wntnjt8clt6xpyu3eqsw435t
+  encrypted_comment_regex: enc!
+  lastmodified: "2026-09-17T15:42:13Z"
+  mac: ENC[AES256_GCM,data:8VjXslaHEhs5i0qPs9qdxIkxjqDfGLl37VD13ad8mlnTXDgumnFRE+PlfW+icAw94HPJwp/xstFLhxk058iCkL1BOp3XDAoSHOC/Fbe1hAofBdDh7YULFtLE19y+3i40YoC7P8Dj1t3jVZNOAnvAQYPU8BjGQZrhlDoAUpuEZzI=,iv:Q23QfFDMxl0X6wACgvH6n+dNi7fNxpgTC4WVe+TEQww=,tag:2NEcvW9CHBZLLoLlXBKkgQ==,type:str]
+  version: 3.13.3

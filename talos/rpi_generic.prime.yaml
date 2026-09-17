@@ -21,3 +21,4 @@ customization:
       - siderolabs/v4l-uvc-drivers
       - siderolabs/binfmt-misc
       - siderolabs/usb-audio-drivers
+      - siderolabs/harbor-credential-provider

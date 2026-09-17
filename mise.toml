@@ -8,7 +8,7 @@ kubectl = "1.34.1"
 kustomize = "5.8.1"
 age = "1.2.1"
 sops = "3.13.3"
-talosctl = "1.13.4"
+talosctl = "1.14.1"
 "ubi:cozystack/talm" = "0.16.2"
 cosign = "3.0.2"
 watchexec = "2.3.2"
@@ -49,7 +49,7 @@ REPO_ROOT = "{{config_root}}"
 KUBECONFIG = "{{config_root}}/kubeconfig"
 TALOSCONFIG = "{{config_root}}/talosconfig"
 HEADSCALE_CLI_ADDRESS = "gghs.vrtx.sh:443"
-TALOS_VERSION = "v1.13.9"
+TALOS_VERSION = "v1.14.1"
 
 [settings]
 npm.bun = true

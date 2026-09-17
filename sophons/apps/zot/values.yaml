@@ -1,9 +1,10 @@
 image:
   # repository: ghcrd.sphns.run/project-zot/zot
-  # repository: ghcrd.sphns.run/tehlordvortex/project-zot/zot
-  repository: pz3.sphns.run/project-zot/zot
-  # 2.1.20 + redisworksfineasasubpathdriveridkwhyitsnotlikethat
-  tag: latest@sha256:160108214b7f0dc46b97a921c12dc09e429560eef4bc3e56686bc3ab66c1f8cf
+  repository: ghcrd.sphns.run/tehlordvortex/project-zot/zot
+  # repository: pz3.sphns.run/project-zot/zot
+  # 2.1.21 + redisworksfineasasubpathdriveridkwhyitsnotlikethat
+  tag: latest@sha256:fac5d61964f9009ab7a7cc94e2a4561f9f5f3bc5df20b7d7d613fd201f7c8c01
+  # tag: latest@sha256:d6152b7cd688af29ea85e0a1ab9fb76e38c5d67ea03421c923eff7d1bf889c22
 
 replicaCount: 2
 podDisruptionBudget:
@@ -26,16 +27,10 @@ affinity:
     preferredDuringSchedulingIgnoredDuringExecution:
       - preference:
           matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: NotIn
-              values: [sophons-oduduwa]
-        weight: 69
-      - preference:
-          matchExpressions:
             - key: cluster.garage.sophons.cloud/global
               operator: In
               values: ["true"]
-        weight: 68
+        weight: 69
       - preference:
           matchExpressions:
             - key: topology.kubernetes.io/region
@@ -50,17 +45,9 @@ topologySpreadConstraints:
         app.kubernetes.io/instance: zenlesszonezot
     maxSkew: 1
     minDomains: 2
-    topologyKey: topology.kubernetes.io/zone
+    topologyKey: kubernetes.io/hostname
     whenUnsatisfiable: DoNotSchedule
     matchLabelKeys: [pod-template-hash]
-
-hostAliases:
-  - ip: 10.43.0.69
-    hostnames:
-      - s3-global.sphns.run
-  - ip: 2001:cafe:43::69
-    hostnames:
-      - s3-global.sphns.run
 
 service:
   type: ClusterIP
@@ -74,7 +61,7 @@ strategy:
 persistence: false
 resources:
   requests:
-    cpu: 100m
+    cpu: 75m
     memory: 100Mi
   limits:
     memory: 400Mi
@@ -93,6 +80,7 @@ securityContext:
   capabilities:
     drop: [ALL]
 
+extraArgs: [serve, /etc/zot/config.yaml]
 env:
   - name: GOGC
     value: "10"
@@ -100,6 +88,9 @@ env:
     valueFrom:
       resourceFieldRef:
         resource: limits.memory
+  # https://github.com/project-zot/zot/issues/2964#issuecomment-4764235839
+  - name: GODEBUG
+    value: http2client=0
 externalSecrets:
   - secretName: z3
     mountPath: /secrets/z3
@@ -129,7 +120,7 @@ initContainers:
       - |
         set -xeuo pipefail
         envsubst '$B2_ACCESS_KEY_ID $B2_SECRET_ACCESS_KEY $GARAGE_ACCESS_KEY_ID $GARAGE_SECRET_ACCESS_KEY' \
-          < /etc/zot.templ/config.json > /etc/zot/config.json
+          < /etc/zot.templ/config.yaml > /etc/zot/config.yaml
 
     env:
       - name: B2_ACCESS_KEY_ID
@@ -156,6 +147,7 @@ initContainers:
     volumeMounts:
       - name: config-templ
         mountPath: /etc/zot.templ
+        readOnly: true
       - name: tmp
         subPath: config
         mountPath: /etc/zot
