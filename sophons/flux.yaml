@@ -1,0 +1,156 @@
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: flux-operator
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  inputs:
+    - version: "*"
+  resources:
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: OCIRepository
+      metadata:
+        name: << inputs.provider.name >>
+        namespace: << inputs.provider.namespace >>
+      spec:
+        interval: 30m
+        url: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+        layerSelector:
+          mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
+          operation: copy
+        ref:
+          semver: << inputs.version | quote >>
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      metadata:
+        name: << inputs.provider.name >>
+        namespace: << inputs.provider.namespace >>
+      spec:
+        interval: 30m
+        releaseName: << inputs.provider.name >>
+        serviceAccountName: << inputs.provider.name >>
+        chartRef:
+          kind: OCIRepository
+          name: << inputs.provider.name >>
+        values:
+          resources:
+            requests:
+              cpu: 25m
+            limits:
+              cpu: null
+              memory: 300Mi
+
+          serviceMonitor:
+            enabled: true
+
+        postRenderers:
+          - kustomize:
+              patches:
+                - target:
+                    kind: Deployment
+                    name: flux-operator
+                  patch: |-
+                    - op: add
+                      path: /spec/template/spec/containers/0/env/-
+                      value:
+                        name: GOGC
+                        value: "10"
+
+                    - op: add
+                      path: /spec/template/spec/containers/0/env/-
+                      value:
+                        name: GOMEMLIMIT
+                        valueFrom:
+                          resourceFieldRef:
+                            resource: limits.memory
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  name: flux
+  namespace: flux-system
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+    fluxcd.controlplane.io/reconcileEvery: 1h
+    fluxcd.controlplane.io/reconcileArtifactEvery: 10m
+    fluxcd.controlplane.io/reconcileTimeout: 5m
+spec:
+  cluster:
+    size: small
+  distribution:
+    version: 2.x
+    registry: ghcr.io/fluxcd
+  sync:
+    kind: OCIRepository
+    interval: 3m
+    url: oci://oci.sphns.run/p/cluster/manifests
+    ref: latest
+    path: sophons
+    pullSecret: flux-oci-pull
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+    - image-reflector-controller
+    - image-automation-controller
+  kustomize:
+    patches:
+      - target:
+          kind: Deployment
+        patch: |-
+          - op: replace
+            path: /spec/template/spec/nodeSelector
+            value:
+              kubernetes.io/os: linux
+          - op: add
+            path: /spec/template/spec/tolerations
+            value:
+              - key: caeneus.sophons.cloud
+                operator: Exists
+              - key: CriticalAddonsOnly
+                operator: Exists
+          - op: replace
+            path: /spec/template/spec/nodeSelector
+            value:
+              kubernetes.io/os: linux
+          - op: replace
+            path: /spec/template/spec/containers/0/resources/requests
+            value:
+              cpu: 25m
+              memory: 64Mi
+
+      - target:
+          kind: Deployment
+          name: source-controller
+        patch: |-
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --feature-gates=ObjectLevelWorkloadIdentity=true
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --default-service-account=source-controller
+
+      - target:
+          kind: Kustomization
+        patch: |-
+          - op: add
+            path: /spec/decryption
+            value:
+              provider: sops
+              secretRef:
+                name: flux-sops-age
+
+# ---
+# apiVersion: source.toolkit.fluxcd.io/v1
+# kind: OCIRepository
+# metadata:
+#   name: cluster-manifests
+#   namespace: flux-system
+# spec:
+#   interval: 3m
+#   url: "oci://oci.sphns.run/p/cluster/manifests"
+#   secretRef:
+#     name: flux-oci-pull

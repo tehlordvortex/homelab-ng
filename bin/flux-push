@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+self_path=$(readlink -f "$0")
+self_dir=$(dirname $self_path)
+cluster="$self_dir/../sophons"
+out="$(mktemp -d "${TMPDIR:-/tmp}/flux-push.XXXXX")"
+trap "rm -rf $out" EXIT
+
+rgit() {
+  git --git-dir="$self_dir/../.git" "$@"
+}
+
+rgit -c filter.sops.smudge= -c filter.sops.required=false archive HEAD \
+  "$cluster/common" "$cluster/apps" "$cluster/system" $cluster/*.yaml |
+  >&2 tar -C "$out" -xvf -
+>&2 echo "exported to $out"
+
+dest="oci://oci.sphns.run/p/cluster/manifests:$(rgit rev-parse --short HEAD)"
+flux push artifact "$dest" \
+  --path="$out" \
+  --source="$(rgit config --get remote.origin.url)" \
+  --revision="$(rgit branch --show-current)@sha1:$(rgit rev-parse HEAD)"
+
+echo -n "$dest"

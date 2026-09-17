@@ -166,7 +166,9 @@ gen_wgcf() {
 ' "$config" >"$self_dir/generated/$interface.$host_name.yaml"
 }
 
-rm -r $self_dir/generated
+if [ -d $self_dir/generated ]; then
+  rm -r $self_dir/generated
+fi
 mkdir -p $self_dir/generated
 
 add_pubkeys_to_wgcfg "$patch_dir/wg.kluster.sops.yaml"

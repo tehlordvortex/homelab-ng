@@ -4,7 +4,7 @@
 [tasks.gen]
 outputs = ["generated/*.yaml"]
 sources = ["patches/*.yaml", "secrets.yaml", "gen.sh", ".env"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = "./gen.sh"
 
 [tasks.'gen:node-lrps']
@@ -43,39 +43,39 @@ run = ["talosctl --nodes=$SOPHONS_CAENEUS"]
 
 [tasks.'apply:beta']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = ["mise talos:beta apply-config -f generated/controlplane.beta.yaml"]
 
 [tasks.'apply:theta']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = ["mise talos:theta apply-config -f generated/controlplane.theta.yaml"]
 
 [tasks.'apply:voltzahl']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = [
   "mise talos:voltzahl apply-config -f generated/controlplane.voltzahl.yaml",
 ]
 
 [tasks.'apply:leistung']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = ["mise talos:leistung apply-config -f generated/worker.leistung.yaml"]
 
 [tasks.'apply:prime']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = ["mise talos:prime apply-config -f generated/worker.prime.yaml"]
 
 [tasks.'apply:caeneus']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = ["mise talos:caeneus apply-config -f generated/worker.caeneus.yaml"]
 
 [tasks.'apply:alpha']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = ["mise talos:alpha apply-config -f generated/worker.alpha.yaml"]
 
 [tasks.'upgrade']
@@ -87,12 +87,12 @@ run = "talosctl reset --system-labels-to-wipe STATE --system-labels-to-wipe EPHE
 
 [tasks.'apply:all']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = [{ task = "apply:worker" }, { task = "apply:controlplane" }]
 
 [tasks.'apply:controlplane']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = [
   { task = "apply:beta" },
   { task = "apply:theta" },
@@ -101,7 +101,7 @@ run = [
 
 [tasks.'apply:worker']
 depends = ["gen"]
-dir = "{{config_root}}"
+dir = "{{config_root}}/talos"
 run = [
   { task = "apply:alpha" },
   { task = "apply:prime" },

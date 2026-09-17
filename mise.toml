@@ -34,6 +34,8 @@ regctl = "0.11.2"
 regsync = "0.11.2"
 "aqua:ViRb3/wgcf" = "2.2.30"
 "go:github.com/simulot/immich-go" = "0.31.0"
+flux2 = "2.9.5"
+flux-operator = "0.60.0"
 
 
 [tools.zli]
