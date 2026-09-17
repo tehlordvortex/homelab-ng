@@ -103,7 +103,7 @@ spec:
         - type: ResponseHeaderModifier
           responseHeaderModifier:
             set:
-              - name: cache-control
+              - name: Cache-Control
                 value: max-age=3600, stale-while-revalidate=900
       backendRefs:
         - name: s3-global

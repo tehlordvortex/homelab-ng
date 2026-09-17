@@ -29,6 +29,8 @@ images:
     newTag: 8.21.0
   - name: docker.io/klutchell/dnscrypt-proxy
     newTag: 2.1.18
+  - name: pz3.sphns.run/library/alpine/aws-cli
+    newTag: 2.36.39-r0
 
 configMapGenerator:
   - name: pihole

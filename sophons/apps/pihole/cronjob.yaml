@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: pihole
     app.kubernetes.io/component: gravity
 spec:
-  schedule: "0 3 * * *" # 3am daily
+  schedule: "0 */3 * * *" # every 3 hours
   concurrencyPolicy: Forbid
   jobTemplate:
     metadata:
@@ -22,6 +22,10 @@ spec:
             app.kubernetes.io/name: pihole
             app.kubernetes.io/component: gravity
         spec:
+          tolerations:
+            - key: caeneus.sophons.cloud
+              operator: Exists
+
           restartPolicy: OnFailure
           serviceAccountName: pihole-gravity
           hostUsers: false
@@ -61,14 +65,14 @@ spec:
                   du -h "$list_file"
 
                   curl -o- -fsSI -H 'host: mirrors' http://s3-global.garage:3902/pihole/adlists.combined.list |
-                    grep -iE '^etag:' | awk '{ print $2 }' >/tmp/old_etag
-                  md5sum "$list_file" | awk '{print "\""$1"\""}' >/tmp/new_etag
+                    grep -iE '^etag:' | awk '{ printf "%s", $2 }' >/tmp/old_etag
 
-                  old_etag="$(cat /tmp/old_etag)"
-                  new_etag="$(cat /tmp/new_etag)"
-                  echo "old etag: $old_etag"
-                  echo "new etag: $new_etag"
+                  old_etag="$(cat /tmp/old_etag | tr -d '"\r\n')"
+                  new_etag="$(md5sum "$list_file" | awk '{ printf "%s", $1 }')"
+                  echo "old etag: [$old_etag]"
+                  echo "new etag: [$new_etag]"
 
+                  set -x
                   if [ "$old_etag" = "$new_etag" ]; then
                     echo "no changes to adlists, further actions will be skipped"
                     touch /tmp/skip
@@ -95,7 +99,7 @@ spec:
                   drop: [ALL]
 
             - name: upload
-              image: docker.io/library/alpine
+              image: pz3.sphns.run/library/alpine/aws-cli
               command:
                 - /bin/ash
                 - -c
@@ -104,8 +108,11 @@ spec:
 
                   if [ -f /tmp/skip ]; then exit 0; fi
 
-                  apk add --no-cache aws-cli
-                  aws s3 cp --endpoint-url="$S3_ENDPOINT" /tmp/lists/combined.list "$S3_URI"
+                  # s3 cp creates a multipart upload and garage computes etags
+                  # for those in a different manner
+                  aws s3api put-object --endpoint-url="$S3_ENDPOINT" \
+                    --bucket="$S3_BUCKET" --key="$S3_KEY" --content-type=text/plain \
+                    --body /tmp/lists/combined.list
 
               envFrom:
                 - secretRef:
@@ -113,8 +120,10 @@ spec:
               env:
                 - name: S3_ENDPOINT
                   value: "http://s3-global-nogw.garage:3900"
-                - name: "S3_URI"
-                  value: "s3://mirrors/pihole/adlists.combined.list"
+                - name: S3_BUCKET
+                  value: mirrors
+                - name: S3_KEY
+                  value: pihole/adlists.combined.list
 
               volumeMounts:
                 - mountPath: /tmp
