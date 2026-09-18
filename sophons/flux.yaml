@@ -15,7 +15,7 @@ spec:
         name: << inputs.provider.name >>
         namespace: << inputs.provider.namespace >>
       spec:
-        interval: 30m
+        interval: 1h
         url: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
         layerSelector:
           mediaType: "application/vnd.cncf.helm.chart.content.v1.tar+gzip"
@@ -28,7 +28,7 @@ spec:
         name: << inputs.provider.name >>
         namespace: << inputs.provider.namespace >>
       spec:
-        interval: 30m
+        interval: 1h
         releaseName: << inputs.provider.name >>
         serviceAccountName: << inputs.provider.name >>
         chartRef:
@@ -53,11 +53,17 @@ spec:
                     name: flux-operator
                   patch: |-
                     - op: add
+                      path: /spec/template/spec/tolerations
+                      value:
+                        - key: caeneus.sophons.cloud
+                          operator: Exists
+                        - key: CriticalAddonsOnly
+                          operator: Exists
+                    - op: add
                       path: /spec/template/spec/containers/0/env/-
                       value:
                         name: GOGC
                         value: "10"
-
                     - op: add
                       path: /spec/template/spec/containers/0/env/-
                       value:
@@ -84,12 +90,13 @@ spec:
     registry: ghcr.io/fluxcd
   sync:
     kind: OCIRepository
-    interval: 3m
+    interval: 1m
     url: oci://oci.sphns.run/p/cluster/manifests
     ref: latest
     path: sophons
     pullSecret: flux-oci-pull
   components:
+    - source-watcher
     - source-controller
     - kustomize-controller
     - helm-controller
@@ -120,7 +127,7 @@ spec:
             path: /spec/template/spec/containers/0/resources/requests
             value:
               cpu: 25m
-              memory: 64Mi
+              memory: 48Mi
 
       - target:
           kind: Deployment
@@ -134,14 +141,23 @@ spec:
             value: --default-service-account=source-controller
 
       - target:
+          kind: Deployment
+          name: kustomize-controller
+        patch: |-
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --log-level=debug
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --sops-age-secret=flux-sops-age
+
+      - target:
           kind: Kustomization
         patch: |-
           - op: add
             path: /spec/decryption
             value:
               provider: sops
-              secretRef:
-                name: flux-sops-age
 
 # ---
 # apiVersion: source.toolkit.fluxcd.io/v1

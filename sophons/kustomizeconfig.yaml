@@ -1,0 +1,9 @@
+nameReference:
+  - kind: Secret
+    fieldSpecs:
+      - path: spec/valuesFrom/name
+        kind: HelmRelease
+  - kind: ConfigMap
+    fieldSpecs:
+      - path: spec/valuesFrom/name
+        kind: HelmRelease

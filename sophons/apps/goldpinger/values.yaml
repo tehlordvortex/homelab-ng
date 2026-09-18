@@ -1,20 +1,18 @@
 tolerations:
-  - key: ""
-    operator: Exists
-  - key: node-role.kubernetes.io/control-plane
-    operator: Exists
-  - key: orunmila.sophons.cloud/ase-orun
-    operator: Exists
   - key: prime.sophons.cloud
+    operator: Exists
+  - key: caeneus.sophons.cloud
     operator: Exists
 
 extraEnv:
+  - name: GOGC
+    value: "10"
+  - name: GOMEMLIMIT
+    valueFrom:
+      resourceFieldRef:
+        resource: limits.memory
   - name: PING_TIMEOUT
     value: 500ms
-  - name: GOMEMLIMIT
-    value: 30MiB
-  - name: GOGC
-    value: "50"
 
 priorityClassName: system-node-critical
 
@@ -23,5 +21,4 @@ resources:
     cpu: 10m
     memory: 32Mi
   limits:
-    cpu: 50m
     memory: 64Mi

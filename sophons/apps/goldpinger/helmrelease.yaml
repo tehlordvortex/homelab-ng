@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/source.toolkit.fluxcd.io/helmrepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: goldpinger
+  namespace: goldpinger
+spec:
+  interval: 1h
+  url: https://bloomberg.github.io/goldpinger
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/source.toolkit.fluxcd.io/helmchart_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmChart
+metadata:
+  name: goldpinger
+  namespace: goldpinger
+spec:
+  interval: 1h
+  chart: goldpinger
+  sourceRef:
+    kind: HelmRepository
+    name: goldpinger
+  version: "1.1.3"
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/source.extensions.fluxcd.io/artifactgenerator_v1beta1.json
+apiVersion: source.extensions.fluxcd.io/v1beta1
+kind: ArtifactGenerator
+metadata:
+  name: goldpinger
+  namespace: goldpinger
+spec:
+  sources:
+    - alias: chart
+      kind: HelmChart
+      name: goldpinger
+    - alias: repo
+      kind: OCIRepository
+      name: flux-system
+      namespace: flux-system
+  artifacts:
+    - name: goldpinger
+      originRevision: "@chart"
+      copy:
+        - from: "@chart/"
+          to: "@artifact/"
+        - from: "@repo/sophons/apps/goldpinger/values.yaml"
+          to: "@artifact/goldpinger/values.yaml"
+          strategy: Merge
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: goldpinger
+  namespace: goldpinger
+spec:
+  interval: 1h
+  chartRef:
+    kind: ExternalArtifact
+    name: goldpinger
+
+  releaseName: goldpinger
