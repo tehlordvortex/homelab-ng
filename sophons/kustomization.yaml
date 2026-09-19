@@ -4,4 +4,5 @@ configurations: [kustomizeconfig.yaml]
 resources:
   - flux.yaml
   - ./system/kube-system/flux.kustomization.yaml
+  - ./system/node-local-dns/flux.kustomization.yaml
   - ./apps/goldpinger/flux.kustomization.yaml

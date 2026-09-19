@@ -1,0 +1,72 @@
+cluster.local:53 {
+    errors
+    cache {
+            success 9984 30
+            denial 9984 5
+    }
+    reload
+    loop
+    bind 0.0.0.0
+    forward . __PILLAR__CLUSTER__DNS__ {
+            force_tcp
+    }
+    prometheus :9253
+    health
+    }
+in-addr.arpa:53 {
+    errors
+    cache 30
+    reload
+    loop
+    bind 0.0.0.0
+    forward . __PILLAR__CLUSTER__DNS__ {
+            force_tcp
+    }
+    prometheus :9253
+    }
+ip6.arpa:53 {
+    errors
+    cache 30
+    reload
+    loop
+    bind 0.0.0.0
+    forward . __PILLAR__CLUSTER__DNS__ {
+            force_tcp
+    }
+    prometheus :9253
+    }
+.:53 {
+    errors
+    cache 30
+    reload
+    loop
+    bind 0.0.0.0
+    # Workloads in the cluster should ideally directly access their
+    # brethren, rather than going through the global internet.
+    template IN ANY vrtx.sh {
+        match "^(hs|(p?pkg[.])?tig|ic)[.]"
+        answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
+        fallthrough
+    }
+    template IN ANY sphns.run {
+        match "^(p?auth|p?s3-(global|backup|weed|b2|time-machine)|p?restic-(backup|b2|time-machine)|p?z3|p?oci)[.]"
+        answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
+        fallthrough
+    }
+    template IN A controlplane.sophons.cloud {
+        match "^controlplane\.sophons\.cloud\.$"
+        rcode NXDOMAIN
+    }
+    template IN AAAA controlplane.sophons.cloud {
+        match "^controlplane\.sophons\.cloud\.$"
+        answer "{{ .Name }} 60 IN CNAME kubeprism.kube-system.svc.cluster.local."
+    }
+    template IN ANY sophons.cloud {
+        match "^(auth|p?oci|p?z3)[.]"
+        answer "{{ .Name }} 60 IN CNAME traefik.traefik.svc.cluster.local."
+        fallthrough
+    }
+    # forward . __PILLAR__UPSTREAM__SERVERS__
+    forward . __PILLAR__CLUSTER__DNS__
+    prometheus :9253
+    }
