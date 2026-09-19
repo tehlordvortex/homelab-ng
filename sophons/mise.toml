@@ -12,33 +12,43 @@ dir = "./apps/traefik/node-lrps"
 run = "./gen.sh"
 
 [tasks.'talos:all']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_NODES"]
 
 [tasks.'talos:controlplane']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_CONTROLPLANE_NODES"]
 
 [tasks.'talos:worker']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_WORKER_NODES"]
 
 [tasks.'talos:beta']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_BETA"]
 
 [tasks.'talos:theta']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_THETA"]
 
 [tasks.'talos:voltzahl']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_VOLTZAHL"]
 
 [tasks.'talos:leistung']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_LEISTUNG"]
 
 [tasks.'talos:alpha']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_ALPHA"]
 
 [tasks.'talos:prime']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_PRIME"]
 
 [tasks.'talos:caeneus']
+dir = "{{cwd}}"
 run = ["talosctl --nodes=$SOPHONS_CAENEUS"]
 
 [tasks.'apply:beta']

@@ -8,7 +8,7 @@ spec:
   type: ClusterIP
   clusterIP: 2001:cafe:43::2
   ipFamilies: [IPv6]
-  internalTrafficPolicy: Local
+  trafficDistribution: PreferSameNode
   ports:
     - port: 443
       targetPort: 7446

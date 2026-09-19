@@ -253,6 +253,8 @@ startupProbe:
   failureThreshold: 15
 
 env:
+  - name: KUBERNETES_SERVICE_HOST
+    value: 2001:cafe:43::2
   - name: GOGC
     value: "10"
   - name: GOMEMLIMIT
