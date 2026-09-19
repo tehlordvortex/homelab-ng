@@ -7,7 +7,7 @@ metadata:
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   inputs:
-    - version: "*"
+    - version: "0.60.0"
   resources:
     - apiVersion: source.toolkit.fluxcd.io/v1
       kind: OCIRepository
@@ -86,7 +86,7 @@ spec:
   cluster:
     size: small
   distribution:
-    version: 2.x
+    version: 2.9.5
     registry: ghcr.io/fluxcd
   sync:
     kind: OCIRepository

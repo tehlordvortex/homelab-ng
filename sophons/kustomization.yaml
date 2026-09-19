@@ -3,4 +3,5 @@ kind: Kustomization
 configurations: [kustomizeconfig.yaml]
 resources:
   - flux.yaml
+  - ./system/kube-system/flux.kustomization.yaml
   - ./apps/goldpinger/flux.kustomization.yaml

@@ -3,12 +3,13 @@ set -euo pipefail
 
 self_path=$(readlink -f "$0")
 self_dir=$(dirname $self_path)
-cluster="$self_dir/../sophons"
+repo_dir=$(dirname $self_dir)
+cluster="$repo_dir/sophons"
 out="$(mktemp -d "${TMPDIR:-/tmp}/flux-push.XXXXX")"
 trap "rm -rf $out" EXIT
 
 rgit() {
-  git --git-dir="$self_dir/../.git" "$@"
+  git --git-dir="$repo_dir/.git" "$@"
 }
 
 rgit -c filter.sops.smudge= -c filter.sops.required=false archive HEAD \

@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configurations: [kustomizeconfig.yaml]
+namespace: kube-system
+resources:
+  - service.yaml
+  - daemonset.yaml
+
+images:
+  - name: docker.io/library/haproxy
+    newTag: 3.4.4-alpine3.24@sha256:52c5921e1619f39cbd5b25e1b4b5847667917f39745056cf004d9c263fbf11b9
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: haproxy
+      app.kubernetes.io/instance: kubeprism
+    includeTemplates: true
+    includeSelectors: true
+
+configMapGenerator:
+  - name: kubeprism-haproxy-config
+    files:
+      - haproxy.cfg

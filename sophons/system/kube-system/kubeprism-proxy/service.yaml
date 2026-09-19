@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubeprism
+  namespace: kube-system
+spec:
+  type: ClusterIP
+  clusterIP: 2001:cafe:43::2
+  ipFamilies: [IPv6]
+  internalTrafficPolicy: Local
+  ports:
+    - port: 443
+      targetPort: 7446
+      name: https
+    - port: 6443
+      targetPort: 7446
+      name: https67
+    - port: 7445
+      targetPort: 7446
+      name: kubeprism
+  selector: {}

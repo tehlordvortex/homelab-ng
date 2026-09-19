@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/daemonset-apps-v1.json
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kubeprism-haproxy
+  namespace: kube-system
+spec:
+  selector: {}
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+        - operator: Exists
+
+      hostNetwork: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+
+      volumes:
+        - name: config
+          configMap:
+            name: kubeprism-haproxy-config
+
+      containers:
+        - name: haproxy
+          image: docker.io/library/haproxy
+          ports:
+            - containerPort: 7446
+              hostPort: 7446
+              protocol: TCP
+              name: kubeprism-proxy
+
+          volumeMounts:
+            - mountPath: /usr/local/etc/haproxy
+              name: config
+              readOnly: true
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: "16Mi"
+            limits:
+              memory: "100Mi"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+
+          startupProbe:
+            tcpSocket:
+              port: 7446
