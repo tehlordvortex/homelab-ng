@@ -1,3 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 namespace: headscale
 labels:
   - pairs:
@@ -10,6 +12,8 @@ labels:
 
 resources:
   - service.yaml
+  - httproute.yaml
+  - grpcroute.yaml
   - statefulset.yaml
   - dnsendpoint.yaml
   - ../garage/access-keys/infinity-and-beyond
@@ -19,7 +23,7 @@ components:
 
 secretGenerator:
   - name: headscale
-    env: .env
+    envs: [.env]
 
 configMapGenerator:
   - name: headscale

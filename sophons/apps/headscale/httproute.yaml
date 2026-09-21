@@ -26,7 +26,7 @@ spec:
             type: PathPrefix
             value: /admin
       backendRefs:
-        - name: headplane
+        - name: headscale
           port: 3000
     - backendRefs:
         - name: headscale

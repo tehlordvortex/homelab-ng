@@ -7,3 +7,4 @@ resources:
   - ./system/node-local-dns/flux.kustomization.yaml
   - ./system/cloudflared-operator/flux.kustomization.yaml
   - ./apps/goldpinger/flux.kustomization.yaml
+  - ./apps/headscale/flux.kustomization.yaml
