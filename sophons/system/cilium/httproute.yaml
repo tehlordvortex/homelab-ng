@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hubble-ui
+  namespace: kube-system
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: "Cluster connectivity observability"
+    gethomepage.dev/name: Hubble UI
+    gethomepage.dev/icon: sh-cilium-hubble.svg
+    gethomepage.dev/group: Admin
+spec:
+  parentRefs:
+    - name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+
+  hostnames:
+    - hubble.sophons.cloud
+
+  rules:
+    - filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: forwardauth-authelia
+      backendRefs:
+        - name: hubble-ui
+          port: 80
