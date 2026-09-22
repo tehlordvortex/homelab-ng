@@ -11,9 +11,3 @@ spec:
       providerSpecific:
         - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
           value: "false"
-    - dnsName: gghs.vrtx.sh
-      recordType: CNAME
-      targets: [hs.vrtx.sh]
-      providerSpecific:
-        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
-          value: "false"

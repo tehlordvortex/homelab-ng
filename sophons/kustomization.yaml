@@ -3,9 +3,13 @@ kind: Kustomization
 configurations: [kustomizeconfig.yaml]
 resources:
   - flux.yaml
+  - ./system/cloudflared-operator/flux.kustomization.yaml
   - ./system/kube-system/flux.kustomization.yaml
   - ./system/node-local-dns/flux.kustomization.yaml
-  - ./system/cloudflared-operator/flux.kustomization.yaml
   - ./apps/forgejo/flux.kustomization.yaml
   - ./apps/goldpinger/flux.kustomization.yaml
   - ./apps/headscale/flux.kustomization.yaml
+  - ./apps/homepage/flux.kustomization.yaml
+  - ./apps/ntfy/flux.kustomization.yaml
+  - ./apps/p2p/flux.kustomization.yaml
+  - ./apps/pds/flux.kustomization.yaml

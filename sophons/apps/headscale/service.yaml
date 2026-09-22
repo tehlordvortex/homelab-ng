@@ -25,32 +25,3 @@ spec:
       protocol: TCP
       appProtocol: kubernetes.io/h2c
       name: hs-grpc
----
-# yaml-language-server: $schema=https://github.com/yannh/kubernetes-json-schema/raw/refs/heads/master/v1.34.1/service.json
-apiVersion: v1
-kind: Service
-metadata:
-  name: headscale-proxy-headless
-  namespace: headscale
-spec:
-  type: ClusterIP
-  ipFamilyPolicy: PreferDualStack
-  clusterIP: None
-  ports:
-    - port: 3000
-      targetPort: hp-http
-      protocol: TCP
-      name: hp-http
-    - port: 8080
-      targetPort: hs-http
-      protocol: TCP
-      name: hs-http
-    - port: 8081
-      targetPort: hs-metrics
-      protocol: TCP
-      name: hs-metrics
-    - port: 50051
-      targetPort: hs-grpc
-      protocol: TCP
-      appProtocol: kubernetes.io/h2c
-      name: hs-grpc

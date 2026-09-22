@@ -96,7 +96,7 @@ spec:
               memory: 64Mi
             limits:
               memory: 128Mi
-              devic.es/tun: 1
+              devic.es/tun: "1"
 
           securityContext:
             allowPrivilegeEscalation: false

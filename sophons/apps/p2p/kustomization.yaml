@@ -1,3 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 namespace: pp22pp
 resources:
   - service.yaml
@@ -22,4 +24,4 @@ images:
 
 secretGenerator:
   - name: sparrow-tunnel
-    env: .env
+    envs: [.env]
