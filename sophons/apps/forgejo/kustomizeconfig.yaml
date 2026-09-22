@@ -1,0 +1,11 @@
+varReference:
+  - kind: HelmRelease
+    path: spec/postRenderers/kustomize/patches/patch
+  - kind: HelmRelease
+    path: spec/values/extraVolumes/configMap/name
+  - kind: HelmRelease
+    path: spec/values/deployment/env/valueFrom/secretKeyRef/name
+  - kind: HelmRelease
+    path: spec/values/gitea/oauth/existingSecret
+  - kind: HelmRelease
+    path: spec/values/gitea/additionalConfigSources/secret/secretName

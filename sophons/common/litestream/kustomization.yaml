@@ -22,3 +22,15 @@ configMapGenerator:
       - config/entrypoint.sh
       - config/restore-probe.sh
       - config/litestream.yaml
+
+patches:
+  - target:
+      kind: HelmRelease
+    patch: |-
+      - op: add
+        path: /spec/postRenderers/-
+        value:
+          kustomize:
+            images:
+              - name: docker.io/litestream/litestream
+                newTag: 0.5.17@sha256:4b02b9859a6b6b4087d8b8944e15f7e984bd7957cba322bbeee38b0e27b9656a

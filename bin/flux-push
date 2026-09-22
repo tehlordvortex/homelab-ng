@@ -17,6 +17,8 @@ rgit -c filter.sops.smudge= -c filter.sops.required=false archive HEAD \
   >&2 tar -C "$out" -xvf -
 >&2 echo "exported to $out"
 
+>&2 "$self_dir/flux-schema-validate" "$out"
+
 dest="oci://oci.sphns.run/p/cluster/manifests:$(rgit rev-parse --short HEAD)"
 flux push artifact "$dest" \
   --path="$out" \

@@ -1,0 +1,348 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  interval: 1h
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  url: oci://code.forgejo.org/forgejo-helm/forgejo
+  ref:
+    tag: 17.1.7
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/source.extensions.fluxcd.io/artifactgenerator_v1beta1.json
+apiVersion: source.extensions.fluxcd.io/v1beta1
+kind: ArtifactGenerator
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  sources:
+    - alias: chart
+      kind: OCIRepository
+      name: forgejo
+    - alias: repo
+      kind: OCIRepository
+      name: flux-system
+      namespace: flux-system
+  artifacts:
+    - name: forgejo
+      originRevision: "@chart"
+      copy:
+        - from: "@chart/"
+          to: "@artifact/"
+        - from: "@repo/sophons/apps/forgejo/values.yaml"
+          to: "@artifact/forgejo/values.yaml"
+          strategy: Merge
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  interval: 1h
+  chartRef:
+    kind: ExternalArtifact
+    name: forgejo
+  upgrade:
+    serverSideApply: enabled
+
+  releaseName: forge-of-creation
+  values:
+    extraVolumes:
+      - name: litestream-config
+        configMap:
+          name: $(LITESTREAM_CONFIG_CONFIGMAP)
+      - name: juicefs-cache
+        hostPath:
+          path: /var/lib/garage/juicefs/cache
+
+    deployment:
+      env:
+        - name: GOGC
+          value: "10"
+        - name: GOMEMLIMIT
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: $(INFINITY_AND_BEYOND_ACCESS_KEY_SECRET)
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: $(INFINITY_AND_BEYOND_ACCESS_KEY_SECRET)
+              key: AWS_SECRET_ACCESS_KEY
+
+    gitea:
+      oauth:
+        - name: authelia
+          provider: openidConnect
+          existingSecret: $(FORGE_OF_CREATION_FORGEJO_AUTHELIA_CONFIG_SECRET)
+          iconUrl: https://auth.sophons.cloud/favicon.ico
+          autoDiscoverUrl: https://auth.sophons.cloud/.well-known/openid-configuration
+          skipLocal-2fa: true
+          scopes: email profile groups sshpubkey
+          attributeSshPublicKey: sshpubkey
+          groupClaimName: groups
+
+  postRenderers:
+    - kustomize:
+        images:
+          # override the -rootless suffix here instead
+          - name: code.forgejo.org/forgejo/forgejo
+            newTag: 16.0.5-rootless@sha256:214f4ae63ee78be1e445e58573c88dc7215e72091210852e0df94eaac1a25685
+
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: forge-of-creation-forgejo
+            patch: |-
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: forge-of-creation-forgejo
+              spec:
+                template:
+                  spec:
+                    initContainers:
+                      - name: init-app-ini
+                        envFrom:
+                          - secretRef:
+                              name: $(FORGE_OF_CREATION_FORGEJO_CONFIG_SECRET)
+
+                    containers:
+                      - name: forgejo
+                        volumeMounts:
+                          - mountPath: /data
+                            mountPropagation: HostToContainer
+
+          - target:
+              kind: Deployment
+              name: forge-of-creation-forgejo
+            patch: |-
+              - op: add
+                path: /spec/template/spec/initContainers/0
+                value:
+                  name: redka-redis
+                  restartPolicy: Always
+                  image: docker.io/nalgeon/redka:1.0.1
+                  args: ["/db/redka.db"]
+                  env:
+                    - name: GOGC
+                      value: "10"
+                    - name: GOMEMLIMIT
+                      valueFrom:
+                        resourceFieldRef:
+                          resource: limits.memory
+
+                  ports:
+                    - name: redis
+                      containerPort: 6379
+
+                  startupProbe:
+                    exec:
+                      command: [valkey-cli, PING]
+
+                  livenessProbe:
+                    exec:
+                      command: [valkey-cli, PING]
+
+                  volumeMounts:
+                    - name: data
+                      subPath: db
+                      mountPath: /db
+                    - name: temp
+                      subPath: redka
+                      mountPath: /tmp
+
+                  securityContext:
+                    readOnlyRootFilesystem: true
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop: [ALL]
+
+                  resources:
+                    requests:
+                      cpu: 40m
+                      memory: 48Mi
+                    limits:
+                      memory: 128Mi
+              - op: add
+                path: /spec/template/spec/initContainers/0
+                value:
+                  name: juice-mount
+                  restartPolicy: Always
+                  # NOTE: the fix for 0% available inodes blocking caching exists
+                  # in juicefs main, but the docker image hasn't been updated in months
+                  # this image is pinned to a commit including the fix
+                  image: pz3.sphns.run/library/juicedata/mount:ce-6541bca
+                  # image: registry.k8s.io/pause:3.10@sha256:ee6521f290b2168b6e0935a181d4cff9be1ac3f505666ef0e3c98fae8199917a
+                  command:
+                    - sh
+                    - -c
+                    - |-
+                      set -xeu
+                      bucket=http://s3-global.garage:3900/juiced-%d
+                      juicefs format --no-update --compress=zstd --block-size=1M \
+                        --storage=s3 --bucket=$bucket --shards=6 \
+                        sqlite3://$META_PATH $VOLUME_NAME
+                      juicefs config --yes --capacity=8 --dir-stats=true --trash-days=0 \
+                        --bucket=$bucket sqlite3://$META_PATH
+
+                      exec juicefs mount -o async_dio,allow_other --buffer-size=64M \
+                        --backup-meta=12h --metrics 0.0.0.0:9567 \
+                        --cache-large-write --cache-expire 2d --free-space-ratio 0.05 \
+                        --max-uploads 32 --max-downloads 128 \
+                        sqlite3://$META_PATH $MOUNT_PATH
+
+                  env:
+                    - name: GOGC
+                      value: "10"
+                    - name: GOMEMLIMIT
+                      value: "256MiB"
+                    - name: META_PATH
+                      value: /data/db/fs.meta.db
+                    - name: VOLUME_NAME
+                      value: forge-of-creation
+                    - name: MOUNT_PATH
+                      value: /data/fs
+                  envFrom:
+                    - secretRef:
+                        name: $(INFINITY_AND_BEYOND_ACCESS_KEY_SECRET)
+
+                  ports:
+                    - name: jfs-metrics
+                      containerPort: 9567
+
+                  volumeMounts:
+                    - name: data
+                      mountPath: /data
+                      mountPropagation: Bidirectional
+                    - name: juicefs-cache
+                      mountPath: /var/jfsCache
+                    - name: temp
+                      subPath: juicefs
+                      mountPath: /tmp
+
+                  startupProbe:
+                    exec:
+                      command: [mountpoint, -q, /data/fs]
+                    initialDelaySeconds: 10
+                    failureThreshold: 6
+
+                  securityContext:
+                    runAsUser: 0
+                    runAsGroup: 0
+                    runAsNonRoot: false
+                    privileged: true # required for Bidirectional
+                    readOnlyRootFilesystem: true
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 128Mi
+                    limits:
+                      memory: 512Mi # we respect the OOMkilla
+              - op: add
+                path: /spec/template/spec/initContainers/0
+                value:
+                  name: litestream-replicate
+                  restartPolicy: Always
+                  image: docker.io/litestream/litestream
+                  command: [bash, /etc/litestream/entrypoint.sh]
+                  envFrom:
+                    - configMapRef:
+                        name: $(LITESTREAM_ENV_CONFIGMAP)
+                    - secretRef:
+                        name: $(INFINITY_AND_BEYOND_ACCESS_KEY_SECRET)
+                  env:
+                    - name: GOGC
+                      value: "10"
+                    - name: GOMEMLIMIT
+                      valueFrom:
+                        resourceFieldRef:
+                          resource: limits.memory
+                    - name: LITESTREAM_ENDPOINT
+                      value: http://s3-global.garage:3900
+                    - name: LITESTREAM_BUCKET
+                      value: litestream-ad-infinitum
+                    - name: LITESTREAM_REPLICA_PATH
+                      value: ng/forge-of-creation
+                    - name: LITESTREAM_SNAPSHOT_INTERVAL
+                      value: 12h
+                    - name: LITESTREAM_RETENTION
+                      value: 48h
+                    # - name: LITESTREAM_STARTUP_ENFORCE_RETENTION
+                    #   value: "true"
+                    # - name: LITESTREAM_STARTUP_FORCE_SNAPSHOT
+                    #   value: "true"
+                    - name: LITESTREAM_CONFIG
+                      value: |-
+                        levels:
+                          - interval: 15m  # L1
+                          - interval: 1.5h # L2
+                          - interval: 6h   # L3
+
+                        dbs:
+                          - path: /db/fs.meta.db
+                            replica:
+                              url: "[[replica_url fs.meta.db]]"
+                          - path: /db/redka.db
+                            replica:
+                              url: "[[replica_url redka.db]]"
+                          - path: /db/gitea.v2.db
+                            replica:
+                              url: "[[replica_url gitea.v2.db]]"
+
+                  ports:
+                    - name: ls-metrics
+                      containerPort: 9090
+
+                  startupProbe:
+                    exec:
+                      command: [bash, /etc/litestream/restore-probe.sh]
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+                    failureThreshold: 30
+
+                  volumeMounts:
+                    - name: data
+                      subPath: db
+                      mountPath: /db
+                    - name: litestream-config
+                      mountPath: /etc/litestream
+                      readOnly: true
+                    - name: temp
+                      subPath: litestream
+                      mountPath: /tmp
+
+                  securityContext:
+                    readOnlyRootFilesystem: true
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop: [ALL]
+
+                  resources:
+                    requests:
+                      cpu: 40m
+                      memory: 48Mi
+                    limits:
+                      memory: 128Mi
+
+          - target:
+              kind: Deployment
+              name: forge-of-creation-forgejo
+            patch: |-
+              - op: replace
+                path: /kind
+                value: StatefulSet
+              - op: remove
+                path: /spec/strategy

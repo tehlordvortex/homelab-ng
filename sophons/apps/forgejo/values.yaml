@@ -43,18 +43,13 @@ persistence:
   enabled: false
   subPath: fs
 
-extraVolumes:
-  - name: litestream-config
-    configMap:
-      name: litestream-config
-  - name: juicefs-cache
-    hostPath:
-      path: /var/lib/garage/juicefs/cache
-
 extraContainerVolumeMounts:
   - name: data
     subPath: db
     mountPath: /db
+  - name: temp
+    subPath: gitea-data
+    mountPath: /data/tmp
 
 extraInitVolumeMounts:
   - name: data
@@ -82,23 +77,6 @@ containerSecurityContext:
 replicaCount: 1
 deployment:
   terminationGracePeriodSeconds: 120
-  env:
-    - name: GOGC
-      value: "10"
-    - name: GOMEMLIMIT
-      valueFrom:
-        resourceFieldRef:
-          resource: limits.memory
-    - name: AWS_ACCESS_KEY_ID
-      valueFrom:
-        secretKeyRef:
-          name: infinity-and-beyond-access-key
-          key: AWS_ACCESS_KEY_ID
-    - name: AWS_SECRET_ACCESS_KEY
-      valueFrom:
-        secretKeyRef:
-          name: infinity-and-beyond-access-key
-          key: AWS_SECRET_ACCESS_KEY
 
 # Prevent the services from being headless
 service:
@@ -151,17 +129,6 @@ gitea:
     username: vrtx
     email: me@vrtx.sh
     passwordMode: initialOnlyRequireReset
-
-  oauth:
-    - name: authelia
-      provider: openidConnect
-      existingSecret: forge-of-creation-forgejo-authelia-config
-      iconUrl: https://auth.sophons.cloud/favicon.ico
-      autoDiscoverUrl: https://auth.sophons.cloud/.well-known/openid-configuration
-      skipLocal-2fa: true
-      scopes: email profile groups sshpubkey
-      attributeSshPublicKey: sshpubkey
-      groupClaimName: groups
 
   config:
     log:
@@ -247,10 +214,6 @@ gitea:
 
     security:
       REVERSE_PROXY_TRUSTED_PROXIES: 10.41.0.0/16,2001:cafe:41::/56
-
-  additionalConfigSources:
-    - secret:
-        secretName: forge-of-creation-forgejo-config
 
   metrics:
     enabled: true

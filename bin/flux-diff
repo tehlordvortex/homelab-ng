@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+
+self_path=$(readlink -f "$0")
+self_dir=$(dirname $self_path)
+repo_dir=${1:-"$(dirname $self_dir)"}
+cluster="$repo_dir/sophons"
+
+flux diff kustomization flux-system --path="$cluster" \
+  --recursive --local-sources OCIRepository/flux-system/flux-system="$repo_dir"

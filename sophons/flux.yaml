@@ -137,10 +137,26 @@ spec:
             value:
               kubernetes.io/os: linux
           - op: add
+            path: /spec/template/spec/affinity
+            value:
+              nodeAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - preference:
+                      matchExpressions:
+                        - key: kubernetes.io/hostname
+                          operator: In
+                          values: [sophons-caeneus]
+                    weight: 67
+          - op: add
             path: /spec/template/spec/containers/0/env/-
             value:
               name: KUBERNETES_SERVICE_HOST
               value: 2001:cafe:43::2
+          - op: add
+            path: /spec/template/spec/containers/0/env/-
+            value:
+              name: GOGC
+              value: "10"
           - op: replace
             path: /spec/template/spec/containers/0/resources/requests
             value:
