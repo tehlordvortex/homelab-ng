@@ -2,19 +2,6 @@
   "grants": [
     {
       "src": [
-        "autogroup:member"
-      ],
-      "dst": [
-        "autogroup:self",
-        // allow internet access thru exit nodes
-        "autogroup:internet"
-      ],
-      "ip": [
-        "*"
-      ]
-    },
-    {
-      "src": [
         "*"
       ],
       "dst": [
@@ -87,21 +74,43 @@
         "vrtx@"
       ],
       "dst": [
-        "tag:sophons"
+        "vrtx@",
+        "tag:sophons",
+        // allow internet access thru exit nodes
+        "autogroup:internet"
       ],
       "ip": [
         "*"
       ]
+    },
+    {
+      "src": [
+        "vrtx@"
+      ],
+      "dst": [
+        "vrtx@",
+        "tag:sophons"
+      ],
+      "app": {
+        "tailscale.com/cap/drive": [
+          {
+            "shares": [
+              "*"
+            ],
+            "access": "rw"
+          }
+        ]
+      }
     }
   ],
   "ssh": [
     {
       "action": "accept",
       "src": [
-        "autogroup:member"
+        "vrtx@"
       ],
       "dst": [
-        "autogroup:self"
+        "vrtx@"
       ],
       "users": [
         "autogroup:nonroot"
@@ -133,7 +142,15 @@
     },
     {
       "target": [
-        "autogroup:member"
+        "tag:sophons"
+      ],
+      "attr": [
+        "drive:share"
+      ]
+    },
+    {
+      "target": [
+        "vrtx@"
       ],
       "attr": [
         "drive:share",
