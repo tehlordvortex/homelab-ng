@@ -60,16 +60,20 @@ spec:
             - port: "2380"
               protocol: TCP
             # health checks?
-            - port: "4240"
-              protocol: TCP
+            # cilium binds to the internalip for these
+            # - port: "4240"
+            #   protocol: TCP
             # geneve
-            - port: "6081"
-              protocol: UDP
+            # - port: "6081"
+            #   protocol: UDP
             # apiserver
             - port: "6443"
               protocol: TCP
             # vxlan
-            - port: "8472"
+            # - port: "8472"
+            #   protocol: UDP
+            # tailscale
+            - port: "41641"
               protocol: UDP
             # talos
             - port: "50000"

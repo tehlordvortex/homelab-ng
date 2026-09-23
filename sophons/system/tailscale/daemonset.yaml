@@ -76,6 +76,10 @@ spec:
               valueFrom:
                 resourceFieldRef:
                   resource: limits.memory
+            # https://tailscale.com/blog/kubernetes-direct-connections
+            # tailscaled listening port
+            - name: PORT
+              value: "41641"
             - name: TS_EXTRA_ARGS
               value: $(TS_BASE_ARGS)
             - name: TS_TAILSCALED_EXTRA_ARGS

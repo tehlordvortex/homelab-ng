@@ -4,9 +4,7 @@ metadata:
   name: private-ranges
 spec:
   externalCIDRs:
-    - 10.1.0.0/16
-    - 10.42.0.0/16
-    - 10.69.0.0/16
+    - 10.0.0.0/8
     - 10.67.0.0/16
     - fdf6:9420:fade::/48
     - 100.64.0.0/10
