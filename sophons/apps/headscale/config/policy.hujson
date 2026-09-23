@@ -13,6 +13,7 @@
     },
     {
       "src": [
+        "vrtx@",
         "tag:headplane-agent"
       ],
       "dst": [
@@ -56,6 +57,18 @@
       "ip": [
         "tcp:6443",
         "tcp:7446"
+      ]
+    },
+    {
+      "src": [
+        "tag:container"
+      ],
+      "dst": [
+        "vrtx@"
+      ],
+      // lmstudio
+      "ip": [
+        "tcp:11433"
       ]
     },
     {
