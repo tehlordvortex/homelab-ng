@@ -1,0 +1,181 @@
+{
+  "grants": [
+    {
+      "src": [
+        "autogroup:member"
+      ],
+      "dst": [
+        "autogroup:self",
+        // allow internet access thru exit nodes
+        "autogroup:internet"
+      ],
+      "ip": [
+        "*"
+      ]
+    },
+    {
+      "src": [
+        "*"
+      ],
+      "dst": [
+        "tag:dns"
+      ],
+      "ip": [
+        "53"
+      ]
+    },
+    {
+      "src": [
+        "tag:headplane-agent"
+      ],
+      "dst": [
+        "*"
+      ],
+      "ip": [
+        "tcp:22"
+      ]
+    },
+    {
+      "src": [
+        "tag:edge-worker"
+      ],
+      "dst": [
+        "tag:sophons-lb"
+      ],
+      "ip": [
+        "443",
+        "tcp:8080"
+      ]
+    },
+    {
+      "src": [
+        "tag:container"
+      ], // Devices behind a restrictive NAT that need to be accessed through the peer relay
+      "dst": [
+        "tag:sophons"
+      ], // The devices functioning as peer relays for the src devices
+      "app": {
+        "tailscale.com/cap/relay": []
+      }
+    },
+    {
+      "src": [
+        "tag:container"
+      ],
+      "dst": [
+        "tag:sophons"
+      ],
+      // controlplane & kubeprism-proxy
+      "ip": [
+        "tcp:6443",
+        "tcp:7446"
+      ]
+    },
+    {
+      "src": [
+        "tag:sophons"
+      ],
+      "dst": [
+        "tag:sophons"
+      ],
+      "ip": [
+        "*"
+      ]
+    },
+    {
+      "src": [
+        "vrtx@"
+      ],
+      "dst": [
+        "tag:sophons"
+      ],
+      "ip": [
+        "*"
+      ]
+    }
+  ],
+  "ssh": [
+    {
+      "action": "accept",
+      "src": [
+        "autogroup:member"
+      ],
+      "dst": [
+        "autogroup:self"
+      ],
+      "users": [
+        "autogroup:nonroot"
+      ]
+    },
+    {
+      "action": "accept",
+      "src": [
+        "vrtx@"
+      ],
+      "dst": [
+        "tag:container",
+        "tag:sophons"
+      ],
+      "users": [
+        "autogroup:nonroot",
+        "root"
+      ]
+    }
+  ],
+  "nodeAttrs": [
+    {
+      "target": [
+        "*"
+      ],
+      "attr": [
+        "magicdns-aaaa"
+      ]
+    },
+    {
+      "target": [
+        "autogroup:member"
+      ],
+      "attr": [
+        "drive:share",
+        "drive:access"
+      ]
+    }
+  ],
+  "autoApprovers": {
+    "routes": {},
+    "exitNode": [
+      "tag:vpn",
+      "tag:router"
+    ]
+  },
+  "tagOwners": {
+    "tag:dns": [
+      "vrtx@"
+    ],
+    "tag:container": [
+      "vrtx@"
+    ],
+    "tag:vpn": [
+      "vrtx@"
+    ],
+    "tag:router": [
+      "vrtx@"
+    ],
+    "tag:id10t": [
+      "vrtx@"
+    ],
+    "tag:sophons": [
+      "vrtx@"
+    ],
+    "tag:headplane-agent": [
+      "vrtx@"
+    ],
+    "tag:sophons-lb": [
+      "vrtx@"
+    ],
+    "tag:edge-worker": [
+      "vrtx@"
+    ]
+  }
+}
+// vim: ft=jsonc

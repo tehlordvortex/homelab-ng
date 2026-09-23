@@ -3,6 +3,7 @@ listen_addr: 0.0.0.0:8080
 metrics_listen_addr: 0.0.0.0:8081
 grpc_listen_addr: 0.0.0.0:50051
 grpc_allow_insecure: true
+trusted_proxies: [10.41.0.0/16, 2001:cafe:41::/56, 127.0.0.1/32, "::1/128"]
 
 log:
   level: info
@@ -11,7 +12,8 @@ noise:
   private_key_path: /etc/headscale/noise_private.key
 
 policy:
-  mode: database
+  mode: file
+  file: /etc/headscale/policy.hujson
 
 database:
   type: sqlite

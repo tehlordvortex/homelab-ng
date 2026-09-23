@@ -12,22 +12,20 @@ spec:
     spec:
       affinity:
         nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
                   - key: topology.kubernetes.io/region
                     operator: NotIn
-                    # only nodes with some kind of always publicly routable ip
                     values: [ng]
-
-          preferredDuringSchedulingIgnoredDuringExecution:
+              weight: 100
             - preference:
                 matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
                       - sophons-voltzahl
-              weight: 100
+              weight: 67
 
       securityContext:
         runAsNonRoot: true
@@ -35,22 +33,27 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
-      # ~do not depend on cluster DNS~ headscale is no longer a load-bearing boundary (me when i'm Sol)
-      # dnsConfig:
-      #   nameservers:
-      #     - 1.1.1.1
-      #     - 1.0.0.1
-      #     - 9.9.9.9
-      # dnsPolicy: None
-      # hostAliases:
-      #   - ip: 10.43.0.69
-      #     hostnames:
-      #       - auth.sophons.cloud
-      #       - ps3-global.sphns.run
-      #   - ip: 2001:cafe:43::69
-      #     hostnames:
-      #       - auth.sophons.cloud
-      #       - ps3-global.sphns.run
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: litestream-config
+          configMap:
+            name: litestream-config
+        - name: headplane
+          configMap:
+            name: headplane
+        - name: headscale
+          projected:
+            sources:
+              - configMap:
+                  name: headscale
+              - secret:
+                  name: headscale
+                  items:
+                    - key: oidc_client.secret
+                      path: oidc_client.secret
+                    - key: noise_private.key
+                      path: noise_private.key
 
       containers:
         - name: headscale
@@ -81,29 +84,20 @@ spec:
             - name: tmp
               mountPath: /var/run/headscale
               subPath: run-headscale
-            - name: config
-              mountPath: "/etc/headscale/config.yaml"
-              subPath: headscale.yaml
-              readOnly: true
-            - name: secret
-              mountPath: "/etc/headscale/noise_private.key"
-              subPath: noise_private.key
-              readOnly: true
-            - name: secret
-              mountPath: /etc/headscale/oidc_client.secret
-              subPath: oidc_client.secret
+            - name: headscale
+              mountPath: /etc/headscale
               readOnly: true
 
           livenessProbe:
             exec:
               command: ["headscale", "health"]
-            initialDelaySeconds: 15
+            # initialDelaySeconds: 15
           readinessProbe:
             exec:
               command: ["headscale", "health"]
             # timeoutSeconds: 5
             # failureThreshold: 5
-            initialDelaySeconds: 15
+            # initialDelaySeconds: 15
 
           resources:
             requests:
@@ -151,17 +145,12 @@ spec:
             - name: tmp
               mountPath: /var/lib/headplane/agent
               subPath: lib-headplane-agent
-            - name: config
-              mountPath: "/etc/headplane/config.yaml"
-              subPath: headplane.yaml
+            - name: headplane
+              mountPath: /etc/headplane
               readOnly: true
-            - name: config
-              mountPath: "/etc/headscale/config.yaml"
-              subPath: headscale.yaml
+            - name: headscale
+              mountPath: /etc/headscale
               readOnly: true
-            - name: secret
-              mountPath: /etc/headscale/oidc_client.secret
-              subPath: oidc_client.secret
 
           livenessProbe:
             httpGet:
@@ -169,7 +158,7 @@ spec:
               port: hp-http
             # timeoutSeconds: 5
             # failureThreshold: 5
-            initialDelaySeconds: 15
+            # initialDelaySeconds: 15
           # readinessProbe:
           #   httpGet:
           #     path: /admin/healthz
@@ -203,7 +192,7 @@ spec:
                 name: infinity-and-beyond-access-key
           env:
             - name: GOGC
-              value: "25"
+              value: "10"
             - name: GOMEMLIMIT
               valueFrom:
                 resourceFieldRef:
@@ -235,7 +224,7 @@ spec:
           startupProbe:
             exec:
               command: [bash, /etc/litestream/restore-probe.sh]
-            initialDelaySeconds: 15
+            initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 30
 
@@ -265,16 +254,3 @@ spec:
               memory: 48Mi
             limits:
               memory: 100Mi
-
-      volumes:
-        - name: config
-          configMap:
-            name: headscale
-        - name: secret
-          secret:
-            secretName: headscale
-        - name: litestream-config
-          configMap:
-            name: litestream-config
-        - name: tmp
-          emptyDir: {}

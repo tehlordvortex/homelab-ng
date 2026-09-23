@@ -28,5 +28,8 @@ secretGenerator:
 configMapGenerator:
   - name: headscale
     files:
-      - config/headscale.yaml
-      - config/headplane.yaml
+      - config.yaml=config/headscale.yaml
+      - config/policy.hujson
+
+  - name: headplane
+    files: [config.yaml=config/headplane.yaml]

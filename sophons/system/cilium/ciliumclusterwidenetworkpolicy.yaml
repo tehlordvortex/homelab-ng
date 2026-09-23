@@ -75,6 +75,9 @@ spec:
             # tailscale
             - port: "41641"
               protocol: UDP
+            # tailscale peer relay
+            - port: "41642"
+              protocol: UDP
             # talos
             - port: "50000"
               protocol: TCP
