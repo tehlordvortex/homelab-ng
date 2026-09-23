@@ -10,8 +10,6 @@ spec:
     spec:
       priorityClassName: system-node-critical
       tolerations:
-        - key: orunmila.sophons.cloud/ase-orun
-          operator: Exists
         - key: caeneus.sophons.cloud
           operator: Exists
         - key: prime.sophons.cloud
@@ -55,9 +53,6 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
-        - name: dev-net
-          hostPath:
-            path: /dev/net
         - name: tailscale
           hostPath:
             path: /var/lib/garage/tailscale
@@ -82,7 +77,7 @@ spec:
                 resourceFieldRef:
                   resource: limits.memory
             - name: TS_EXTRA_ARGS
-              value: $(TS_BASE_ARGS) --advertise-exit-node
+              value: $(TS_BASE_ARGS)
             - name: TS_TAILSCALED_EXTRA_ARGS
               value: $(TSD_BASE_ARGS)
             - name: TS_AUTH_ONCE
@@ -103,15 +98,12 @@ spec:
             - mountPath: /run
               name: tmp
               subPath: run
-            - mountPath: /dev/net
-              name: dev-net
             - mountPath: /var/lib/tailscale
               name: tailscale
 
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
-            privileged: false
             capabilities:
               drop: [ALL]
               add: [NET_ADMIN]
@@ -121,7 +113,6 @@ spec:
               path: /healthz
               port: ts-metrics
             failureThreshold: 15
-            initialDelaySeconds: 10
 
           readinessProbe:
             httpGet:
@@ -130,7 +121,8 @@ spec:
 
           resources:
             requests:
-              cpu: 50m
-              memory: 100Mi
+              cpu: 10m
+              memory: 64Mi
             limits:
-              memory: 172Mi
+              memory: 128Mi
+              devic.es/tun: "1"

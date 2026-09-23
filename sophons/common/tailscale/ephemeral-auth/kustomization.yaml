@@ -3,18 +3,12 @@ kind: Component
 
 secretGenerator:
   - name: tailscale-auth
-    env: .env
+    envs: [.env]
 
-patches:
-  - target:
-      kind: ConfigMap
-      name: tailscale-config
-    patch: |
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: tailscale-config
-      data:
-        TS_KUBE_SECRET: ""
-        TS_STATE_DIR: ""
-        TS_AUTH_ONCE: "false"
+configMapGenerator:
+  - name: tailscale-config
+    behavior: merge
+    literals:
+      - TS_KUBE_SECRET=""
+      - TS_STATE_DIR=""
+      - TS_AUTH_ONCE="false"

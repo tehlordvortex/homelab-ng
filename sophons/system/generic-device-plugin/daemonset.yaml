@@ -26,8 +26,6 @@ spec:
         - name: generic-device-plugin
           image: ghcr.io/squat/generic-device-plugin
           args:
-            - --log-level
-            - debug
             - --domain
             - devic.es
             - --device

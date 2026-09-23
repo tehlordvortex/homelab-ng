@@ -3,13 +3,25 @@ kind: Component
 
 images:
   - name: ghcr.io/tailscale/tailscale
-    newTag: v1.98.8
+    newTag: v1.102.4@sha256:2667499ed87ae29218f292556ba062918402dd5e92e93637af14867e4df12dd3
 
 configMapGenerator:
   - name: tailscale-config
     literals:
-      - TS_BASE_ARGS="--login-server https://hs.vrtx.sh"
+      - TS_BASE_ARGS="--login-server http://headscale.headscale:8080"
       - TSD_BASE_ARGS=""
       - TS_ENABLE_HEALTH_CHECK="true"
       - TS_ENABLE_METRICS="true"
       - TS_AUTH_ONCE="true"
+
+patches:
+  - target:
+      kind: HelmRelease
+    patch: |-
+      - op: add
+        path: /spec/postRenderers/-
+        value:
+          kustomize:
+            images:
+              - name: ghcr.io/tailscale/tailscale
+                newTag: v1.102.4@sha256:2667499ed87ae29218f292556ba062918402dd5e92e93637af14867e4df12dd3

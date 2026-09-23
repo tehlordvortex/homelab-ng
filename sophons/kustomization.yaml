@@ -4,8 +4,15 @@ configurations: [kustomizeconfig.yaml]
 resources:
   - flux.yaml
   - ./system/cloudflared-operator/flux.kustomization.yaml
+  - ./system/gateway-api/flux.kustomization.yaml
+  - ./system/generic-device-plugin/flux.kustomization.yaml
   - ./system/kube-system/flux.kustomization.yaml
+  - ./system/local-path-provisioner/flux.kustomization.yaml
   - ./system/node-local-dns/flux.kustomization.yaml
+  - ./system/swap/flux.kustomization.yaml
+  - ./system/tailscale/flux.kustomization.yaml
+  - ./system/talos-backup/flux.kustomization.yaml
+  - ./system/wgexporter/flux.kustomization.yaml
   - ./apps/forgejo/flux.kustomization.yaml
   - ./apps/goldpinger/flux.kustomization.yaml
   - ./apps/headscale/flux.kustomization.yaml

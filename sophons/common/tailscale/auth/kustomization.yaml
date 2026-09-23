@@ -3,4 +3,4 @@ kind: Component
 
 secretGenerator:
   - name: tailscale-auth
-    env: .env
+    envs: [.env]

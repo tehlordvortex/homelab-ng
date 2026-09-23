@@ -20,9 +20,6 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       priorityClassName: system-node-critical
-      tolerations:
-        - key: orunmila.sophons.cloud/ase-orun
-          operator: Exists
       hostNetwork: true # no need to waste pod ips on this
       containers:
         - name: debian
