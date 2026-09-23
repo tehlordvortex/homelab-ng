@@ -13,7 +13,7 @@ noise:
 
 policy:
   mode: file
-  file: /etc/headscale/policy.hujson
+  path: /etc/headscale/policy.hujson
 
 database:
   type: sqlite
