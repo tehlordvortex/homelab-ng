@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nlamirault/schema-hub/main/schemas/monitoring.coreos.com/podmonitor_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: tailscale
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tailscale
+      app.kubernetes.io/instance: klusterscale
+  podMetricsEndpoints:
+    - port: ts-metrics

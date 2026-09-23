@@ -2,6 +2,7 @@ namespace: kube-system
 namePrefix: klusterscale-
 resources:
   - daemonset.yaml
+  - podmonitor.yaml
 components:
   - ../../common/tailscale
   - ../../common/tailscale/state-path
