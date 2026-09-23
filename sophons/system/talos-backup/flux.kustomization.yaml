@@ -12,3 +12,5 @@ spec:
     kind: OCIRepository
     name: flux-system
   path: sophons/system/talos-backup
+  decryption:
+    provider: sops
