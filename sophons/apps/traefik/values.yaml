@@ -131,48 +131,8 @@ providers:
     experimentalChannel: true
   file:
     enabled: true
+    watch: true
     content:
-      http:
-        routers:
-          headplane:
-            entryPoints: [web, websecure]
-            service: headplane
-            rule: Host(`hs.vrtx.sh`) && PathPrefix(`/admin`)
-          headscale:
-            entryPoints: [web, websecure]
-            service: headscale
-            rule: Host(`hs.vrtx.sh`)
-          headscale-grpc:
-            entryPoints: [websecure]
-            service: headscale-grpc
-            rule: Host(`gghs.vrtx.sh`)
-
-        services:
-          headplane:
-            loadBalancer:
-              servers:
-                - url: http://headscale-proxy-headless.headscale.svc.cluster.local:3000
-              passHostHeader: true
-              serversTransport: headscale@file
-          headscale:
-            loadBalancer:
-              servers:
-                - url: http://headscale-proxy-headless.headscale.svc.cluster.local:8080
-              passHostHeader: true
-              serversTransport: headscale@file
-          headscale-grpc:
-            loadBalancer:
-              servers:
-                - url: h2c://headscale-proxy-headless.headscale.svc.cluster.local:50051
-              passHostHeader: true
-              serversTransport: headscale-grpc@file
-
-        serversTransports:
-          headscale:
-            serverName: hs.vrtx.sh
-          headscale-grpc:
-            serverName: gghs.vrtx.sh
-
       tls:
         stores:
           default:
@@ -292,6 +252,10 @@ experimental:
   #   cacheify:
   #     moduleName: "github.com/ciaranj/cacheify"
   #     version: "v1.0.0"
+  plugins:
+    static-response:
+      moduleName: "github.com/jdel/staticresponse"
+      version: "v0.0.1"
   localPlugins:
     cacheify:
       moduleName: github.com/ciaranj/cacheify

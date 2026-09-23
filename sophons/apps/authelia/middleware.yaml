@@ -23,27 +23,37 @@ spec:
     middlewares:
       - name: forwardauth-authelia
         namespace: authelia
-# ---
-# apiVersion: traefik.io/v1alpha1
-# kind: Middleware
-# metadata:
-#   name: oidc-enable-response-caching
-#   namespace: authelia
-# spec:
-#   headers:
-#     customResponseHeaders:
-#       cache-control: "public, max-age=604800, stale-while-revalidate=86400, stale-if-error=86400"
-#       pragma: ""
 ---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: oidc-cache
+  name: static-well-known-openid-configuration
   namespace: authelia
 spec:
   plugin:
-    cacheify:
-      path: /cache
-      maxExpiry: 604800 # 7d
-      # maxExpiry: 1
-      # cleanup: 5
+    static-response:
+      headers:
+        content-type: application/json; charset=utf-8
+        cache-control: max-age=604800, stale-while-revalidate=86400
+        # content-security-policy: default-src 'none'
+        # permissions-policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), screen-wake-lock=(), sync-xhr=(), xr-spatial-tracking=(), interest-cohort=()
+        # referrer-policy: strict-origin-when-cross-origin
+        # x-content-type-options: nosniff
+        # x-dns-prefetch-control: off
+        # x-frame-options: DENY
+      body: |-
+        {"issuer":"https://auth.sophons.cloud","jwks_uri":"https://auth.sophons.cloud/jwks.json","authorization_endpoint":"https://auth.sophons.cloud/api/oidc/authorization","token_endpoint":"https://auth.sophons.cloud/api/oidc/token","subject_types_supported":["public","pairwise"],"response_types_supported":["code","id_token","token","id_token token","code id_token","code token","code id_token token"],"grant_types_supported":["authorization_code","implicit","client_credentials","refresh_token","urn:ietf:params:oauth:grant-type:device_code"],"response_modes_supported":["form_post","query","fragment","jwt","form_post.jwt","query.jwt","fragment.jwt"],"scopes_supported":["offline_access","openid","profile","email","address","phone","groups"],"claims_supported":["amr","aud","azp","client_id","exp","iat","iss","jti","rat","auth_time","nonce","groups","sub","name","given_name","family_name","middle_name","nickname","preferred_username","profile","picture","website","email","email_verified","alt_emails","gender","birthdate","zoneinfo","locale","phone_number","phone_number_verified","address","updated_at"],"token_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post","client_secret_jwt","private_key_jwt","none"],"token_endpoint_auth_signing_alg_values_supported":["HS256","HS384","HS512","RS256","RS384","RS512","ES256","ES384","ES512","PS256","PS384","PS512"],"introspection_endpoint":"https://auth.sophons.cloud/api/oidc/introspection","revocation_endpoint":"https://auth.sophons.cloud/api/oidc/revocation","introspection_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post","client_secret_jwt","private_key_jwt"],"revocation_endpoint_auth_methods_supported":["client_secret_basic","client_secret_post","client_secret_jwt","private_key_jwt","none"],"revocation_endpoint_auth_signing_alg_values_supported":["HS256","HS384","HS512","RS256","RS384","RS512","ES256","ES384","ES512","PS256","PS384","PS512"],"code_challenge_methods_supported":["S256"],"device_authorization_endpoint":"https://auth.sophons.cloud/api/oidc/device-authorization","authorization_response_iss_parameter_supported":true,"introspection_signing_alg_values_supported":["HS256","HS384","HS512","RS256","RS384","RS512","ES256","ES384","ES512","PS256","PS384","PS512","none"],"introspection_encryption_alg_values_supported":["RSA1_5","RSA-OAEP","RSA-OAEP-256","A128KW","A192KW","A256KW","dir","ECDH-ES","ECDH-ES+A128KW","ECDH-ES+A192KW","ECDH-ES+A256KW","A128GCMKW","A192GCMKW","A256GCMKW","PBES2-HS256+A128KW","PBES2-HS384+A192KW","PBES2-HS512+A256KW"],"introspection_encryption_enc_values_supported":["A128CBC-HS256","A192CBC-HS384","A256CBC-HS512","A128GCM","A192GCM","A256GCM"],"pushed_authorization_request_endpoint":"https://auth.sophons.cloud/api/oidc/pushed-authorization-request","require_pushed_authorization_requests":false,"id_token_signing_alg_values_supported":["HS256","HS384","HS512","RS256","RS384","RS512","ES256","ES384","ES512","PS256","PS384","PS512"],"id_token_encryption_alg_values_supported":["RSA1_5","RSA-OAEP","RSA-OAEP-256","A128KW","A192KW","A256KW","dir","ECDH-ES","ECDH-ES+A128KW","ECDH-ES+A192KW","ECDH-ES+A256KW","A128GCMKW","A192GCMKW","A256GCMKW","PBES2-HS256+A128KW","PBES2-HS384+A192KW","PBES2-HS512+A256KW"],"id_token_encryption_enc_values_supported":["A128CBC-HS256","A192CBC-HS384","A256CBC-HS512","A128GCM","A192GCM","A256GCM"],"userinfo_endpoint":"https://auth.sophons.cloud/api/oidc/userinfo","userinfo_signing_alg_values_supported":["HS256","HS384","HS512","RS256","RS384","RS512","ES256","ES384","ES512","PS256","PS384","PS512","none"],"userinfo_encryption_alg_values_supported":["RSA1_5","RSA-OAEP","RSA-OAEP-256","A128KW","A192KW","A256KW","dir","ECDH-ES","ECDH-ES+A128KW","ECDH-ES+A192KW","ECDH-ES+A256KW","A128GCMKW","A192GCMKW","A256GCMKW","PBES2-HS256+A128KW","PBES2-HS384+A192KW","PBES2-HS512+A256KW"],"userinfo_encryption_enc_values_supported":["A128CBC-HS256","A192CBC-HS384","A256CBC-HS512","A128GCM","A192GCM","A256GCM"],"request_object_signing_alg_values_supported":["HS256","HS384","HS512","RS256","RS384","RS512","ES256","ES384","ES512","PS256","PS384","PS512","none"],"request_object_encryption_alg_values_supported":["RSA1_5","RSA-OAEP","RSA-OAEP-256","A128KW","A192KW","A256KW","dir","ECDH-ES","ECDH-ES+A128KW","ECDH-ES+A192KW","ECDH-ES+A256KW","A128GCMKW","A192GCMKW","A256GCMKW","PBES2-HS256+A128KW","PBES2-HS384+A192KW","PBES2-HS512+A256KW"],"request_object_encryption_enc_values_supported":["A128CBC-HS256","A192CBC-HS384","A256CBC-HS512","A128GCM","A192GCM","A256GCM"],"claim_types_supported":["normal"],"request_parameter_supported":true,"request_uri_parameter_supported":true,"require_request_uri_registration":true,"claims_parameter_supported":true,"prompt_values_supported":["consent","login","none","select_account"],"authorization_signing_alg_values_supported":["HS256","HS384","HS512","RS256","RS384","RS512","ES256","ES384","ES512","PS256","PS384","PS512"],"authorization_encryption_alg_values_supported":["RSA1_5","RSA-OAEP","RSA-OAEP-256","A128KW","A192KW","A256KW","dir","ECDH-ES","ECDH-ES+A128KW","ECDH-ES+A192KW","ECDH-ES+A256KW","A128GCMKW","A192GCMKW","A256GCMKW","PBES2-HS256+A128KW","PBES2-HS384+A192KW","PBES2-HS512+A256KW"],"authorization_encryption_enc_values_supported":["A128CBC-HS256","A192CBC-HS384","A256CBC-HS512","A128GCM","A192GCM","A256GCM"]}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: static-jwks-json
+  namespace: authelia
+spec:
+  plugin:
+    static-response:
+      headers:
+        content-type: application/json; charset=utf-8
+        cache-control: max-age=604800, stale-while-revalidate=86400
+      body: |-
+        {"keys":[{"use":"sig","kty":"RSA","kid":"19a1ca-rs256","alg":"RS256","n":"s5eJCLJlP2XuhHUT9jcyde9i0IA_2Kh8ODadSA1l0S-QK7Ui9o4yGwZhd2VEx7MzyA94zRiQtr5VxFe87HJErY9LfMhQNJiO9v9Uj-WlK5SzQkajM2d-3WQeBB_PeVJTkzFTU8R6NjLEVX7qEGXl686JxCwfcmoc-W2IGCIsBuGlYbK3vPFCip4BLJLpPhBMVmnXoDZCW3igfPBxfE9VULudDOCX_nJyOywEmjU4-XYQvMMsdjCczcDRd9-uqG1MTZfUREgB8vX-ZLAaRJbVQHsSYWA15hJb_ypx0cKa0QWg52TKO_eMEw4Wtm1LE0GqUqHlilBKKqvz9Gh8msB64Q","e":"AQAB"}]}
