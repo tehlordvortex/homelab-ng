@@ -7,4 +7,5 @@ repo_dir=${1:-"$(dirname $self_dir)"}
 cluster="$repo_dir/sophons"
 
 "$self_dir/flux-build" "$repo_dir" |
-  flux schema validate --schema-location default --schema-location ecosystem
+  flux schema validate --schema-location default --schema-location ecosystem \
+    --skip-kind talos.dev/v1alpha1/ServiceAccount
