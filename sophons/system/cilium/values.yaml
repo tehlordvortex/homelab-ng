@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://github.com/cilium/cilium/raw/refs/tags/v1.20.0/install/kubernetes/cilium/values.schema.json
+# yaml-language-server: $schema=https://github.com/cilium/cilium/raw/refs/tags/v1.20.2/install/kubernetes/cilium/values.schema.json
 cgroup:
   autoMount:
     enabled: false
@@ -115,7 +115,7 @@ envoy:
 
   resources:
     requests:
-      memory: 32Mi
+      memory: 16Mi
     limits:
       memory: 128Mi
   securityContext:
