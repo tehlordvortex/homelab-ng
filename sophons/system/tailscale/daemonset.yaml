@@ -53,6 +53,10 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
         - name: tailscale
           hostPath:
             path: /var/lib/garage/tailscale
@@ -101,6 +105,8 @@ spec:
             #   value: nftables
 
           volumeMounts:
+            - mountPath: /dev/net/tun
+              name: tun
             - mountPath: /tmp
               name: tmp
             - mountPath: /run
@@ -133,4 +139,3 @@ spec:
               memory: 64Mi
             limits:
               memory: 128Mi
-              devic.es/tun: "1"
